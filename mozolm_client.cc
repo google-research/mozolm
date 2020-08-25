@@ -12,22 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/mozolm_client.h"
+#include "third_party/mozolm/mozolm_client.h"
 
 #include <string>
 #include <vector>
 
-#include "absl/memory/memory.h"
+#include "mozolm/stubs/integral_types.h"
+#include "mozolm/stubs/logging.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_format.h"
 #include "absl/synchronization/notification.h"
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client_async_impl.h"
-#include "mozolm/stubs/integral_types.h"
-#include "mozolm/stubs/logging.h"
+#include "third_party/mozolm/grpc_util.proto.h"
+#include "third_party/mozolm/mozolm_client_async_impl.h"
 
 namespace mozolm {
 namespace grpc {
@@ -145,7 +144,7 @@ MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {
       GOOGLE_LOG(ERROR) << "unknown credential type";
   }
   channel_ = ::grpc::CreateChannel(grpc_config.server_port(), creds);
-  completion_client_ = absl::make_unique<MozoLMClientAsyncImpl>(
+  completion_client_ = std::make_unique<MozoLMClientAsyncImpl>(
       MozoLMServer::NewStub(channel_));
   timeout_ = grpc_config.client_config().timeout();
 }

@@ -19,10 +19,10 @@
 #include <string>
 #include <vector>
 
-#include "include/grpcpp/create_channel.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client_async_impl.h"
 #include "mozolm/stubs/integral_types.h"
+#include "include/grpcpp/create_channel.h"
+#include "third_party/mozolm/grpc_util.proto.h"
+#include "third_party/mozolm/mozolm_client_async_impl.h"
 
 namespace mozolm {
 namespace grpc {

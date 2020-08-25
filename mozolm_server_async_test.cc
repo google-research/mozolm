@@ -15,11 +15,12 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/mozolm_server_async_impl.h"
-#include "mozolm/lm_scores.grpc.pb.h"
 #include "gtest/gtest.h"
+
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/server_context.h"
+#include "third_party/mozolm/mozolm_server_async_impl.h"
+#include "third_party/mozolm/lm_scores.grpc.pb.h"
 
 namespace mozolm {
 namespace grpc {

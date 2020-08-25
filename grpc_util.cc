@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/grpc_util.h"
+#include "third_party/mozolm/grpc_util.h"
 
 #include <memory>
 #include <string>
@@ -22,9 +22,9 @@
 #include "absl/strings/str_format.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client.h"
-#include "mozolm/mozolm_server_async_impl.h"
+#include "third_party/mozolm/grpc_util.proto.h"
+#include "third_party/mozolm/mozolm_client.h"
+#include "third_party/mozolm/mozolm_server_async_impl.h"
 
 ABSL_FLAG(double, mozolm_client_timeout, 10.0,
           "timeout to wait for response in seconds");
@@ -36,7 +36,7 @@ namespace {
 bool RunCompletionServer(const ClientServerConfig& grpc_config,
                          ::grpc::ServerBuilder* builder) {
   MozoLMServerAsyncImpl mozolm_server(grpc_config.server_config().vocab(),
-                                         grpc_config.server_config().counts());
+                                      grpc_config.server_config().counts());
   mozolm_server.StartServer(grpc_config.server_port(), builder);
   return true;
 }

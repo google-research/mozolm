@@ -19,17 +19,16 @@
 #include <string>
 
 #include "absl/flags/declare.h"
-#include "absl/memory/memory.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/server.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "mozolm/mozolm_bigram_char_model.h"
-#include "mozolm/mozolm_model.h"
-#include "mozolm/lm_scores.grpc.pb.h"
-#include "mozolm/lm_scores.pb.h"
+#include "third_party/mozolm/mozolm_bigram_char_model.h"
+#include "third_party/mozolm/mozolm_model.h"
+#include "third_party/mozolm/lm_scores.grpc.pb.h"
+#include "third_party/mozolm/lm_scores.proto.h"
 
 ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
 
@@ -45,16 +44,16 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0.
   explicit MozoLMServerAsyncImpl(const std::string& in_vocab = "",
-                                 const std::string& in_counts = "") {
+                                  const std::string& in_counts = "") {
     // TODO(roark): setup ThreadPool functionality.  Example:
     //   if (FLAGS_mozolm_server_asynch_pool_size > 0) {
     //     asynch_pool_ =
-    //        absl::MakeUnique<ThreadPool>(FLAGS_mozolm_server_asynch_pool_size);
+    //      absl::MakeUnique<ThreadPool>(FLAGS_mozolm_server_asynch_pool_size);
     //     asynch_pool_->StartWorkers();
     //   } else {
     //     asynch_pool_ = nullptr;
     //   }
-    model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
+    model_ = std::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
   }
 
   // TODO(roark): look into server shutdown methods.
@@ -88,7 +87,8 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
     return model_->StateSym(state);
   }
 
-  bool StartServer(const std::string& server_port, ::grpc::ServerBuilder* builder);
+  bool StartServer(const std::string& server_port,
+                   ::grpc::ServerBuilder* builder);
 
  private:
   void DriveCQ();              // Manages a step in the operation of cq_.

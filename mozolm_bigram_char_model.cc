@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/mozolm_bigram_char_model.h"
+#include "third_party/mozolm/mozolm_bigram_char_model.h"
 
 #include <fstream>
 
-#include "absl/strings/str_split.h"
-#include "absl/synchronization/mutex.h"
 #include "mozolm/stubs/integral_types.h"
 #include "mozolm/stubs/logging.h"
+#include "absl/strings/str_split.h"
+#include "absl/synchronization/mutex.h"
 
 namespace mozolm {
 namespace {
@@ -126,7 +126,8 @@ int BigramCharLanguageModel::NextState(int state, int utf8_sym) {
 bool BigramCharLanguageModel::ExtractLMScores(int state, LMScores* response) {
   absl::ReaderMutexLock nl(&normalizer_lock_);
   absl::ReaderMutexLock cl(&counts_lock_);
-  bool valid_state = state >= 0 && state < static_cast<int>(utf8_indices_.size());
+  bool valid_state =
+      state >= 0 && state < static_cast<int>(utf8_indices_.size());
   if (valid_state) {
     response->set_normalization(utf8_normalizer_[state]);
     for (size_t i = 0; i < bigram_counts_[state].size(); i++) {
@@ -142,7 +143,8 @@ bool BigramCharLanguageModel::UpdateLMCounts(int state, int utf8_sym,
   absl::WriterMutexLock nl(&normalizer_lock_);
   absl::WriterMutexLock cl(&counts_lock_);
   int next_state = NextState(state, utf8_sym);
-  bool valid_update = state >= 0 && state < static_cast<int>(utf8_indices_.size()) &&
+  bool valid_update = state >= 0 &&
+                      state < static_cast<int>(utf8_indices_.size()) &&
                       next_state >= 0 && count > 0;
   if (valid_update) {
     utf8_normalizer_[state] += count;

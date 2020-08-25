@@ -18,9 +18,9 @@
 #include <string>
 #include <vector>
 
-#include "absl/synchronization/mutex.h"
-#include "mozolm/lm_scores.pb.h"
 #include "mozolm/stubs/integral_types.h"
+#include "absl/synchronization/mutex.h"
+#include "third_party/mozolm/lm_scores.proto.h"
 
 namespace mozolm {
 
