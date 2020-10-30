@@ -9,8 +9,6 @@ addons:
       - wget
       - pkg-config
       - g++-8
-      - sox
-      - python3-pip
 
 before_install:
   - wget https://github.com/bazelbuild/bazel/releases/download/3.7.0/bazel_3.7.0-linux-x86_64.deb
@@ -18,5 +16,5 @@ before_install:
   - sudo dpkg -i bazel_3.7.0-linux-x86_64.deb
 
 script:
-  - bazel test -c opt ...
+  - bazel test -c opt //mozolm/...
 
