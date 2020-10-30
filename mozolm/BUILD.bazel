@@ -16,8 +16,8 @@ cc_library(
         ":lm_scores_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
-        "@io_absl_cpp//absl/strings",
-        "@io_absl_cpp//absl/synchronization",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -32,10 +32,10 @@ cc_library(
         ":lm_scores_cc_proto",
         ":mozolm_models",
         "@com_github_grpc_grpc//:grpc++",
-        "@io_absl_cpp//absl/flags:flag",
-        "@io_absl_cpp//absl/functional:bind_front",
-        "@io_absl_cpp//absl/memory",
-        "@io_absl_cpp//absl/synchronization",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -45,9 +45,9 @@ cc_binary(
     deps = [
         ":grpc_util",
         ":grpc_util_cc_proto",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
         "@com_google_protobuf//:protobuf",
-        "@io_absl_cpp//absl/flags:flag",
-        "@io_absl_cpp//absl/flags:parse",
     ],
 )
 
@@ -74,9 +74,9 @@ cc_library(
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",
-        "@io_absl_cpp//absl/memory",
-        "@io_absl_cpp//absl/strings:str_format",
-        "@io_absl_cpp//absl/synchronization",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -87,9 +87,9 @@ cc_binary(
         ":grpc_util",
         ":grpc_util_cc_proto",
         ":mozolm_client",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
         "@com_google_protobuf//:protobuf",
-        "@io_absl_cpp//absl/flags:flag",
-        "@io_absl_cpp//absl/flags:parse",
     ],
 )
 
@@ -102,8 +102,8 @@ cc_library(
         ":mozolm_client",
         ":mozolm_server_async_impl",
         "@com_github_grpc_grpc//:grpc++",
-        "@io_absl_cpp//absl/flags:flag",
-        "@io_absl_cpp//absl/strings:str_format",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -115,9 +115,9 @@ cc_library(
         ":grpc_util_cc_proto",
         ":mozolm_client_async_impl",
         "@com_github_grpc_grpc//:grpc++",
-        "@io_absl_cpp//absl/random",
-        "@io_absl_cpp//absl/strings:str_format",
-        "@io_absl_cpp//absl/synchronization",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
