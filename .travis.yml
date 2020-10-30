@@ -1,4 +1,4 @@
-dist: bionic
+dist: focal
 language: cpp
 
 addons:
@@ -8,7 +8,7 @@ addons:
     packages:
       - wget
       - pkg-config
-      - g++-7
+      - g++-8
       - sox
       - python3-pip
 
