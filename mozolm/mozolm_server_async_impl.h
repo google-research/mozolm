@@ -19,6 +19,7 @@
 #include <string>
 
 #include "absl/flags/declare.h"
+#include "absl/memory/memory.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
 #include "include/grpcpp/grpcpp.h"
@@ -44,7 +45,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0.
   explicit MozoLMServerAsyncImpl(const std::string& in_vocab = "",
-                                  const std::string& in_counts = "") {
+                                 const std::string& in_counts = "") {
     // TODO(roark): setup ThreadPool functionality.  Example:
     //   if (FLAGS_mozolm_server_asynch_pool_size > 0) {
     //     asynch_pool_ =
@@ -53,7 +54,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
     //   } else {
     //     asynch_pool_ = nullptr;
     //   }
-    model_ = std::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
+    model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
   }
 
   // TODO(roark): look into server shutdown methods.

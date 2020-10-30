@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/memory/memory.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_format.h"
 #include "absl/synchronization/notification.h"
@@ -144,7 +145,7 @@ MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {
       GOOGLE_LOG(ERROR) << "unknown credential type";
   }
   channel_ = ::grpc::CreateChannel(grpc_config.server_port(), creds);
-  completion_client_ = std::make_unique<MozoLMClientAsyncImpl>(
+  completion_client_ = absl::make_unique<MozoLMClientAsyncImpl>(
       MozoLMServer::NewStub(channel_));
   timeout_ = grpc_config.client_config().timeout();
 }

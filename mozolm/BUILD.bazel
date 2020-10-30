@@ -14,10 +14,10 @@ cc_library(
     ],
     deps = [
         ":lm_scores_cc_proto",
-        "@io_absl_cpp//absl/strings",
-        "@io_absl_cpp//absl/synchronization",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "@io_absl_cpp//absl/strings",
+        "@io_absl_cpp//absl/synchronization",
     ],
 )
 
@@ -28,12 +28,13 @@ cc_library(
     srcs = ["mozolm_server_async_impl.cc"],
     hdrs = ["mozolm_server_async_impl.h"],
     deps = [
-        ":mozolm_models",
         ":lm_scores_cc_grpc_proto",
         ":lm_scores_cc_proto",
+        ":mozolm_models",
         "@com_github_grpc_grpc//:grpc++",
         "@io_absl_cpp//absl/flags:flag",
         "@io_absl_cpp//absl/functional:bind_front",
+        "@io_absl_cpp//absl/memory",
         "@io_absl_cpp//absl/synchronization",
     ],
 )
@@ -55,8 +56,8 @@ cc_test(
     size = "small",
     srcs = ["mozolm_server_async_test.cc"],
     deps = [
-        ":mozolm_server_async_impl",
         ":lm_scores_cc_grpc_proto",
+        ":mozolm_server_async_impl",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_googletest//:gtest_main",
     ],
@@ -70,11 +71,12 @@ cc_library(
     hdrs = ["mozolm_client_async_impl.h"],
     deps = [
         ":lm_scores_cc_grpc_proto",
-        "@com_github_grpc_grpc//:grpc++",
-        "@io_absl_cpp//absl/strings:str_format",
-        "@io_absl_cpp//absl/synchronization",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "@com_github_grpc_grpc//:grpc++",
+        "@io_absl_cpp//absl/memory",
+        "@io_absl_cpp//absl/strings:str_format",
+        "@io_absl_cpp//absl/synchronization",
     ],
 )
 
@@ -100,7 +102,7 @@ cc_library(
         ":mozolm_client",
         ":mozolm_server_async_impl",
         "@com_github_grpc_grpc//:grpc++",
-	    "@io_absl_cpp//absl/flags:flag",
+        "@io_absl_cpp//absl/flags:flag",
         "@io_absl_cpp//absl/strings:str_format",
     ],
 )
@@ -132,8 +134,8 @@ cc_proto_library(
 cc_grpc_library(
     name = "lm_scores_cc_grpc_proto",
     srcs = [":lm_scores_proto"],
-    deps = [":lm_scores_cc_proto"],
     grpc_only = True,
+    deps = [":lm_scores_cc_proto"],
 )
 
 proto_library(
