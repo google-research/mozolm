@@ -1,0 +1,22 @@
+dist: bionic
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - wget
+      - pkg-config
+      - g++-7
+      - sox
+      - python3-pip
+
+before_install:
+  - wget https://github.com/bazelbuild/bazel/releases/download/3.7.0/bazel_3.7.0-linux-x86_64.deb
+  - sha256sum -c build/bazel_3.7.0-linux-x86_64.deb.sha256
+  - sudo dpkg -i bazel_3.7.0-linux-x86_64.deb
+
+script:
+  - bazel test -c opt ...
+

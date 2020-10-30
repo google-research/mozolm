@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/google-research/mozolm.svg?branch=master)](https://travis-ci.org/google-research/mozolm)
+
 # MozoLM
 
 A language model serving library, with middleware functionality including mixing
