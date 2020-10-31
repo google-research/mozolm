@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/google-research/mozolm.svg?branch=master)](https://travis-ci.org/google-research/mozolm)
+[![Build Status](https://travis-ci.org/google-research/mozolm.svg?branch=main)](https://travis-ci.org/google-research/mozolm)
 
 # MozoLM
 
