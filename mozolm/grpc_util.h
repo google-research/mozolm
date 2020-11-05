@@ -18,7 +18,7 @@
 #include <string>
 
 #include "absl/flags/declare.h"
-#include "third_party/mozolm/grpc_util.proto.h"
+#include "mozolm/grpc_util.pb.h"
 
 ABSL_DECLARE_FLAG(double, mozolm_client_timeout);
 

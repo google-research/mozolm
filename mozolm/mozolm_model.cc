@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "third_party/mozolm/mozolm_model.h"
+#include "mozolm/mozolm_model.h"
 
 #include <string>
 #include <vector>

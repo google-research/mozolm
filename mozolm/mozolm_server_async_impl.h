@@ -25,10 +25,10 @@
 #include "include/grpcpp/server.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "third_party/mozolm/mozolm_bigram_char_model.h"
-#include "third_party/mozolm/mozolm_model.h"
-#include "third_party/mozolm/lm_scores.grpc.pb.h"
-#include "third_party/mozolm/lm_scores.proto.h"
+#include "mozolm/mozolm_bigram_char_model.h"
+#include "mozolm/mozolm_model.h"
+#include "mozolm/lm_scores.grpc.pb.h"
+#include "mozolm/lm_scores.pb.h"
 
 ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
 

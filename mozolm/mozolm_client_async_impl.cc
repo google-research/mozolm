@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "third_party/mozolm/mozolm_client_async_impl.h"
+#include "mozolm/mozolm_client_async_impl.h"
 
 #include <algorithm>
 #include <functional>
@@ -28,7 +28,7 @@
 #include "include/grpcpp/impl/codegen/time.h"
 #include "include/grpc/impl/codegen/gpr_types.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "third_party/mozolm/lm_scores.grpc.pb.h"
+#include "mozolm/lm_scores.grpc.pb.h"
 
 namespace mozolm {
 namespace grpc {

@@ -20,7 +20,7 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "absl/synchronization/mutex.h"
-#include "third_party/mozolm/lm_scores.proto.h"
+#include "mozolm/lm_scores.pb.h"
 
 namespace mozolm {
 

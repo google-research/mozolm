@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "third_party/mozolm/mozolm_bigram_char_model.h"
+#include "mozolm/mozolm_bigram_char_model.h"
 
 #include <fstream>
 
