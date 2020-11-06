@@ -19,6 +19,7 @@
 #include <string>
 
 #include "absl/flags/declare.h"
+#include "absl/memory/memory.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
 #include "include/grpcpp/grpcpp.h"
@@ -53,7 +54,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
     //   } else {
     //     asynch_pool_ = nullptr;
     //   }
-    model_ = std::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
+    model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
   }
 
   // TODO(roark): look into server shutdown methods.

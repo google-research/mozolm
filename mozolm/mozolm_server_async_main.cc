@@ -19,7 +19,7 @@
 // DATADIR=mozolm/data
 // VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
 // COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
-// blaze-bin/mozolm/mozolm_server_async \
+// bazel-bin/mozolm/mozolm_server_async \
 //   --client_server_config="server_port:\"localhost:50051\" \
 //   credential_type:INSECURE server_config { vocab:\"$VOCAB\" \
 //   counts:\"$COUNTS\" wait_for_clients:true }"
