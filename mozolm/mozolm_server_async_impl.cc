@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "mozolm/stubs/logging.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
 #include "include/grpcpp/server_builder.h"
@@ -22,7 +23,6 @@
 #include "mozolm/mozolm_server_async_impl.h"
 #include "mozolm/lm_scores.grpc.pb.h"
 #include "mozolm/lm_scores.pb.h"
-#include "mozolm/stubs/logging.h"
 
 ABSL_FLAG(int, mozolm_server_asynch_pool_size, 2,
           "number of threads in the UpdateLMScores handlers thread pool");
@@ -265,7 +265,6 @@ bool MozoLMServerAsyncImpl::StartServer(const std::string& server_port,
     DriveCQ();
   }
 
-  //  thread::signal::RemoveHandler(token, 0);  // Waits for shutdown to complete.
   return true;
 }
 

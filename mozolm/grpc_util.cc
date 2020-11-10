@@ -36,7 +36,7 @@ namespace {
 bool RunCompletionServer(const ClientServerConfig& grpc_config,
                          ::grpc::ServerBuilder* builder) {
   MozoLMServerAsyncImpl mozolm_server(grpc_config.server_config().vocab(),
-                                         grpc_config.server_config().counts());
+                                      grpc_config.server_config().counts());
   mozolm_server.StartServer(grpc_config.server_port(), builder);
   return true;
 }

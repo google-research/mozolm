@@ -17,9 +17,9 @@
 #include <string>
 #include <vector>
 
+#include "mozolm/stubs/logging.h"
 #include "absl/strings/str_split.h"
 #include "absl/synchronization/mutex.h"
-#include "mozolm/stubs/logging.h"
 
 namespace mozolm {
 

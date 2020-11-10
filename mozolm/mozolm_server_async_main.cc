@@ -16,8 +16,9 @@
 //
 // Example usage:
 // --------------
-// VOCAB=mozolm/data/en_wiki_1Mline_char_bigram.rows.txt
-// COUNTS=mozolm/data/en_wiki_1Mline_char_bigram.matrix.txt
+// DATADIR=mozolm/data
+// VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
+// COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 // bazel-bin/mozolm/mozolm_server_async \
 //   --client_server_config="server_port:\"localhost:50051\" \
 //   credential_type:INSECURE server_config { vocab:\"$VOCAB\" \
@@ -27,12 +28,12 @@
 
 #include <string>
 
+#include "mozolm/stubs/logging.h"
+#include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "google/protobuf/text_format.h"
 #include "mozolm/grpc_util.h"
 #include "mozolm/grpc_util.pb.h"
-#include "mozolm/stubs/logging.h"
 
 ABSL_FLAG(std::string, client_server_config, "",
           "mozolm_grpc.ClientServerConfig in text format.");

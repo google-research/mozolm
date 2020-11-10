@@ -20,9 +20,9 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/lm_scores.grpc.pb.h"
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
+#include "mozolm/lm_scores.grpc.pb.h"
 
 namespace mozolm {
 namespace grpc {

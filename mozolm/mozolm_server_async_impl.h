@@ -45,11 +45,11 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0.
   explicit MozoLMServerAsyncImpl(const std::string& in_vocab = "",
-                                 const std::string& in_counts = "") {
+                                  const std::string& in_counts = "") {
     // TODO(roark): setup ThreadPool functionality.  Example:
     //   if (FLAGS_mozolm_server_asynch_pool_size > 0) {
     //     asynch_pool_ =
-    //        absl::MakeUnique<ThreadPool>(FLAGS_mozolm_server_asynch_pool_size);
+    //      absl::MakeUnique<ThreadPool>(FLAGS_mozolm_server_asynch_pool_size);
     //     asynch_pool_->StartWorkers();
     //   } else {
     //     asynch_pool_ = nullptr;
@@ -88,7 +88,8 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
     return model_->StateSym(state);
   }
 
-  bool StartServer(const std::string& server_port, ::grpc::ServerBuilder* builder);
+  bool StartServer(const std::string& server_port,
+                   ::grpc::ServerBuilder* builder);
 
  private:
   void DriveCQ();              // Manages a step in the operation of cq_.

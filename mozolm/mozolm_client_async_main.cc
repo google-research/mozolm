@@ -29,9 +29,9 @@
 
 #include <string>
 
+#include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "google/protobuf/text_format.h"
 #include "mozolm/grpc_util.h"
 #include "mozolm/grpc_util.pb.h"
 #include "mozolm/mozolm_client.h"
