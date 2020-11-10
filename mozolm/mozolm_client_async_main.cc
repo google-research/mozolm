@@ -16,7 +16,7 @@
 //
 // Example usage:
 // --------------
-// - To randomly generate a string:
+// - To randomly generate strings:
 //   bazel-bin/mozolm/mozolm_client_async \
 //     --randgen \
 //     --client_server_config="server_port:\"localhost:50051\" \
