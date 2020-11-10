@@ -59,7 +59,7 @@ bool RunServer(const ClientServerConfig& grpc_config, bool run_client,
   std::shared_ptr<::grpc::ServerCredentials> creds;
   switch (grpc_config.credential_type()) {
     case ClientServerConfig::SSL:
-      // TODO(roark): setup SSL credentials.
+      // TODO: setup SSL credentials.
       creds = ::grpc::InsecureServerCredentials();
       break;
     case ClientServerConfig::INSECURE:

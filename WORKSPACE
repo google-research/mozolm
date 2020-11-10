@@ -49,6 +49,32 @@ grpc_deps()
 load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 grpc_extra_deps()
 
+# -------------------------------------------------------------------------
+# OpenFst: See
+#    http://www.openfst.org/twiki/pub/FST/FstDownload/README
+# -------------------------------------------------------------------------
+openfst_version = "1.7.10-rc1"
+
+http_archive(
+    name = "org_openfst",
+    urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
+    sha256 = "b82eb91d22b9b3f271702bef2dfd0e400ab4193e9bbc96fa595b14e22a1a6577",
+    strip_prefix = "openfst-%s" % openfst_version,
+)
+
+# -------------------------------------------------------------------------
+# OpenGrm N-Gram:
+# -------------------------------------------------------------------------
+
+opengrm_ngram_version = "1.3.12-rc1"
+
+http_archive(
+    name = "org_opengrm_ngram",
+    urls = ["https://github.com/agutkin/finite_state/raw/main/ngram-%s.tar.gz" % opengrm_ngram_version],
+    sha256 = "656b429002cc4e7f12a75ce9410ef2c4fbd8a63cc359c49ae724c52b0b646e10",
+    strip_prefix = "ngram-%s" % opengrm_ngram_version
+)
+
 # Local Variables:
 # mode: bazel-build-mode
 # End:

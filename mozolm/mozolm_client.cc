@@ -96,7 +96,7 @@ bool MozoLMClient::RandGen(const std::string& context_string,
       if (chosen > 0) {
         // Only updates if not end-of-string.
         std::string next_sym;
-        // TODO(roark): deal with general UTF8.
+        // TODO: deal with general UTF8.
         // next_sym = EncodingUtils::EncodeAsUTF8(&chosen, 1);
         next_sym.push_back(static_cast<char>(chosen));
         *result += next_sym;
@@ -122,7 +122,7 @@ bool MozoLMClient::OneKbestSample(int k_best, const std::string& context_string,
     *result = std::to_string(k_best) + "-best prob continuations:";
     double norm = normalization / 100.0;
     for (int i = 0; i < k_best; i++) {
-      // TODO(roark): fix for general utf8 symbols.
+      // TODO: fix for general utf8 symbols.
       *result = absl::StrFormat(
           "%s %c(%5.2f)", *result, count_idx_pair_vector[i].second,
           static_cast<double>(count_idx_pair_vector[i].first) / norm);
@@ -135,7 +135,7 @@ MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {
   std::shared_ptr<::grpc::ChannelCredentials> creds;
   switch (grpc_config.credential_type()) {
     case ClientServerConfig::SSL:
-      // TODO(roark): setup SSL credentials.
+      // TODO: setup SSL credentials.
       creds = ::grpc::InsecureChannelCredentials();
       break;
     case ClientServerConfig::INSECURE:

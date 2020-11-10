@@ -46,7 +46,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // requests if pool_size is > 0.
   explicit MozoLMServerAsyncImpl(const std::string& in_vocab = "",
                                   const std::string& in_counts = "") {
-    // TODO(roark): setup ThreadPool functionality.  Example:
+    // TODO: setup ThreadPool functionality.  Example:
     //   if (FLAGS_mozolm_server_asynch_pool_size > 0) {
     //     asynch_pool_ =
     //      absl::MakeUnique<ThreadPool>(FLAGS_mozolm_server_asynch_pool_size);
@@ -57,7 +57,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
     model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
   }
 
-  // TODO(roark): look into server shutdown methods.
+  // TODO: look into server shutdown methods.
   ~MozoLMServerAsyncImpl() {
     if (server_ != nullptr) {
       server_->Shutdown();
@@ -161,7 +161,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // Notified when pending rpc count is zero.
   absl::Notification rpcs_completed_;
 
-  // TODO(roark) configure asynch_pool_.
+  // TODO configure asynch_pool_.
   // std::unique_ptr<ThreadPool> asynch_pool_;  // Pool for handling updates.
 };
 
