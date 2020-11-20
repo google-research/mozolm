@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 
 package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
-
-exports_files(["LICENSE"])
 
 cc_library(
     name = "mozolm_models",
@@ -151,9 +148,6 @@ cc_library(
 proto_library(
     name = "lm_scores_proto",
     srcs = ["lm_scores.proto"],
-    has_services = 1,
-    cc_api_version = 2,
-    deps = [],
 )
 
 cc_proto_library(
@@ -164,14 +158,13 @@ cc_proto_library(
 cc_grpc_library(
     name = "lm_scores_cc_grpc_proto",
     srcs = [":lm_scores_proto"],
+    grpc_only = True,
     deps = [":lm_scores_cc_proto"],
 )
 
 proto_library(
     name = "grpc_util_proto",
     srcs = ["grpc_util.proto"],
-    cc_api_version = 2,
-    deps = [],
 )
 
 cc_proto_library(
