@@ -70,7 +70,7 @@ void ReadCountMatrix(const std::string& in_counts, int rows,
   GOOGLE_CHECK_EQ(idx, rows) << "Expects one row per vocab entry";
   infile.close();
 }
-} // namespace
+}  // namespace
 
 // Initializes the bigram character model based on flags.
 BigramCharLanguageModel::BigramCharLanguageModel(const std::string& in_vocab,
@@ -85,8 +85,8 @@ BigramCharLanguageModel::BigramCharLanguageModel(const std::string& in_vocab,
     }
   } else {
     // Assumes uniform distribution over lowercase a-z and whitespace.
-    utf8_indices_.push_back(0);  // Index 0 is <S> and </S> by convention.
-    utf8_indices_.push_back(32); // Whitespace.
+    utf8_indices_.push_back(0);   // Index 0 is <S> and </S> by convention.
+    utf8_indices_.push_back(32);  // Whitespace.
     for (int32 sym = 97; sym <= 122; sym++) {
       utf8_indices_.push_back(sym);
     }

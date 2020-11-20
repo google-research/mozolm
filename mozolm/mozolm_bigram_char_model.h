@@ -25,7 +25,6 @@
 namespace mozolm {
 
 class BigramCharLanguageModel : public LanguageModel {
-
  public:
   explicit BigramCharLanguageModel(const std::string& in_vocab = "",
                                    const std::string& in_counts = "");

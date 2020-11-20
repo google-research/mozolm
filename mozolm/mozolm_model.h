@@ -25,7 +25,6 @@
 namespace mozolm {
 
 class LanguageModel {
-
  public:
   explicit LanguageModel() {
     start_state_ = 0;
