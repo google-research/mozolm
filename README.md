@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/google-research/mozolm.svg?branch=main)](https://travis-ci.org/google-research/mozolm)
+[![Build Tests](https://github.com/google-research/mozolm/workflows/build/badge.svg)](https://github.com/google/fresnel/actions?query=workflow%3A%22build%22)
 
 # MozoLM
 
