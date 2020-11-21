@@ -22,9 +22,6 @@ jobs:
         path: "~/.cache/bazel"
         key: ${{ runner.os }}-build
 
-    # - name: Install p4c system dependencies (Flex, Bison, GMP)
-    # run: sudo apt-get update && sudo apt-get install bison flex libfl-dev libgmp-dev
-
     - name: Install bazelisk
       run: |
         curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.4/$BAZEL"
@@ -46,9 +43,6 @@ jobs:
         # See https://docs.bazel.build/versions/master/output_directories.html
         path: "~/.cache/bazel"
         key: ${{ runner.os }}-test
-
-    # - name: Install p4c system dependencies (Flex, Bison, GMP)
-    # run: sudo apt-get update && sudo apt-get install bison flex libfl-dev libgmp-dev
 
     - name: Install bazelisk
       run: |
