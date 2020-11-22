@@ -1,5 +1,6 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/google-research/mozolm/blob/main/LICENSE)
-[![Build Tests](https://github.com/google-research/mozolm/workflows/build/badge.svg)](https://github.com/google-research/mozolm/actions?query=workflow%3A%22build%22)
+[![Build Tests (Linux)](https://github.com/google-research/mozolm/workflows/linux/badge.svg)](https://github.com/google-research/mozolm/actions?query=workflow%3A%22linux%22)
+[![Build Tests (Windows)](https://github.com/google-research/mozolm/workflows/windows/badge.svg)](https://github.com/google-research/mozolm/actions?query=workflow%3A%22windows%22)
 
 # MozoLM
 

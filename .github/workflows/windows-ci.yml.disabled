@@ -1,0 +1,34 @@
+name: "windows"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build-and-test-windows:
+    name: Build and Test (Windows)
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Mount bazel cache
+      uses: actions/cache@v2
+      with:
+        # See https://docs.bazel.build/versions/master/output_directories.html
+        path: "%HOME%"
+        key: ${{ runner.os }}-build
+
+    - name: Install bazelisk
+      run: |
+        mkdir bazel
+        powershell Invoke-WebRequest https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-windows-amd64.exe -OutFile bazel\bazel.exe
+        set PATH=%PATH%;bazel
+
+    - name: Build
+      run: bazel\bazel.exe build -c opt //...
+
+    - name: Test
+      run: bazel\bazel.exe test -c opt //... --test_output=errors
