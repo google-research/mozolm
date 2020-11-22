@@ -1,4 +1,5 @@
 [![Build Tests](https://github.com/google-research/mozolm/workflows/build/badge.svg)](https://github.com/google/fresnel/actions?query=workflow%3A%22build%22)
+[![GitHub license](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/google-research/mozolm/blob/main/LICENSE)
 
 # MozoLM
 
