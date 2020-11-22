@@ -1,0 +1,83 @@
+# Copyright 2020 MozoLM Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Master Bazel build file for utfcpp library.
+#
+# To check this library run:
+#   bazel test -c opt @com_github_utfcpp//...
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "utfcpp",
+    includes = ["source"],
+    hdrs = [
+        "source/utf8.h",
+        "source/utf8/checked.h",
+        "source/utf8/unchecked.h",
+        "source/utf8/core.h",
+        "source/utf8/cpp11.h",
+    ],
+)
+
+cc_binary(
+    name = "docsample",
+    srcs = ["samples/docsample.cpp"],
+    deps = [":utfcpp"],
+)
+
+cc_test(
+    name = "test_checked_api",
+    srcs = ["tests/test_checked_api.cpp"],
+    deps = [
+        ":utfcpp",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test_checked_iterator",
+    srcs = ["tests/test_checked_iterator.cpp"],
+    deps = [
+        ":utfcpp",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test_unchecked_api",
+    srcs = ["tests/test_unchecked_api.cpp"],
+    deps = [
+        ":utfcpp",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test_unchecked_iterator",
+    srcs = ["tests/test_unchecked_iterator.cpp"],
+    deps = [
+        ":utfcpp",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test_cpp11",
+    srcs = ["tests/test_cpp11.cpp"],
+    deps = [
+        ":utfcpp",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
