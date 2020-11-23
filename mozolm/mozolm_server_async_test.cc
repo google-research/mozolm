@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/server_context.h"
 #include "mozolm/mozolm_server_async_impl.h"

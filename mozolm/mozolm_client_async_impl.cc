@@ -25,8 +25,6 @@
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/client_context.h"
 #include "include/grpcpp/completion_queue.h"
-#include "include/grpcpp/impl/codegen/time.h"
-#include "include/grpc/impl/codegen/gpr_types.h"
 #include "include/grpcpp/support/async_stream.h"
 #include "mozolm/lm_scores.grpc.pb.h"
 

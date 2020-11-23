@@ -30,6 +30,7 @@ cc_library(
     ],
     deps = [
         ":lm_scores_cc_proto",
+        ":utf8_util",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "@com_google_absl//absl/strings",
@@ -170,4 +171,23 @@ proto_library(
 cc_proto_library(
     name = "grpc_util_cc_proto",
     deps = [":grpc_util_proto"],
+)
+
+cc_library(
+    name = "utf8_util",
+    srcs = ["utf8_util.cc"],
+    hdrs = ["utf8_util.h"],
+    deps = [
+        "@com_github_utfcpp//:utfcpp",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "utf8_util_test",
+    srcs = ["utf8_util_test.cc"],
+    deps = [
+        ":utf8_util",
+        "@com_google_googletest//:gtest_main",
+    ],
 )

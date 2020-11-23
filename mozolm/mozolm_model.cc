@@ -18,17 +18,15 @@
 #include <vector>
 
 #include "mozolm/stubs/logging.h"
-#include "absl/strings/str_split.h"
 #include "absl/synchronization/mutex.h"
+#include "mozolm/utf8_util.h"
 
 namespace mozolm {
 
 int LanguageModel::ContextState(const std::string &context, int init_state) {
   int this_state = init_state < 0 ? start_state_ : init_state;
   if (!context.empty()) {
-    // TODO: put back UTF8 compliant single token split.
-    const std::vector<std::string> context_utf8 = absl::StrSplit(
-        context, absl::ByLength(1), absl::SkipEmpty());
+    const std::vector<std::string> context_utf8 = utf8::StrSplitByChar(context);
     for (const auto& sym : context_utf8) {
       // TODO: put back utf8 conversion. Currently just works with ASCII.
       this_state = NextState(this_state, static_cast<int>(sym[0]));
