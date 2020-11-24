@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_CLIENT_H__
-#define MOZOLM_MOZOLM_CLIENT_H__
+#ifndef MOZOLM_MOZOLM_MOZOLM_CLIENT_H_
+#define MOZOLM_MOZOLM_MOZOLM_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -58,4 +58,4 @@ class MozoLMClient {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_CLIENT_H__
+#endif  // MOZOLM_MOZOLM_MOZOLM_CLIENT_H_

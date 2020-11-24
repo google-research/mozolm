@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H__
-#define MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H__
+#ifndef MOZOLM_MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H_
+#define MOZOLM_MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -168,4 +168,4 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H__
+#endif  // MOZOLM_MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H_

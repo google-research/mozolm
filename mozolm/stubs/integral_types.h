@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_STUBS_INTEGRAL_TYPES_H_
-#define MOZOLM_STUBS_INTEGRAL_TYPES_H_
+#ifndef MOZOLM_MOZOLM_STUBS_INTEGRAL_TYPES_H_
+#define MOZOLM_MOZOLM_STUBS_INTEGRAL_TYPES_H_
 
 namespace mozolm {
 
@@ -30,4 +30,4 @@ typedef signed int char32;
 
 }  // namespace mozolm
 
-#endif  // MOZOLM_STUBS_INTEGRAL_TYPES_H_
+#endif  // MOZOLM_MOZOLM_STUBS_INTEGRAL_TYPES_H_

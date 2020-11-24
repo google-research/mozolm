@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_GRPC_UTIL_H__
-#define MOZOLM_GRPC_UTIL_H__
+#ifndef MOZOLM_MOZOLM_GRPC_UTIL_H_
+#define MOZOLM_MOZOLM_GRPC_UTIL_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ bool RunClient(const ClientServerConfig& grpc_config, int k_best, bool randgen,
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_GRPC_UTIL_H__
+#endif  // MOZOLM_MOZOLM_GRPC_UTIL_H_
