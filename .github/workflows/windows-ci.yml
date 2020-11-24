@@ -18,17 +18,15 @@ jobs:
       uses: actions/cache@v2
       with:
         # See https://docs.bazel.build/versions/master/output_directories.html
-        path: "%HOME%"
+        path: ${{ github.workspace }}/.cache/bazel
         key: ${{ runner.os }}-build
 
     - name: Install bazelisk
       run: |
-        mkdir bazel
-        powershell Invoke-WebRequest https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-windows-amd64.exe -OutFile bazel\bazel.exe
-        set PATH=%PATH%;bazel
+        powershell Invoke-WebRequest https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-windows-amd64.exe -OutFile bazel.exe
 
     - name: Build
-      run: bazel\bazel.exe build -c opt //...
+      run: ./bazel.exe build -c opt //...
 
     - name: Test
-      run: bazel\bazel.exe test -c opt //... --test_output=errors
+      run: ./bazel.exe test -c opt //... --test_output=errors
