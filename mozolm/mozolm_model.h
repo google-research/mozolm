@@ -16,7 +16,6 @@
 #define MOZOLM_MOZOLM_MODEL_H__
 
 #include <string>
-#include <vector>
 
 #include "mozolm/stubs/integral_types.h"
 #include "absl/synchronization/mutex.h"

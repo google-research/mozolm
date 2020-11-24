@@ -24,18 +24,35 @@ namespace utf8 {
 namespace {
 
 TEST(Utf8UtilTest, CheckStrSplitByChar) {
-  EXPECT_THAT(utf8::StrSplitByChar("abcdefg"), ElementsAre(
+  EXPECT_THAT(StrSplitByChar("abcdefg"), ElementsAre(
       "a", "b", "c", "d", "e", "f", "g"));
-  EXPECT_THAT(utf8::StrSplitByChar("Բարեւ"), ElementsAre(
+  EXPECT_THAT(StrSplitByChar("Բարեւ"), ElementsAre(
       "Բ", "ա", "ր", "ե", "ւ"));
-  EXPECT_THAT(utf8::StrSplitByChar("ባህሪ"), ElementsAre(
+  EXPECT_THAT(StrSplitByChar("ባህሪ"), ElementsAre(
       "ባ", "ህ", "ሪ"));
-  EXPECT_THAT(utf8::StrSplitByChar("ස්වභාවය"), ElementsAre(
+  EXPECT_THAT(StrSplitByChar("ස්වභාවය"), ElementsAre(
       "ස", "්", "ව", "භ", "ා", "ව", "ය"));
-  EXPECT_THAT(utf8::StrSplitByChar("მოგესალმებით"), ElementsAre(
+  EXPECT_THAT(StrSplitByChar("მოგესალმებით"), ElementsAre(
       "მ", "ო", "გ", "ე", "ს", "ა", "ლ", "მ", "ე", "ბ", "ი", "თ"));
-  EXPECT_THAT(utf8::StrSplitByChar("ຍິນດີຕ້ອນຮັບ"), ElementsAre(
+  EXPECT_THAT(StrSplitByChar("ຍິນດີຕ້ອນຮັບ"), ElementsAre(
       "ຍ", "ິ", "ນ", "ດ", "ີ", "ຕ", "້", "ອ", "ນ", "ຮ", "ັ", "ບ"));
+}
+
+TEST(Utf8UtilTest, CheckDecodeUnicodeChar) {
+  char32 code;
+  EXPECT_EQ(1, DecodeUnicodeChar("z", &code));
+  EXPECT_EQ(122, code);
+  EXPECT_EQ(3, DecodeUnicodeChar("ස්", &code));
+  EXPECT_EQ(3523, code);  // The first letter: Sinhala Letter Dantaja Sayanna.
+  EXPECT_EQ(2, DecodeUnicodeChar("ܨ", &code));
+  EXPECT_EQ(1832, code);  // Syriac Letter Sadhe.
+  EXPECT_EQ(3, DecodeUnicodeChar("༄", &code));
+  EXPECT_EQ(3844, code);  // TIBETAN MARK INITIAL YIG MGO MDUN MA
+
+  // Invalid UTF8. For examples, see:
+  //   https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+  EXPECT_EQ(1, DecodeUnicodeChar("\xfe\xfe\xff\xff", &code));
+  EXPECT_EQ(kBadUTF8Char, code);
 }
 
 }  // namespace

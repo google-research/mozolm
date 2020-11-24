@@ -178,6 +178,8 @@ cc_library(
     srcs = ["utf8_util.cc"],
     hdrs = ["utf8_util.h"],
     deps = [
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
         "@com_github_utfcpp//:utfcpp",
         "@com_google_absl//absl/strings",
     ],

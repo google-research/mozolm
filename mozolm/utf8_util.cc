@@ -25,6 +25,9 @@ namespace mozolm {
 namespace utf8 {
 
 std::vector<std::string> StrSplitByChar(const std::string &input) {
+     if (!::utf8::is_valid(input.begin(), input.end())) {
+       return {};  // Refuse to split invalid UTF8 input.
+     }
      const int num_codepoints = ::utf8::distance(input.begin(), input.end());
      std::vector<std::string> result;
      result.reserve(num_codepoints);
@@ -38,6 +41,26 @@ std::vector<std::string> StrSplitByChar(const std::string &input) {
        ++pos;
      }
      return result;
+}
+
+int DecodeUnicodeChar(const std::string &input, char32 *first_char) {
+     if (input.empty()) {  // Do nothing.
+       *first_char = 0;
+       return 1;
+     }
+     if (!::utf8::is_valid(input.begin(), input.end())) {  // Error.
+       *first_char = kBadUTF8Char;
+       return 1;
+     }
+     utf8_iterator pos(input.begin(), input.begin(), input.end());
+     const utf8_iterator pos_end(input.end(), input.begin(), input.end());
+     if (pos == pos_end) {  // This probably should not happen. Error.
+       *first_char = kBadUTF8Char;
+       return 1;
+     }
+     *first_char = *pos;
+     ++pos;
+     return pos.base() - input.begin();  // Number of bytes.
 }
 
 }  // namespace utf8

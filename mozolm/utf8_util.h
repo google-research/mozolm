@@ -20,12 +20,23 @@
 #include <string>
 #include <vector>
 
+#include "mozolm/stubs/integral_types.h"
+
 namespace mozolm {
 namespace utf8 {
+
+// Marker representing invalid UTF-8 encoding.
+constexpr char32 kBadUTF8Char = 0xFFFD;
 
 // Splits the provided input into equal-length strings consisting of one
 // character.
 std::vector<std::string> StrSplitByChar(const std::string &input);
+
+// Decodes one Unicode code-point value from a UTF-8 string representation of a
+// single unicode character. Returns the number of bytes read from the string.
+// If the array does not contain valid UTF-8 encoding, stores `kBadUTF8Char` in
+// the result `first_char` and returns 1.
+int DecodeUnicodeChar(const std::string &input, char32 *first_char);
 
 }  // namespace utf8
 }  // namespace mozolm
