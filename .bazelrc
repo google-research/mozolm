@@ -1,0 +1,2 @@
+build --copt=-DGRPC_BAZEL_BUILD
+build --action_env=GRPC_BAZEL_RUNTIME=1
