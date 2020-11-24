@@ -19,11 +19,8 @@
 #include "mozolm/stubs/logging.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
+#include "absl/memory/memory.h"
 #include "include/grpcpp/server_builder.h"
-#include "mozolm/mozolm_model.h"
-#include "mozolm/mozolm_bigram_char_model.h"
-#include "mozolm/lm_scores.grpc.pb.h"
-#include "mozolm/lm_scores.pb.h"
 
 ABSL_FLAG(int, mozolm_server_asynch_pool_size, 2,
           "number of threads in the UpdateLMScores handlers thread pool");
@@ -34,9 +31,21 @@ namespace grpc {
 using ::grpc::Status;
 using ::grpc::ServerContext;
 
+MozoLMServerAsyncImpl::MozoLMServerAsyncImpl(
+    const std::string& in_vocab, const std::string& in_counts) {
+  const int pool_size = absl::GetFlag(FLAGS_mozolm_server_asynch_pool_size);
+  if (pool_size > 0) {
+    asynch_pool_ = absl::make_unique<ThreadPool>(pool_size);
+    asynch_pool_->StartWorkers();
+  } else {
+    asynch_pool_ = nullptr;
+  }
+  model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
+}
+
 Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,
-                                             const GetContextRequest* request,
-                                             LMScores* response) {
+                                            const GetContextRequest* request,
+                                            LMScores* response) {
   if (!model_->ExtractLMScores(
           model_->ContextState(request->context(), request->state()),
           response)) {

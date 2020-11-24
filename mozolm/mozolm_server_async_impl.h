@@ -19,7 +19,6 @@
 #include <string>
 
 #include "absl/flags/declare.h"
-#include "absl/memory/memory.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
 #include "include/grpcpp/grpcpp.h"
@@ -30,6 +29,7 @@
 #include "mozolm/mozolm_model.h"
 #include "mozolm/lm_scores.grpc.pb.h"
 #include "mozolm/lm_scores.pb.h"
+#include "mozolm/stubs/thread_pool.h"
 
 ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
 
@@ -45,17 +45,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0.
   explicit MozoLMServerAsyncImpl(const std::string& in_vocab = "",
-                                  const std::string& in_counts = "") {
-    // TODO: setup ThreadPool functionality.  Example:
-    //   if (FLAGS_mozolm_server_asynch_pool_size > 0) {
-    //     asynch_pool_ =
-    //      absl::MakeUnique<ThreadPool>(FLAGS_mozolm_server_asynch_pool_size);
-    //     asynch_pool_->StartWorkers();
-    //   } else {
-    //     asynch_pool_ = nullptr;
-    //   }
-    model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
-  }
+                                 const std::string& in_counts = "");
 
   // TODO: look into server shutdown methods.
   ~MozoLMServerAsyncImpl() {
@@ -161,8 +151,7 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
   // Notified when pending rpc count is zero.
   absl::Notification rpcs_completed_;
 
-  // TODO configure asynch_pool_.
-  // std::unique_ptr<ThreadPool> asynch_pool_;  // Pool for handling updates.
+  std::unique_ptr<ThreadPool> asynch_pool_;  // Pool for handling updates.
 };
 
 }  // namespace grpc
