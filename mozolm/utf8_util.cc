@@ -63,5 +63,11 @@ int DecodeUnicodeChar(const std::string &input, char32 *first_char) {
      return pos.base() - input.begin();  // Number of bytes.
 }
 
+std::string EncodeUnicodeChar(char32 input) {
+     std::string result;
+     ::utf8::append(input, std::back_inserter(result));
+     return result;
+}
+
 }  // namespace utf8
 }  // namespace mozolm

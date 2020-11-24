@@ -28,6 +28,7 @@
 #include "include/grpcpp/security/credentials.h"
 #include "mozolm/grpc_util.pb.h"
 #include "mozolm/mozolm_client_async_impl.h"
+#include "mozolm/utf8_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -72,7 +73,7 @@ int64 MozoLMClient::GetNextState(const std::string& context_string,
 }
 
 bool MozoLMClient::RandGen(const std::string& context_string,
-                            std::string* result) {
+                           std::string* result) {
   bool success = true;
 
   // The context string is the prefix to the randomly generated string.
@@ -89,16 +90,13 @@ bool MozoLMClient::RandGen(const std::string& context_string,
     bool success = GetLMScores(/*context_string=*/"", state, &normalization,
                                &count_idx_pair_vector);
     if (success) {
-      int pos = GetRandomPosition(normalization, count_idx_pair_vector);
+      const int pos = GetRandomPosition(normalization, count_idx_pair_vector);
       GOOGLE_CHECK_GE(pos, 0);
       GOOGLE_CHECK_LT(pos, count_idx_pair_vector.size());
       chosen = count_idx_pair_vector[pos].second;
       if (chosen > 0) {
         // Only updates if not end-of-string.
-        std::string next_sym;
-        // TODO: deal with general UTF8.
-        // next_sym = EncodingUtils::EncodeAsUTF8(&chosen, 1);
-        next_sym.push_back(static_cast<char>(chosen));
+        const std::string next_sym = utf8::EncodeUnicodeChar(chosen);
         *result += next_sym;
         state = GetNextState(next_sym, state);
       }
@@ -113,7 +111,7 @@ bool MozoLMClient::RandGen(const std::string& context_string,
 }
 
 bool MozoLMClient::OneKbestSample(int k_best, const std::string& context_string,
-                                   std::string* result) {
+                                  std::string* result) {
   std::vector<std::pair<int64, int32>> count_idx_pair_vector;
   int64 normalization;
   const bool success = GetLMScores(context_string, /*initial_state=*/-1,

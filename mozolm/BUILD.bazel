@@ -50,11 +50,12 @@ cc_library(
         ":mozolm_models",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
-        "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/synchronization",
+        "@com_github_grpc_grpc//:grpc++",
+        #        "//thread",
     ],
 )
 
@@ -136,6 +137,7 @@ cc_library(
     deps = [
         ":grpc_util_cc_proto",
         ":mozolm_client_async_impl",
+        ":utf8_util",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",

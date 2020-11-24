@@ -25,18 +25,21 @@
 namespace mozolm {
 namespace utf8 {
 
-// Marker representing invalid UTF-8 encoding.
+// Marker representing invalid UTF-8 encoding as a single Unicode codepoint.
 constexpr char32 kBadUTF8Char = 0xFFFD;
 
 // Splits the provided input into equal-length strings consisting of one
-// character.
+// Unicode character (codepoint).
 std::vector<std::string> StrSplitByChar(const std::string &input);
 
-// Decodes one Unicode code-point value from a UTF-8 string representation of a
-// single unicode character. Returns the number of bytes read from the string.
-// If the array does not contain valid UTF-8 encoding, stores `kBadUTF8Char` in
-// the result `first_char` and returns 1.
+// Decodes the first Unicode codepoint value from a UTF-8 string representation
+// of multiple unicode characters. Returns the number of bytes read from the
+// string.  If the array does not contain valid UTF-8 encoding, stores
+// `kBadUTF8Char` in the result `first_char` and returns 1.
 int DecodeUnicodeChar(const std::string &input, char32 *first_char);
+
+// Encodes single Unicode codepoint value as UTF-8.
+std::string EncodeUnicodeChar(char32 input);
 
 }  // namespace utf8
 }  // namespace mozolm

@@ -55,6 +55,14 @@ TEST(Utf8UtilTest, CheckDecodeUnicodeChar) {
   EXPECT_EQ(kBadUTF8Char, code);
 }
 
+TEST(Utf8UtilTest, CheckEncodeUnicodeChar) {
+  EXPECT_EQ("z", EncodeUnicodeChar(122));
+  EXPECT_EQ("ܨ", EncodeUnicodeChar(1832));
+  EXPECT_EQ("༄", EncodeUnicodeChar(3844));
+  // Cuneiform sign dag kisim5 times tak4 (U+1206B).
+  EXPECT_EQ("𒁫", EncodeUnicodeChar(73835));
+}
+
 }  // namespace
 }  // namespace utf8
 }  // namespace mozolm
