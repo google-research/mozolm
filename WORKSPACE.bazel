@@ -90,6 +90,17 @@ http_archive(
     strip_prefix = "ngram-%s" % opengrm_ngram_version
 )
 
+# -------------------------------------------------------------------------
+# Android cross-compile configuration:
+#   https://github.com/tensorflow/tensorflow/tree/master/third_party/android
+# -------------------------------------------------------------------------
+
+load("//third_party/android:android_configure.bzl", "android_configure")
+android_configure(name = "local_config_android")
+
+load("@local_config_android//:android.bzl", "android_workspace")
+android_workspace()
+
 # Local Variables:
 # mode: bazel-build-mode
 # End:
