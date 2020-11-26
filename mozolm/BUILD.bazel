@@ -18,21 +18,6 @@ package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
 
-cc_library(
-    name = "mozolm_models",
-    srcs = ["mozolm_bigram_char_model.cc"],
-    hdrs = ["mozolm_bigram_char_model.h"],
-    deps = [
-        ":utf8_util",
-        "//mozolm/models:language_model",
-        "//mozolm/models:lm_scores_cc_proto",
-        "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/synchronization",
-    ],
-)
-
 # Async server code (completion-queue based).
 
 cc_library(
@@ -40,9 +25,9 @@ cc_library(
     srcs = ["mozolm_server_async_impl.cc"],
     hdrs = ["mozolm_server_async_impl.h"],
     deps = [
-        ":mozolm_models",
         ":service_cc_grpc_proto",
         ":service_cc_proto",
+        "//mozolm/models:simple_bigram_char_model",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:thread_pool",

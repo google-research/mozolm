@@ -39,3 +39,16 @@ cc_proto_library(
     name = "lm_scores_cc_proto",
     deps = [":lm_scores_proto"],
 )
+
+cc_library(
+    name = "simple_bigram_char_model",
+    srcs = ["simple_bigram_char_model.cc"],
+    hdrs = ["simple_bigram_char_model.h"],
+    deps = [
+        ":language_model",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/synchronization",
+    ],
+)

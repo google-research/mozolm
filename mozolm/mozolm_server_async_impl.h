@@ -25,7 +25,7 @@
 #include "include/grpcpp/server.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "mozolm/mozolm_bigram_char_model.h"
+#include "mozolm/models/simple_bigram_char_model.h"
 #include "mozolm/service.grpc.pb.h"
 #include "mozolm/service.pb.h"
 #include "mozolm/stubs/thread_pool.h"
@@ -132,7 +132,8 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
       ::grpc::ServerAsyncResponseWriter<LMScores>* responder, bool ignored_ok)
       ABSL_LOCKS_EXCLUDED(server_shutdown_lock_);
 
-  std::unique_ptr<BigramCharLanguageModel> model_;
+  // TODO: Make this configurable.
+  std::unique_ptr<models::SimpleBigramCharModel> model_;
 
   std::unique_ptr<::grpc::ServerCompletionQueue> cq_;
   MozoLMServer::AsyncService service_;

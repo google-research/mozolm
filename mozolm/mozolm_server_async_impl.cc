@@ -40,7 +40,8 @@ MozoLMServerAsyncImpl::MozoLMServerAsyncImpl(
   } else {
     asynch_pool_ = nullptr;
   }
-  model_ = absl::make_unique<BigramCharLanguageModel>(in_vocab, in_counts);
+  model_ = absl::make_unique<models::SimpleBigramCharModel>(in_vocab,
+                                                            in_counts);
 }
 
 Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,

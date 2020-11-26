@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/mozolm_bigram_char_model.h"
+#include "mozolm/models/simple_bigram_char_model.h"
 
 #include <fstream>
 
-#include "mozolm/stubs/integral_types.h"
 #include "mozolm/stubs/logging.h"
 #include "absl/strings/str_split.h"
-#include "absl/synchronization/mutex.h"
 
 namespace mozolm {
+namespace models {
 namespace {
 
 void ReadVocabSymbols(const std::string& in_vocab,
@@ -73,8 +72,8 @@ void ReadCountMatrix(const std::string& in_counts, int rows,
 }  // namespace
 
 // Initializes the bigram character model based on flags.
-BigramCharLanguageModel::BigramCharLanguageModel(const std::string& in_vocab,
-                                                 const std::string& in_counts) {
+SimpleBigramCharModel::SimpleBigramCharModel(const std::string& in_vocab,
+                                             const std::string& in_counts) {
   if (!in_vocab.empty()) {
     ReadVocabSymbols(in_vocab, &utf8_indices_);
     utf8_normalizer_.resize(utf8_indices_.size(), 0);
@@ -108,22 +107,22 @@ BigramCharLanguageModel::BigramCharLanguageModel(const std::string& in_vocab,
   }
 }
 
-int BigramCharLanguageModel::StateSym(int state) {
+int SimpleBigramCharModel::StateSym(int state) {
   return state < static_cast<int>(utf8_indices_.size()) &&
       state >= 0 ? utf8_indices_[state] : -1;
 }
 
-int BigramCharLanguageModel::SymState(int utf8_sym) {
+int SimpleBigramCharModel::SymState(int utf8_sym) {
   return utf8_sym < static_cast<int>(vocab_indices_.size()) && utf8_sym >= 0
              ? vocab_indices_[utf8_sym]
              : -1;
 }
 
-int BigramCharLanguageModel::NextState(int state, int utf8_sym) {
+int SimpleBigramCharModel::NextState(int state, int utf8_sym) {
   return SymState(utf8_sym);
 }
 
-bool BigramCharLanguageModel::ExtractLMScores(int state, LMScores* response) {
+bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
   absl::ReaderMutexLock nl(&normalizer_lock_);
   absl::ReaderMutexLock cl(&counts_lock_);
   bool valid_state =
@@ -138,8 +137,8 @@ bool BigramCharLanguageModel::ExtractLMScores(int state, LMScores* response) {
   return valid_state;
 }
 
-bool BigramCharLanguageModel::UpdateLMCounts(int state, int utf8_sym,
-                                             int64 count) {
+bool SimpleBigramCharModel::UpdateLMCounts(int state, int utf8_sym,
+                                           int64 count) {
   absl::WriterMutexLock nl(&normalizer_lock_);
   absl::WriterMutexLock cl(&counts_lock_);
   int next_state = NextState(state, utf8_sym);
@@ -153,4 +152,5 @@ bool BigramCharLanguageModel::UpdateLMCounts(int state, int utf8_sym,
   return valid_update;
 }
 
+}  // namespace models
 }  // namespace mozolm

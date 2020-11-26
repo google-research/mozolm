@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_MOZOLM_BIGRAM_CHAR_MODEL_H_
-#define MOZOLM_MOZOLM_MOZOLM_BIGRAM_CHAR_MODEL_H_
+#ifndef MOZOLM_MOZOLM_MODELS_SIMPLE_BIGRAM_CHAR_MODEL_H_
+#define MOZOLM_MOZOLM_MODELS_SIMPLE_BIGRAM_CHAR_MODEL_H_
 
 #include <string>
 #include <vector>
@@ -23,11 +23,12 @@
 #include "mozolm/models/language_model.h"
 
 namespace mozolm {
+namespace models {
 
-class BigramCharLanguageModel : public models::LanguageModel {
+class SimpleBigramCharModel : public LanguageModel {
  public:
-  explicit BigramCharLanguageModel(const std::string& in_vocab = "",
-                                   const std::string& in_counts = "");
+  explicit SimpleBigramCharModel(const std::string& in_vocab = "",
+                                 const std::string& in_counts = "");
 
   // Provides the state associated with the symbol.
   int SymState(int utf8_sym);
@@ -57,6 +58,7 @@ class BigramCharLanguageModel : public models::LanguageModel {
   absl::Mutex counts_lock_;  // protects count information.
 };
 
+}  // namespace models
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_MOZOLM_BIGRAM_CHAR_MODEL_H_
+#endif  // MOZOLM_MOZOLM_MODELS_SIMPLE_BIGRAM_CHAR_MODEL_H_
