@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_GRPC_UTIL_H_
-#define MOZOLM_MOZOLM_GRPC_UTIL_H_
+#ifndef MOZOLM_MOZOLM_GRPC_GRPC_UTIL_H_
+#define MOZOLM_MOZOLM_GRPC_GRPC_UTIL_H_
 
 #include <string>
 
 #include "absl/flags/declare.h"
-#include "mozolm/grpc_util.pb.h"
+#include "mozolm/grpc/grpc_util.pb.h"
 
 ABSL_DECLARE_FLAG(double, mozolm_client_timeout);
 
@@ -43,4 +43,4 @@ bool RunClient(const ClientServerConfig& grpc_config, int k_best, bool randgen,
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_GRPC_UTIL_H_
+#endif  // MOZOLM_MOZOLM_GRPC_GRPC_UTIL_H_

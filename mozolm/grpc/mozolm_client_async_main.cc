@@ -17,12 +17,12 @@
 // Example usage:
 // --------------
 // - To randomly generate strings:
-//   bazel-bin/mozolm/mozolm_client_async \
+//   bazel-bin/mozolm/grpc/mozolm_client_async \
 //     --randgen \
 //     --client_server_config="server_port:\"localhost:50051\" \
 //     credential_type:INSECURE"
 // - To get 7-best symbols from context "Ask a q":
-//   bazel-bin/mozolm/mozolm_client_async \
+//   bazel-bin/mozolm/grpc/mozolm_client_async \
 //     --k_best=7 --context_string="Ask a q" \
 //     --client_server_config="server_port:\"localhost:50051\" \
 //     credential_type:INSECURE"
@@ -32,9 +32,9 @@
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "mozolm/grpc_util.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client.h"
+#include "mozolm/grpc/grpc_util.h"
+#include "mozolm/grpc/grpc_util.pb.h"
+#include "mozolm/grpc/mozolm_client.h"
 
 ABSL_FLAG(int, k_best, 1, "Number of best scoring to return");
 ABSL_FLAG(bool, randgen, false, "Whether to randomly generate");

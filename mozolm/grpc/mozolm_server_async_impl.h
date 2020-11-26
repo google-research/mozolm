@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H_
-#define MOZOLM_MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H_
+#ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_SERVER_ASYNC_IMPL_H_
+#define MOZOLM_MOZOLM_GRPC_MOZOLM_SERVER_ASYNC_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -26,8 +26,8 @@
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
 #include "mozolm/models/simple_bigram_char_model.h"
-#include "mozolm/service.grpc.pb.h"
-#include "mozolm/service.pb.h"
+#include "mozolm/grpc/service.grpc.pb.h"
+#include "mozolm/grpc/service.pb.h"
 #include "mozolm/stubs/thread_pool.h"
 
 ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
@@ -157,4 +157,4 @@ class MozoLMServerAsyncImpl final : public MozoLMServer::AsyncService {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_MOZOLM_SERVER_ASYNC_IMPL_H_
+#endif  // MOZOLM_MOZOLM_GRPC_MOZOLM_SERVER_ASYNC_IMPL_H_

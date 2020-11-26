@@ -1,0 +1,157 @@
+# Copyright 2020 MozoLM Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+
+package(default_visibility = ["//mozolm:__subpackages__"])
+
+licenses(["notice"])
+
+# Async server code (completion-queue based).
+
+cc_library(
+    name = "mozolm_server_async_impl",
+    srcs = ["mozolm_server_async_impl.cc"],
+    hdrs = ["mozolm_server_async_impl.h"],
+    deps = [
+        ":service_cc_grpc_proto",
+        ":service_cc_proto",
+        "//mozolm/models:simple_bigram_char_model",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:thread_pool",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+cc_binary(
+    name = "mozolm_server_async",
+    srcs = ["mozolm_server_async_main.cc"],
+    deps = [
+        ":grpc_util",
+        ":grpc_util_cc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_test(
+    name = "mozolm_server_async_test",
+    size = "small",
+    srcs = ["mozolm_server_async_test.cc"],
+    deps = [
+        ":mozolm_server_async_impl",
+        ":service_cc_grpc_proto",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Async client code (completion-queue based).
+
+cc_library(
+    name = "mozolm_client_async_impl",
+    srcs = ["mozolm_client_async_impl.cc"],
+    hdrs = ["mozolm_client_async_impl.h"],
+    deps = [
+        ":service_cc_grpc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+cc_binary(
+    name = "mozolm_client_async",
+    srcs = ["mozolm_client_async_main.cc"],
+    deps = [
+        ":grpc_util",
+        ":grpc_util_cc_proto",
+        ":mozolm_client",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_library(
+    name = "grpc_util",
+    srcs = ["grpc_util.cc"],
+    hdrs = ["grpc_util.h"],
+    deps = [
+        ":grpc_util_cc_proto",
+        ":mozolm_client",
+        ":mozolm_server_async_impl",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "mozolm_client",
+    srcs = ["mozolm_client.cc"],
+    hdrs = ["mozolm_client.h"],
+    deps = [
+        ":grpc_util_cc_proto",
+        ":mozolm_client_async_impl",
+        "//mozolm:utf8_util",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+proto_library(
+    name = "service_proto",
+    srcs = ["service.proto"],
+    deps = ["//mozolm/models:lm_scores_proto"],
+)
+
+cc_proto_library(
+    name = "service_cc_proto",
+    deps = [":service_proto"],
+)
+
+cc_grpc_library(
+    name = "service_cc_grpc_proto",
+    srcs = [":service_proto"],
+    grpc_only = True,
+    deps = [":service_cc_proto"],
+)
+
+proto_library(
+    name = "grpc_util_proto",
+    srcs = ["grpc_util.proto"],
+)
+
+cc_proto_library(
+    name = "grpc_util_cc_proto",
+    deps = [":grpc_util_proto"],
+)

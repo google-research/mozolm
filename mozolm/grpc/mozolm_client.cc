@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/mozolm_client.h"
+#include "mozolm/grpc/mozolm_client.h"
 
 #include <string>
 #include <vector>
@@ -26,8 +26,8 @@
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client_async_impl.h"
+#include "mozolm/grpc/grpc_util.pb.h"
+#include "mozolm/grpc/mozolm_client_async_impl.h"
 #include "mozolm/utf8_util.h"
 
 namespace mozolm {

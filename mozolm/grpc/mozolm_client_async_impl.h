@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_MOZOLM_CLIENT_ASYNC_IMPL_H_
-#define MOZOLM_MOZOLM_MOZOLM_CLIENT_ASYNC_IMPL_H_
+#ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
+#define MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
 
 #include <functional>
 #include <memory>
@@ -22,7 +22,7 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
-#include "mozolm/service.grpc.pb.h"
+#include "mozolm/grpc/service.grpc.pb.h"
 
 namespace mozolm {
 namespace grpc {
@@ -51,4 +51,4 @@ class MozoLMClientAsyncImpl {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_MOZOLM_CLIENT_ASYNC_IMPL_H_
+#endif  // MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_

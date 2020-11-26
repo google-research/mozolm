@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/mozolm_server_async_impl.h"
+#include "mozolm/grpc/mozolm_server_async_impl.h"
 
 #include <string>
 

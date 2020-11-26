@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_MOZOLM_CLIENT_H_
-#define MOZOLM_MOZOLM_MOZOLM_CLIENT_H_
+#ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_H_
+#define MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -21,8 +21,8 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/create_channel.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client_async_impl.h"
+#include "mozolm/grpc/grpc_util.pb.h"
+#include "mozolm/grpc/mozolm_client_async_impl.h"
 
 namespace mozolm {
 namespace grpc {
@@ -58,4 +58,4 @@ class MozoLMClient {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_MOZOLM_CLIENT_H_
+#endif  // MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_H_

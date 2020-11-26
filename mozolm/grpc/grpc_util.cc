@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/grpc_util.h"
+#include "mozolm/grpc/grpc_util.h"
 
 #include <memory>
 #include <string>
@@ -22,9 +22,9 @@
 #include "absl/strings/str_format.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
-#include "mozolm/grpc_util.pb.h"
-#include "mozolm/mozolm_client.h"
-#include "mozolm/mozolm_server_async_impl.h"
+#include "mozolm/grpc/grpc_util.pb.h"
+#include "mozolm/grpc/mozolm_client.h"
+#include "mozolm/grpc/mozolm_server_async_impl.h"
 
 ABSL_FLAG(double, mozolm_client_timeout, 10.0,
           "timeout to wait for response in seconds");

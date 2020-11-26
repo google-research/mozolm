@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package mozolm;
+package mozolm.grpc;
 
 import "mozolm/models/lm_scores.proto";
 
