@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_MOZOLM_MODEL_H_
-#define MOZOLM_MOZOLM_MOZOLM_MODEL_H_
+#ifndef MOZOLM_MOZOLM_MODELS_LANGUAGE_MODEL_H_
+#define MOZOLM_MOZOLM_MODELS_LANGUAGE_MODEL_H_
 
 #include <string>
 
 #include "mozolm/stubs/integral_types.h"
-#include "absl/synchronization/mutex.h"
-#include "mozolm/lm_scores.pb.h"
+#include "mozolm/models/lm_scores.pb.h"
 
 namespace mozolm {
+namespace models {
 
 class LanguageModel {
  public:
@@ -55,6 +55,7 @@ class LanguageModel {
   int32 start_state_;
 };
 
+}  // namespace models
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_MOZOLM_MODEL_H_
+#endif  // MOZOLM_MOZOLM_MODELS_LANGUAGE_MODEL_H_

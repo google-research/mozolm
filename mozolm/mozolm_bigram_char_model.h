@@ -20,11 +20,11 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "absl/synchronization/mutex.h"
-#include "mozolm/mozolm_model.h"
+#include "mozolm/models/language_model.h"
 
 namespace mozolm {
 
-class BigramCharLanguageModel : public LanguageModel {
+class BigramCharLanguageModel : public models::LanguageModel {
  public:
   explicit BigramCharLanguageModel(const std::string& in_vocab = "",
                                    const std::string& in_counts = "");

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/mozolm_model.h"
+#include "mozolm/models/language_model.h"
 
 #include <vector>
 
 #include "mozolm/stubs/logging.h"
-#include "absl/synchronization/mutex.h"
 #include "mozolm/utf8_util.h"
 
 namespace mozolm {
+namespace models {
 
 int LanguageModel::ContextState(const std::string &context, int init_state) {
   int this_state = init_state < 0 ? start_state_ : init_state;
@@ -39,4 +39,5 @@ int LanguageModel::ContextState(const std::string &context, int init_state) {
   return this_state;
 }
 
+}  // namespace models
 }  // namespace mozolm

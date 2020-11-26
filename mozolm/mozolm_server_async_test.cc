@@ -20,7 +20,7 @@
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/server_context.h"
 #include "mozolm/mozolm_server_async_impl.h"
-#include "mozolm/lm_scores.grpc.pb.h"
+#include "mozolm/service.grpc.pb.h"
 
 namespace mozolm {
 namespace grpc {

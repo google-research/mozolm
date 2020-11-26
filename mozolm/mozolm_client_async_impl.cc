@@ -21,12 +21,10 @@
 #include <utility>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/client_context.h"
 #include "include/grpcpp/completion_queue.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "mozolm/lm_scores.grpc.pb.h"
 
 namespace mozolm {
 namespace grpc {

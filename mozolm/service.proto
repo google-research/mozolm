@@ -16,6 +16,8 @@ syntax = "proto3";
 
 package mozolm;
 
+import "mozolm/models/lm_scores.proto";
+
 // Next available ID: 3
 message GetContextRequest {
   // Initial state for getting state information.
@@ -23,18 +25,6 @@ message GetContextRequest {
 
   // Context string (from initial state) for info.
   string context = 2;
-}
-
-// Next available ID: 4
-message LMScores {
-  // Individual symbols for which counts are returned.
-  repeated int32 utf8_syms = 1;
-
-  // Counts for each of the symbols.
-  repeated int64 counts = 2;
-
-  // Sum of counts for normalizations.
-  int64 normalization = 3;
 }
 
 // Next available ID: 2
