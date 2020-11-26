@@ -13,8 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BAZEL: bazelisk-linux-amd64
+
     steps:
     - uses: actions/checkout@v2
+
+    - name: Free up some space in an image
+      run: |
+        # This doesn't seem to affect the speed of the run, but takes ~2 minutes,
+        # commented out for now.
+        #sudo rm -rf /usr/share/dotnet
+        #sudo rm -rf /opt/ghc
+        df -h
 
     - name: Mount bazel cache
       uses: actions/cache@v2
@@ -32,4 +41,4 @@ jobs:
       run: ./$BAZEL build -c opt //...
 
     - name: Test
-      run: ./$BAZEL test -c opt //... --test_output=errors
+      run: ./$BAZEL test -c opt --test_output=errors //...
