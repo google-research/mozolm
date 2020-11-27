@@ -19,7 +19,8 @@ jobs:
       with:
         # See https://docs.bazel.build/versions/master/output_directories.html
         path: ${{ github.workspace }}/.cache/bazel
-        key: ${{ runner.os }}-build
+        key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE.bazel') }}
+        restore-keys: ${{ runner.os }}-bazel
 
     - name: Install bazelisk
       run: |

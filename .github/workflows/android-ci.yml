@@ -30,7 +30,8 @@ jobs:
       with:
         # See https://docs.bazel.build/versions/master/output_directories.html
         path: "~/.cache/bazel"
-        key: ${{ runner.os }}-build
+        key: ${{ runner.os }}-android-bazel-${{ hashFiles('WORKSPACE.bazel') }}
+        restore-keys: ${{ runner.os }}-android-bazel
 
     - name: Install bazelisk
       run: |
@@ -38,6 +39,7 @@ jobs:
         chmod +x ${BAZEL}
 
     - name: Prepare Android NDK directory for caching
+      id: ndk-cache-prepare
       # Workaround for https://github.com/actions/virtual-environments/issues/1337.
       # See also: https://stackoverflow.com/questions/60776512/how-can-i-cache-android-ndk-in-my-github-actions-workflow.
       # ANDROID_HOME points to /usr/local/lib/android/sdk.
@@ -46,12 +48,14 @@ jobs:
         sudo mkdir -p ${ANDROID_HOME}/ndk
         sudo chmod -R 777 ${ANDROID_HOME}/ndk
         sudo chown -R $USER:$USER ${ANDROID_HOME}/ndk
+        # Push the Android SDK base directory into env variables.
+        echo "ANDROID_HOME=${ANDROID_HOME}" >> ${GITHUB_ENV}
 
     - name: Android NDK Cache
       id: ndk-cache
       uses: actions/cache@v2
       with:
-        path: ${ANDROID_HOME}/ndk
+        path: ${{ env.ANDROID_HOME }}/ndk
         key: ndk-cache-${{ env.NDK_VERSION }}-v2
 
     - name: Install Android NDK
