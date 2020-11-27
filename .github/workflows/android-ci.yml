@@ -8,8 +8,8 @@ on:
 
 jobs:
 
-  build-and-test-android:
-    name: Build and Test (Android)
+  build-android:
+    name: Build (Android)
     runs-on: ubuntu-latest
     env:
       BAZEL: bazelisk-linux-amd64
@@ -61,7 +61,4 @@ jobs:
         echo "===> Android NDK installed in: "$(ls -l ${ANDROID_HOME}/ndk)
 
     - name: Build
-      run: ./${BAZEL} build -c opt --config=android_x86_64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //...
-
-    - name: Test
-      run: ./${BAZEL} test -c opt --test_output=errors --config=android_x86_64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //...
+      run: ./${BAZEL} build -c opt --config=android_arm64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //...

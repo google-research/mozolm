@@ -1,15 +1,84 @@
+# MozoLM Bazel configuration file.
+# --------------------------------
+# Among other sources mostly based on TensorFlow options in:
+#   https://github.com/tensorflow/tensorflow/blob/master/.bazelrc
 
+# ------------------------------
+# General compiler options:
+# ------------------------------
+
+# Enable using platform specific build settings, except when cross-compiling for
+# mobile platforms.
+build --enable_platform_specific_config
+build:android --noenable_platform_specific_config
+build:ios --noenable_platform_specific_config
+
+# Only enable cross-compiling for android configs.
+build:linux --distinct_host_configuration=false
+build:macos --distinct_host_configuration=false
+build:windows --distinct_host_configuration=false
+
+# Compiler options:
+#     c++17:                  Build with C++17 options (links with libc++)
+#     c++1z:                  Build with C++17 options (links with libc++)
+#     c++17_gcc:              Build with C++17 options (links with stdlibc++)
+#     c++1z_gcc:              Build with C++17 options (links with stdlibc++)
+# Build with C++ 17 features.
+build:c++17 --cxxopt=-std=c++1z
+build:c++17 --cxxopt=-stdlib=libc++
+build:c++1z --config=c++17
+build:c++17_gcc --cxxopt=-std=c++1z
+build:c++1z_gcc --config=c++17_gcc
+
+# By default, build in C++ 17 mode.
+build:android --cxxopt=-std=c++17
+build:android --host_cxxopt=-std=c++17
+build:android --copt=-w
+build:ios --cxxopt=-std=c++17
+build:ios --host_cxxopt=-std=c++17
+build:linux --cxxopt=-std=c++17
+build:linux --host_cxxopt=-std=c++17
+build:linux --copt=-w
+build:macos --cxxopt=-std=c++17
+build:macos --host_cxxopt=-std=c++17
+build:macos --copt=-w
+build:windows --cxxopt=/std:c++17
+build:windows --host_cxxopt=/std:c++17
+build:windows --copt=/w
+
+# Suppress C++ compiler warnings, otherwise build logs become 10s of MBs.
+build:short_logs --output_filter=DONT_MATCH_ANYTHING
+
+# Without this, bazel wraps each cc_library with "--whole-archive" flags for the
+# linker when building the dynamic library, which leads to over-bloated libs.
+build --incompatible_remove_legacy_whole_archive
+
+# ------------------------------
 # gRPC++ options:
 # ------------------------------
 
+build --define=use_fast_cpp_protos=true
+
+# ARES was not building on Android anyway.
+build --define=grpc_no_ares=true
+
 # The following options fix thread local storage-related linker failures on
 # macOS.
-build --copt=-DGRPC_BAZEL_BUILD
-build --action_env=GRPC_BAZEL_RUNTIME=1
+build:macos --copt=-DGRPC_BAZEL_BUILD
+build:macos --action_env=GRPC_BAZEL_RUNTIME=1
 
+# ------------------------------
 # Android configuration settings
 # ------------------------------
 # See https://github.com/tensorflow/tensorflow/blob/master/.bazelrc
+
+# Following libraries seem to be required for NDK r21. Maybe consider building
+# everything statically instead.
+build:android --linkopt=-landroid
+build:android --linkopt=-ldl
+build:android --linkopt=-llog
+build:android --linkopt=-lm
+build:android --linkopt=-Wl,--gc-sections
 
 # Options:
 #    android:
