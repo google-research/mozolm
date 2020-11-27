@@ -29,6 +29,7 @@ class SimpleBigramCharModel : public LanguageModel {
  public:
   explicit SimpleBigramCharModel(const std::string& in_vocab = "",
                                  const std::string& in_counts = "");
+  ~SimpleBigramCharModel() override = default;
 
   // Provides the state associated with the symbol.
   int SymState(int utf8_sym);

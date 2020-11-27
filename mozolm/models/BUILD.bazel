@@ -52,3 +52,15 @@ cc_library(
         "@com_google_absl//absl/synchronization",
     ],
 )
+
+cc_library(
+    name = "opengrm_ngram_char_model",
+    srcs = ["opengrm_ngram_char_model.cc"],
+    hdrs = ["opengrm_ngram_char_model.h"],
+    deps = [
+        ":language_model",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
