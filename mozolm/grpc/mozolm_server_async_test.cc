@@ -15,10 +15,10 @@
 #include <string>
 #include <vector>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/server_context.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "mozolm/grpc/mozolm_server_async_impl.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 

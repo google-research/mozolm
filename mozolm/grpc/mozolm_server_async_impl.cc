@@ -17,10 +17,10 @@
 #include <string>
 
 #include "mozolm/stubs/logging.h"
+#include "include/grpcpp/server_builder.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
 #include "absl/memory/memory.h"
-#include "include/grpcpp/server_builder.h"
 
 ABSL_FLAG(int, mozolm_server_asynch_pool_size, 2,
           "number of threads in the UpdateLMScores handlers thread pool");

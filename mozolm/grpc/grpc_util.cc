@@ -18,10 +18,10 @@
 #include <string>
 #include <vector>
 
-#include "absl/flags/flag.h"
-#include "absl/strings/str_format.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
+#include "absl/flags/flag.h"
+#include "absl/strings/str_format.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client.h"
 #include "mozolm/grpc/mozolm_server_async_impl.h"

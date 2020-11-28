@@ -18,16 +18,16 @@
 #include <memory>
 #include <string>
 
-#include "absl/flags/declare.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/synchronization/notification.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/server.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "mozolm/models/simple_bigram_char_model.h"
+#include "absl/flags/declare.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/synchronization/notification.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/grpc/service.pb.h"
+#include "mozolm/models/simple_bigram_char_model.h"
 #include "mozolm/stubs/thread_pool.h"
 
 ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
