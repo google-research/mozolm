@@ -20,7 +20,7 @@ jobs:
       uses: actions/cache@v2
       with:
         # See https://docs.bazel.build/versions/master/output_directories.html
-        path: "~/.cache/bazel"
+        path: "/private/var/tmp"
         key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE.bazel') }}
         restore-keys: ${{ runner.os }}-bazel
 
