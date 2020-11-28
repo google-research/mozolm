@@ -59,8 +59,9 @@ build --incompatible_remove_legacy_whole_archive
 
 build --define=use_fast_cpp_protos=true
 
-# ARES was not building on Android anyway.
-build --define=grpc_no_ares=true
+# Asynchronous name resolver (c-ares) is not building on Android with current
+# gRPC++.
+build:android --define=grpc_no_ares=true
 
 # The following options fix thread local storage-related linker failures on
 # macOS.
