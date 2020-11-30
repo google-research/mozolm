@@ -18,18 +18,24 @@
 #include <string>
 
 #include "mozolm/stubs/integral_types.h"
+#include "absl/status/status.h"
 #include "mozolm/models/lm_scores.pb.h"
+#include "mozolm/models/model_storage.pb.h"
 
 namespace mozolm {
 namespace models {
 
 class LanguageModel {
  public:
-  explicit LanguageModel() {
-    start_state_ = 0;
-  }
-
   virtual ~LanguageModel() = default;
+
+  // Reads the model from the model storage.
+  virtual absl::Status Read(const ModelStorage &storage) = 0;
+
+  // Provides the symbol associated with the state.
+  virtual int StateSym(int state) {
+    return -1;  // Requires a derived class to complete.
+  }
 
   // Provides the state reached from state following utf8_sym.
   virtual int NextState(int state, int utf8_sym) {
@@ -50,6 +56,9 @@ class LanguageModel {
   virtual bool UpdateLMCounts(int32 state, int32 utf8_sym, int64 count) {
     return false;  // Requires a derived class to complete.
   }
+
+ protected:
+  LanguageModel() : start_state_(0) {}
 
  private:
   int32 start_state_;

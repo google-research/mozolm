@@ -27,7 +27,7 @@ cc_library(
     deps = [
         ":service_cc_grpc_proto",
         ":service_cc_proto",
-        "//mozolm/models:simple_bigram_char_model",
+        "//mozolm/models:language_model",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:thread_pool",
@@ -60,7 +60,12 @@ cc_test(
     deps = [
         ":mozolm_server_async_impl",
         ":service_cc_grpc_proto",
+        "//mozolm/models:language_model",
+        "//mozolm/models:model_config_cc_proto",
+        "//mozolm/models:model_factory",
+        "//mozolm/models:model_storage_cc_proto",
         "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -104,8 +109,10 @@ cc_library(
         ":grpc_util_cc_proto",
         ":mozolm_client",
         ":mozolm_server_async_impl",
+        "//mozolm/models:model_factory",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
     ],
 )
@@ -149,6 +156,7 @@ cc_grpc_library(
 proto_library(
     name = "grpc_util_proto",
     srcs = ["grpc_util.proto"],
+    deps = ["//mozolm/models:model_config_proto"],
 )
 
 cc_proto_library(

@@ -21,8 +21,9 @@
 // COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 // bazel-bin/mozolm/grpc/mozolm_server_async \
 //   --client_server_config="server_port:\"localhost:50051\" \
-//   credential_type:INSECURE server_config { vocab:\"$VOCAB\" \
-//   counts:\"$COUNTS\" wait_for_clients:true }"
+//   credential_type:INSECURE server_config { model_config { \
+//   type:SIMPLE_CHAR_BIGRAM storage { vocabulary_file:\"$VOCAB\" \
+//   model_file:\"$COUNTS\" } } wait_for_clients:true }"
 //
 // Will wait for queries in terminal, Ctrl-C to quit.
 

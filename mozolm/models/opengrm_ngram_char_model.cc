@@ -19,8 +19,8 @@
 namespace mozolm {
 namespace models {
 
-OpenGrmNGramCharModel::OpenGrmNGramCharModel(const std::string& in_vocab,
-                                             const std::string& in_counts) {
+absl::Status OpenGrmNGramCharModel::Read(const ModelStorage &storage) {
+  return absl::UnimplementedError("I/O not available yet");
 }
 
 int OpenGrmNGramCharModel::NextState(int state, int utf8_sym) {

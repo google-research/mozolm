@@ -71,15 +71,15 @@ void ReadCountMatrix(const std::string& in_counts, int rows,
 }
 }  // namespace
 
-// Initializes the bigram character model based on flags.
-SimpleBigramCharModel::SimpleBigramCharModel(const std::string& in_vocab,
-                                             const std::string& in_counts) {
-  if (!in_vocab.empty()) {
-    ReadVocabSymbols(in_vocab, &utf8_indices_);
+absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
+  const std::string &vocab_file = storage.vocabulary_file();
+  const std::string &counts_file = storage.model_file();
+  if (!vocab_file.empty()) {
+    ReadVocabSymbols(vocab_file, &utf8_indices_);
     utf8_normalizer_.resize(utf8_indices_.size(), 0);
-    if (!in_counts.empty()) {
+    if (!counts_file.empty()) {
       // Only reads from bigram count file if vocab file also provided.
-      ReadCountMatrix(in_counts, utf8_indices_.size(), &utf8_normalizer_,
+      ReadCountMatrix(counts_file, utf8_indices_.size(), &utf8_normalizer_,
                       &bigram_counts_);
     }
   } else {
@@ -105,6 +105,7 @@ SimpleBigramCharModel::SimpleBigramCharModel(const std::string& in_vocab,
     GOOGLE_CHECK_GE(utf8_indices_[i], 0);
     vocab_indices_[utf8_indices_[i]] = i;
   }
+  return absl::OkStatus();
 }
 
 int SimpleBigramCharModel::StateSym(int state) {

@@ -21,8 +21,10 @@
 #include <string>
 
 #include "mozolm/stubs/integral_types.h"
+#include "absl/status/status.h"
 #include "ngram/ngram-model.h"
 #include "mozolm/models/language_model.h"
+#include "mozolm/models/model_storage.pb.h"
 
 namespace mozolm {
 namespace models {
@@ -31,9 +33,11 @@ namespace models {
 // provided for demonstration purposes to show how to hook up OpenGrm APIs.
 class OpenGrmNGramCharModel : public LanguageModel {
  public:
-  explicit OpenGrmNGramCharModel(const std::string& in_vocab = "",
-                                 const std::string& in_counts = "");
+  OpenGrmNGramCharModel() = default;
   ~OpenGrmNGramCharModel() override = default;
+
+  // Reads the model from the model storage.
+  absl::Status Read(const ModelStorage &storage) override;
 
   // Provides the state reached from state following utf8_sym.
   int NextState(int state, int utf8_sym) override;

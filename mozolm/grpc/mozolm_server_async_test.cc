@@ -19,8 +19,12 @@
 #include "include/grpcpp/server_context.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/status/status.h"
 #include "mozolm/grpc/mozolm_server_async_impl.h"
 #include "mozolm/grpc/service.grpc.pb.h"
+#include "mozolm/models/model_config.pb.h"
+#include "mozolm/models/model_factory.h"
+#include "mozolm/models/model_storage.pb.h"
 
 namespace mozolm {
 namespace grpc {
@@ -29,9 +33,16 @@ namespace {
 using ::grpc::Status;
 using ::grpc::ServerContext;
 
+class MozoLMServerAsyncImplMock : public MozoLMServerAsyncImpl {
+ public:
+  MozoLMServerAsyncImplMock() : MozoLMServerAsyncImpl(
+      models::MakeModel(ModelConfig::SIMPLE_CHAR_BIGRAM,
+                        ModelStorage()).value()) {}
+};
+
 // Check that a call to GetLMScores returns the expected status error code.
 void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
-  MozoLMServerAsyncImpl server;
+  MozoLMServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
   LMScores response;
@@ -44,7 +55,7 @@ void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
 // Check that a call to GetLMScores succeeds and returns the expected
 // counts and normalization.
 void CheckGetLMScores(int state) {
-  MozoLMServerAsyncImpl server;
+  MozoLMServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
   LMScores response;
@@ -62,7 +73,7 @@ void CheckGetLMScores(int state) {
 // Check that a call to UpdateLMScores returns the expected status code.
 void CheckUpdateLMScoresError(int state, int utf8_sym, int count,
                               ::grpc::StatusCode error_code) {
-  MozoLMServerAsyncImpl server;
+  MozoLMServerAsyncImplMock server;
   ServerContext context;
   UpdateLMScoresRequest request;
   LMScores response;
@@ -76,7 +87,7 @@ void CheckUpdateLMScoresError(int state, int utf8_sym, int count,
 
 // Check that a call to UpdateLMScore updates correctly.
 void CheckUpdateLMScoresContent(int state, int count) {
-  MozoLMServerAsyncImpl server;
+  MozoLMServerAsyncImplMock server;
   ServerContext context;
   UpdateLMScoresRequest request;
   LMScores response;

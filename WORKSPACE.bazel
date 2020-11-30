@@ -23,12 +23,12 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
-grpc_version = "1.33.2"
+grpc_version = "1.34.0-pre1"
 
 http_archive(
     name = "com_github_grpc_grpc",
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "2060769f2d4b0d3535ba594b2ab614d7f68a492f786ab94b4318788d45e3278a",
+    sha256 = "2f5f808a648e0c2a4ba79590fdf0feb968e9fb6dd21785fb3c94ba0c4338c956",
     strip_prefix = "grpc-%s" % grpc_version,
 )
 
@@ -67,12 +67,12 @@ http_archive(
 # OpenFst: See
 #   http://www.openfst.org/twiki/pub/FST/FstDownload/README
 # -------------------------------------------------------------------------
-openfst_version = "1.7.10-rc1"
+openfst_version = "1.8.1-rc1"
 
 http_archive(
     name = "org_openfst",
     urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
-    sha256 = "ca7d7a86c867ee14052a26a5476fa27dcae4570ccca85d2c0efa0e992ddd6eb4",
+    sha256 = "e6e2fa06de302dd72741ffc30e772b88f0b2baec2f6dae780ca6412a3a213d8a",
     strip_prefix = "openfst-%s" % openfst_version
 )
 
@@ -85,7 +85,7 @@ opengrm_ngram_version = "1.3.12-rc1"
 http_archive(
     name = "org_opengrm_ngram",
     urls = ["https://github.com/agutkin/finite_state/raw/main/ngram-%s.tar.gz" % opengrm_ngram_version],
-    sha256 = "8034cce0556e5e2733114ee8a35163a9f1db3a193dd894f69fe49c9cc1eca0ab",
+    sha256 = "07ee378953a4744fa001d1481b6d9558c6bbd85f500ccbc3acde5a596fb0ae76",
     strip_prefix = "ngram-%s" % opengrm_ngram_version,
 )
 

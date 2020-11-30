@@ -21,10 +21,12 @@
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
 #include "absl/flags/flag.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client.h"
 #include "mozolm/grpc/mozolm_server_async_impl.h"
+#include "mozolm/models/model_factory.h"
 
 ABSL_FLAG(double, mozolm_client_timeout, 10.0,
           "timeout to wait for response in seconds");
@@ -33,12 +35,14 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
-bool RunCompletionServer(const ClientServerConfig& grpc_config,
-                         ::grpc::ServerBuilder* builder) {
-  MozoLMServerAsyncImpl mozolm_server(grpc_config.server_config().vocab(),
-                                      grpc_config.server_config().counts());
+absl::Status RunCompletionServer(const ClientServerConfig& grpc_config,
+                                 ::grpc::ServerBuilder* builder) {
+  auto model_status = models::MakeModel(
+      grpc_config.server_config().model_config());
+  if (!model_status.ok()) return model_status.status();
+  MozoLMServerAsyncImpl mozolm_server(std::move(model_status.value()));
   mozolm_server.StartServer(grpc_config.server_port(), builder);
-  return true;
+  return absl::OkStatus();;
 }
 
 }  // namespace
@@ -70,7 +74,7 @@ bool RunServer(const ClientServerConfig& grpc_config, bool run_client,
   }
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(grpc_config.server_port(), creds);
-  return RunCompletionServer(grpc_config, &builder);
+  return RunCompletionServer(grpc_config, &builder).ok();
 }
 
 bool RunClient(const ClientServerConfig& grpc_config, int k_best, bool randgen,

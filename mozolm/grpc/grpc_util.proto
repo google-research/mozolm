@@ -16,6 +16,8 @@ syntax = "proto3";
 
 package mozolm.grpc;
 
+import "mozolm/models/model_config.proto";
+
 // Next available ID: 5
 message ClientServerConfig {
   // String representing the port where the server will listen.
@@ -33,16 +35,13 @@ message ClientServerConfig {
   ClientConfig client_config = 4;
 }
 
-// Next available ID: 4
+// Next available ID: 3
 message ServerConfig {
-  // File name containing vocab for model.
-  string vocab = 1;
-
-  // File name containing counts for model.
-  string counts = 2;
+  // Model configuration.
+  ModelConfig model_config = 1;
 
   // Whether the server will wait for client requests.
-  bool wait_for_clients = 3;
+  bool wait_for_clients = 2;
 }
 
 // Next available ID: 2

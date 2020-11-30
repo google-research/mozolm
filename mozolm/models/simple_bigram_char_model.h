@@ -19,23 +19,28 @@
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "mozolm/models/language_model.h"
+#include "mozolm/models/model_storage.pb.h"
 
 namespace mozolm {
 namespace models {
 
 class SimpleBigramCharModel : public LanguageModel {
  public:
-  explicit SimpleBigramCharModel(const std::string& in_vocab = "",
-                                 const std::string& in_counts = "");
+  SimpleBigramCharModel() = default;
   ~SimpleBigramCharModel() override = default;
+
+  // Reads the model from the model storage.
+  absl::Status Read(const ModelStorage &storage)
+      ABSL_EXCLUSIVE_LOCKS_REQUIRED(normalizer_lock_, counts_lock_) override;
 
   // Provides the state associated with the symbol.
   int SymState(int utf8_sym);
 
   // Provides the symbol associated with the state.
-  int StateSym(int state);
+  int StateSym(int state) override;
 
   // Provides the state reached from state following utf8_sym.
   int NextState(int state, int utf8_sym) override;

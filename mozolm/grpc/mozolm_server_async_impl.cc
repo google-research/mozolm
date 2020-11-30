@@ -15,6 +15,7 @@
 #include "mozolm/grpc/mozolm_server_async_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/server_builder.h"
@@ -32,7 +33,7 @@ using ::grpc::Status;
 using ::grpc::ServerContext;
 
 MozoLMServerAsyncImpl::MozoLMServerAsyncImpl(
-    const std::string& in_vocab, const std::string& in_counts) {
+    std::unique_ptr<models::LanguageModel> model) {
   const int pool_size = absl::GetFlag(FLAGS_mozolm_server_asynch_pool_size);
   if (pool_size > 0) {
     asynch_pool_ = absl::make_unique<ThreadPool>(pool_size);
@@ -40,8 +41,7 @@ MozoLMServerAsyncImpl::MozoLMServerAsyncImpl(
   } else {
     asynch_pool_ = nullptr;
   }
-  model_ = absl::make_unique<models::SimpleBigramCharModel>(in_vocab,
-                                                            in_counts);
+  model_ = std::move(model);
 }
 
 Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,

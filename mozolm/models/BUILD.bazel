@@ -24,9 +24,11 @@ cc_library(
     hdrs = ["language_model.h"],
     deps = [
         ":lm_scores_cc_proto",
+        ":model_storage_cc_proto",
         "//mozolm:utf8_util",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "@com_google_absl//absl/status",
     ],
 )
 
@@ -40,14 +42,51 @@ cc_proto_library(
     deps = [":lm_scores_proto"],
 )
 
+proto_library(
+    name = "model_storage_proto",
+    srcs = ["model_storage.proto"],
+)
+
+cc_proto_library(
+    name = "model_storage_cc_proto",
+    deps = [":model_storage_proto"],
+)
+
+proto_library(
+    name = "model_config_proto",
+    srcs = ["model_config.proto"],
+    deps = [":model_storage_proto"],
+)
+
+cc_proto_library(
+    name = "model_config_cc_proto",
+    deps = [":model_config_proto"],
+)
+
+cc_library(
+    name = "model_factory",
+    srcs = ["model_factory.cc"],
+    hdrs = ["model_factory.h"],
+    deps = [
+        ":language_model",
+        ":model_config_cc_proto",
+        ":model_storage_cc_proto",
+        ":opengrm_ngram_char_model",
+        ":simple_bigram_char_model",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
 cc_library(
     name = "simple_bigram_char_model",
     srcs = ["simple_bigram_char_model.cc"],
     hdrs = ["simple_bigram_char_model.h"],
     deps = [
         ":language_model",
+        ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
     ],
@@ -59,8 +98,10 @@ cc_library(
     hdrs = ["opengrm_ngram_char_model.h"],
     deps = [
         ":language_model",
+        ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "@com_google_absl//absl/status",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
