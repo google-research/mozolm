@@ -12,7 +12,7 @@ along with RPC client/server interactions.
 
 ## Contributions
 
-NOTE We don't accept pull requests (PRs) at the moment.
+NOTE: We don't accept pull requests (PRs) at the moment.
 
 ## License
 
