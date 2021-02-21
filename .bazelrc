@@ -44,7 +44,7 @@ build:macos --host_cxxopt=-std=c++17
 build:macos --copt=-w
 build:windows --cxxopt=/std:c++17
 build:windows --host_cxxopt=/std:c++17
-build:windows --copt=/w
+build:windows --copt=/W0
 
 # Suppress C++ compiler warnings, otherwise build logs become 10s of MBs.
 build:short_logs --output_filter=DONT_MATCH_ANYTHING
@@ -67,6 +67,19 @@ build:android --define=grpc_no_ares=true
 # macOS.
 build:macos --copt=-DGRPC_BAZEL_BUILD
 build:macos --action_env=GRPC_BAZEL_RUNTIME=1
+
+# ------------------------------
+# Windows configuration settings
+# ------------------------------
+
+# Make sure to include as little of windows.h as possible
+build:windows --copt=-DWIN32_LEAN_AND_MEAN
+build:windows --host_copt=-DWIN32_LEAN_AND_MEAN
+build:windows --copt=-DNOGDI
+build:windows --host_copt=-DNOGDI
+
+# Verbose failure logs when something goes wrong
+build:windows --verbose_failures
 
 # ------------------------------
 # Android configuration settings
