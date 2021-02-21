@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BAZEL: bazelisk-linux-amd64
+      CC: gcc-9
+      CXX: g++-9
 
     steps:
     - uses: actions/checkout@v2
