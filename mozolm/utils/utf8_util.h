@@ -14,8 +14,8 @@
 
 // UTF8 manipulation utilities.
 
-#ifndef MOZOLM_MOZOLM_UTF8_UTIL_H_
-#define MOZOLM_MOZOLM_UTF8_UTIL_H_
+#ifndef MOZOLM_MOZOLM_UTILS_UTF8_UTIL_H_
+#define MOZOLM_MOZOLM_UTILS_UTF8_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -44,4 +44,4 @@ std::string EncodeUnicodeChar(char32 input);
 }  // namespace utf8
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_UTF8_UTIL_H_
+#endif  // MOZOLM_MOZOLM_UTILS_UTF8_UTIL_H_

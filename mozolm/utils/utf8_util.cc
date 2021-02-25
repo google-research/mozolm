@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/utf8_util.h"
+#include "mozolm/utils/utf8_util.h"
 
 #include <iterator>
 

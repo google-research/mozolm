@@ -28,7 +28,7 @@
 #include "absl/synchronization/notification.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client_async_impl.h"
-#include "mozolm/utf8_util.h"
+#include "mozolm/utils/utf8_util.h"
 
 namespace mozolm {
 namespace grpc {

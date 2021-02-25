@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Miscellaneous utility packages.
+
 package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])

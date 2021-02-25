@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "mozolm/stubs/logging.h"
-#include "mozolm/utf8_util.h"
+#include "mozolm/utils/utf8_util.h"
 
 namespace mozolm {
 namespace models {

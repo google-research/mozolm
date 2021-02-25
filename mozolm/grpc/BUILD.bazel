@@ -124,9 +124,9 @@ cc_library(
     deps = [
         ":grpc_util_cc_proto",
         ":mozolm_client_async_impl",
-        "//mozolm:utf8_util",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/random",

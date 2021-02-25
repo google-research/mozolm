@@ -25,9 +25,9 @@ cc_library(
     deps = [
         ":lm_scores_cc_proto",
         ":model_storage_cc_proto",
-        "//mozolm:utf8_util",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/utils:utf8_util",
         "@com_google_absl//absl/status",
     ],
 )
