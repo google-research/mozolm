@@ -16,44 +16,54 @@
 
 #include <fstream>
 
-#include "mozolm/stubs/logging.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 
 namespace mozolm {
 namespace models {
 namespace {
 
-void ReadVocabSymbols(const std::string& in_vocab,
-                      std::vector<int32>* utf8_indices) {
+absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
+    const std::string& in_vocab) {
   int32 last_idx = -1;
   std::ifstream infile(in_vocab);
-  GOOGLE_CHECK(infile.is_open());
+  if (!infile.is_open()) return absl::NotFoundError(in_vocab);
   std::string str;
+  std::vector<int32> utf8_indices;
   while (std::getline(infile, str)) {
-    GOOGLE_CHECK(!str.empty());
+    if (str.empty()) return absl::InternalError("Empty line");
     const std::vector<std::string> str_fields =
         absl::StrSplit(str, ' ', absl::SkipEmpty());
-    GOOGLE_CHECK_EQ(str_fields.size(), 1);
-    int32 utf8_sym = std::stoi(str_fields[0]);
-    GOOGLE_CHECK_GT(utf8_sym, last_idx) << "Assumes sorted unique numeric vocab";
-    utf8_indices->push_back(utf8_sym);
+    if (str_fields.size() != 1) {
+      return absl::InternalError("Expects one column per vocab entry");
+    }
+    const int32 utf8_sym = std::stoi(str_fields[0]);
+    if (utf8_sym <= last_idx) {
+      return absl::InternalError("Assumes sorted unique numeric vocab");
+    }
+    utf8_indices.push_back(utf8_sym);
     last_idx = utf8_sym;
   }
   infile.close();
+  return utf8_indices;
 }
 
-void ReadCountMatrix(const std::string& in_counts, int rows,
-                     std::vector<int64>* utf8_normalizer,
-                     std::vector<std::vector<int64>>* bigram_matrix) {
+absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
+                             std::vector<int64>* utf8_normalizer,
+                             std::vector<std::vector<int64>>* bigram_matrix) {
   int idx = 0;
   std::ifstream infile(in_counts);
-  GOOGLE_CHECK(infile.is_open());
+  if (!infile.is_open()) return absl::NotFoundError(in_counts);
   std::string str;
   while (std::getline(infile, str)) {
-    GOOGLE_CHECK(!str.empty());
+    if (str.empty()) return absl::InternalError("Empty line");
     const std::vector<std::string> str_fields =
         absl::StrSplit(str, ' ', absl::SkipEmpty());
-    GOOGLE_CHECK_EQ(str_fields.size(), rows) << "Expects one column per vocab entry";
+    if (str_fields.size() != rows) {
+      return absl::InternalError(absl::StrCat(
+          "Expects ", rows, " columns per vocab entry"));
+    }
     std::vector<int64> bigram_counts(rows, 1);
     for (size_t i = 0; i < str_fields.size(); i++) {
       int64 count = std::stol(str_fields[i]);
@@ -66,21 +76,28 @@ void ReadCountMatrix(const std::string& in_counts, int rows,
     bigram_matrix->push_back(bigram_counts);
     ++idx;
   }
-  GOOGLE_CHECK_EQ(idx, rows) << "Expects one row per vocab entry";
+  if (idx != rows) {
+    return absl::InternalError("Expects one row per vocab entry");
+  }
   infile.close();
+  return absl::OkStatus();
 }
+
 }  // namespace
 
 absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
   const std::string &vocab_file = storage.vocabulary_file();
   const std::string &counts_file = storage.model_file();
   if (!vocab_file.empty()) {
-    ReadVocabSymbols(vocab_file, &utf8_indices_);
+    const auto utf8_indices_result = ReadVocabSymbols(vocab_file);
+    if (!utf8_indices_result.ok()) return utf8_indices_result.status();
+    utf8_indices_ = *utf8_indices_result;
     utf8_normalizer_.resize(utf8_indices_.size(), 0);
     if (!counts_file.empty()) {
       // Only reads from bigram count file if vocab file also provided.
-      ReadCountMatrix(counts_file, utf8_indices_.size(), &utf8_normalizer_,
-                      &bigram_counts_);
+      const auto status = ReadCountMatrix(counts_file, utf8_indices_.size(),
+                                          &utf8_normalizer_, &bigram_counts_);
+      if (!status.ok()) return status;
     }
   } else {
     // Assumes uniform distribution over lowercase a-z and whitespace.
@@ -101,9 +118,16 @@ absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
   }
   vocab_indices_.resize(utf8_indices_.back() + 1, -1);
   for (size_t i = 0; i < utf8_indices_.size(); i++) {
-    GOOGLE_CHECK_LT(utf8_indices_[i], vocab_indices_.size());
-    GOOGLE_CHECK_GE(utf8_indices_[i], 0);
-    vocab_indices_[utf8_indices_[i]] = i;
+    const int utf8_index = utf8_indices_[i];
+    if (utf8_index >= vocab_indices_.size()) {
+      return absl::OutOfRangeError(absl::StrCat(
+          "Invalid UTF8 index ", utf8_index, " for vocab of size ",
+          vocab_indices_.size()));
+    }
+    if (utf8_index < 0) {
+      return absl::InternalError(absl::StrCat("Invalid UTF index", utf8_index));
+    }
+    vocab_indices_[utf8_index] = i;
   }
   return absl::OkStatus();
 }
