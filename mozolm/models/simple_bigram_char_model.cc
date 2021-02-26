@@ -19,6 +19,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
 namespace models {
@@ -28,7 +29,9 @@ absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
     const std::string& in_vocab) {
   int32 last_idx = -1;
   std::ifstream infile(in_vocab);
-  if (!infile.is_open()) return absl::NotFoundError(in_vocab);
+  if (!infile.is_open()) {
+    return absl::NotFoundError(absl::StrCat("File not found: ", in_vocab));
+  }
   std::string str;
   std::vector<int32> utf8_indices;
   while (std::getline(infile, str)) {
@@ -54,7 +57,9 @@ absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
                              std::vector<std::vector<int64>>* bigram_matrix) {
   int idx = 0;
   std::ifstream infile(in_counts);
-  if (!infile.is_open()) return absl::NotFoundError(in_counts);
+  if (!infile.is_open()) {
+    return absl::NotFoundError(absl::StrCat("File not found: ", in_counts));
+  }
   std::string str;
   while (std::getline(infile, str)) {
     if (str.empty()) return absl::InternalError("Empty line");
@@ -89,15 +94,12 @@ absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
   const std::string &vocab_file = storage.vocabulary_file();
   const std::string &counts_file = storage.model_file();
   if (!vocab_file.empty()) {
-    const auto utf8_indices_result = ReadVocabSymbols(vocab_file);
-    if (!utf8_indices_result.ok()) return utf8_indices_result.status();
-    utf8_indices_ = *utf8_indices_result;
+    ASSIGN_OR_RETURN(utf8_indices_, ReadVocabSymbols(vocab_file));
     utf8_normalizer_.resize(utf8_indices_.size(), 0);
     if (!counts_file.empty()) {
       // Only reads from bigram count file if vocab file also provided.
-      const auto status = ReadCountMatrix(counts_file, utf8_indices_.size(),
-                                          &utf8_normalizer_, &bigram_counts_);
-      if (!status.ok()) return status;
+      RETURN_IF_ERROR(ReadCountMatrix(counts_file, utf8_indices_.size(),
+                                      &utf8_normalizer_, &bigram_counts_));
     }
   } else {
     // Assumes uniform distribution over lowercase a-z and whitespace.

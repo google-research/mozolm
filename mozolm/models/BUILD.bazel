@@ -86,6 +86,7 @@ cc_library(
         ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

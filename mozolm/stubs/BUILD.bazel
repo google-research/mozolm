@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Miscellaneous low-level helper packages.
+
 package(default_visibility = ["//mozolm:__subpackages__"])
+
+licenses(["notice"])
 
 cc_library(
     name = "integral_types",
@@ -43,4 +47,10 @@ cc_test(
         "@com_google_absl//absl/synchronization",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "status_macros",
+    hdrs = ["status_macros.h"],
+    deps = ["@com_google_absl//absl/status"],
 )
