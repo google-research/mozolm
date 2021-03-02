@@ -13,8 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BAZEL: bazelisk-linux-amd64
+      CC: gcc-9
+      CXX: g++-9
       NDK_API_LEVEL: 21
-      NDK_VERSION: 21.3.6528147
+      NDK_VERSION: 21.4.7075529
 
     steps:
     - uses: actions/checkout@v2
