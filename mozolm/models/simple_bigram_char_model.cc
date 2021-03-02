@@ -53,7 +53,7 @@ absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
 }
 
 absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
-                             std::vector<int64>* utf8_normalizer,
+                             std::vector<double>* utf8_normalizer,
                              std::vector<std::vector<int64>>* bigram_matrix) {
   int idx = 0;
   std::ifstream infile(in_counts);
@@ -158,7 +158,9 @@ bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
     response->set_normalization(utf8_normalizer_[state]);
     for (size_t i = 0; i < bigram_counts_[state].size(); i++) {
       response->add_utf8_syms(utf8_indices_[i]);
-      response->add_counts(bigram_counts_[state][i]);
+      response->add_probabilities(
+          static_cast<double>(bigram_counts_[state][i]) /
+          utf8_normalizer_[state]);
     }
   }
   return valid_state;

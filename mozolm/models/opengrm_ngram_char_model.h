@@ -42,7 +42,7 @@ class OpenGrmNGramCharModel : public LanguageModel {
   // Provides the state reached from state following utf8_sym.
   int NextState(int state, int utf8_sym) override;
 
-  // Copies the counts and normalization from the given state into the response.
+  // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
 
   // Updates the count for the utf8_sym and normalization at the current state.

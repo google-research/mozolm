@@ -32,21 +32,19 @@
 
 namespace mozolm {
 namespace grpc {
-
 namespace {
+
 // Uses random number to choose position according to returned distribution.
 int GetRandomPosition(
-    int64 normalization,
-    const std::vector<std::pair<int64, int32>>& count_idx_pair_vector) {
+    const std::vector<std::pair<double, int32>>& prob_idx_pair_vector) {
   absl::BitGen gen;
   const double thresh = absl::Uniform(gen, 0, 100);
   double total_prob = 0.0;
-  const double norm = normalization / 100.0;
   int pos = 0;
   while (total_prob < thresh &&
-         pos < static_cast<int64>(count_idx_pair_vector.size())) {
+         pos < static_cast<int64>(prob_idx_pair_vector.size())) {
     total_prob +=
-        static_cast<double>(count_idx_pair_vector[pos++].first) / norm;
+        static_cast<double>(prob_idx_pair_vector[pos++].first);
   }
   if (pos > 0) --pos;
   return pos;
@@ -54,12 +52,12 @@ int GetRandomPosition(
 }  // namespace
 
 bool MozoLMClient::GetLMScores(
-    const std::string& context_string, int initial_state, int64* normalization,
-    std::vector<std::pair<int64, int32>>* count_idx_pair_vector) {
+    const std::string& context_string, int initial_state, double* normalization,
+    std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
   GOOGLE_CHECK_NE(completion_client_, nullptr);
   GOOGLE_CHECK(completion_client_->GetLMScore(context_string, initial_state,
                                               timeout_, normalization,
-                                              count_idx_pair_vector));
+                                              prob_idx_pair_vector));
   return *normalization > 0;
 }
 
@@ -85,15 +83,15 @@ bool MozoLMClient::RandGen(const std::string& context_string,
   int chosen = -1;  // Initialize to non-zero to enter loop.
   while (success && chosen != 0 &&
          static_cast<int>(result->length()) < max_length) {
-    std::vector<std::pair<int64, int32>> count_idx_pair_vector;
-    int64 normalization;
+    std::vector<std::pair<double, int32>> prob_idx_pair_vector;
+    double normalization;
     bool success = GetLMScores(/*context_string=*/"", state, &normalization,
-                               &count_idx_pair_vector);
+                               &prob_idx_pair_vector);
     if (success) {
-      const int pos = GetRandomPosition(normalization, count_idx_pair_vector);
+      const int pos = GetRandomPosition(prob_idx_pair_vector);
       GOOGLE_CHECK_GE(pos, 0);
-      GOOGLE_CHECK_LT(pos, count_idx_pair_vector.size());
-      chosen = count_idx_pair_vector[pos].second;
+      GOOGLE_CHECK_LT(pos, prob_idx_pair_vector.size());
+      chosen = prob_idx_pair_vector[pos].second;
       if (chosen > 0) {
         // Only updates if not end-of-string.
         const std::string next_sym = utf8::EncodeUnicodeChar(chosen);
@@ -112,18 +110,17 @@ bool MozoLMClient::RandGen(const std::string& context_string,
 
 bool MozoLMClient::OneKbestSample(int k_best, const std::string& context_string,
                                   std::string* result) {
-  std::vector<std::pair<int64, int32>> count_idx_pair_vector;
-  int64 normalization;
+  std::vector<std::pair<double, int32>> prob_idx_pair_vector;
+  double normalization;
   const bool success = GetLMScores(context_string, /*initial_state=*/-1,
-                                   &normalization, &count_idx_pair_vector);
+                                   &normalization, &prob_idx_pair_vector);
   if (success) {
     *result = std::to_string(k_best) + "-best prob continuations:";
-    double norm = normalization / 100.0;
     for (int i = 0; i < k_best; i++) {
       // TODO: fix for general utf8 symbols.
-      *result = absl::StrFormat(
-          "%s %c(%5.2f)", *result, count_idx_pair_vector[i].second,
-          static_cast<double>(count_idx_pair_vector[i].first) / norm);
+      *result = absl::StrFormat("%s %c(%5.2f)", *result,
+                                prob_idx_pair_vector[i].second,
+                                prob_idx_pair_vector[i].first);
     }
   }
   return success;

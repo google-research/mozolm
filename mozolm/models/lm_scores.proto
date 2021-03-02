@@ -21,9 +21,11 @@ message LMScores {
   // Individual symbols for which counts are returned.
   repeated int32 utf8_syms = 1;
 
-  // Counts for each of the symbols.
-  repeated int64 counts = 2;
+  // Probabilities for each of the symbols.
+  repeated double probabilities = 2;
 
-  // Sum of counts for normalizations.
-  int64 normalization = 3;
+  // Normalization to recreate (smoothed) counts from probabilities. This may
+  // have some value when mixing models, for methods that, e.g., take into
+  // account the number of observations when calculating mixing values.
+  double normalization = 3;
 }

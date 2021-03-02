@@ -47,7 +47,7 @@ class LanguageModel {
   // than zero, the model will start at the start state of the model.
   int ContextState(const std::string &context = "", int init_state = -1);
 
-  // Copies the counts and normalization from the given state into the response.
+  // Copies the probs and normalization from the given state into the response.
   virtual bool ExtractLMScores(int state, LMScores* response) {
     return false;  // Requires a derived class to complete.
   }

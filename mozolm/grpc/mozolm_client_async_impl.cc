@@ -30,18 +30,18 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
-// Retrieves reverse frequency sorted vector of count/utf8-symbol pairs and
+// Retrieves reverse probability sorted vector of prob/utf8-symbol pairs and
 // normalization.
 void RetrieveLMScores(
-    LMScores response, int64* normalization,
-    std::vector<std::pair<int64, int32>>* count_idx_pair_vector) {
-  count_idx_pair_vector->reserve(response.counts_size());
-  for (int i = 0; i < response.counts_size(); i++) {
-    count_idx_pair_vector->push_back(
-        std::make_pair(response.counts(i), response.utf8_syms(i)));
+    LMScores response, double* normalization,
+    std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
+  prob_idx_pair_vector->reserve(response.probabilities_size());
+  for (int i = 0; i < response.probabilities_size(); i++) {
+    prob_idx_pair_vector->push_back(
+        std::make_pair(response.probabilities(i), response.utf8_syms(i)));
     }
-    std::sort(count_idx_pair_vector->begin(), count_idx_pair_vector->end());
-    std::reverse(count_idx_pair_vector->begin(), count_idx_pair_vector->end());
+    std::sort(prob_idx_pair_vector->begin(), prob_idx_pair_vector->end());
+    std::reverse(prob_idx_pair_vector->begin(), prob_idx_pair_vector->end());
   *normalization = response.normalization();
 }
 
@@ -59,8 +59,8 @@ MozoLMClientAsyncImpl::MozoLMClientAsyncImpl(
 
 bool MozoLMClientAsyncImpl::GetLMScore(
     const std::string& context_str, int initial_state, double timeout,
-    int64* normalization,
-    std::vector<std::pair<int64, int32>>* count_idx_pair_vector) {
+    double* normalization,
+    std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
   // Sets up ClientContext, request and response.
   ::grpc::ClientContext context;
   context.set_deadline(gpr_time_add(
@@ -81,7 +81,7 @@ bool MozoLMClientAsyncImpl::GetLMScore(
     GOOGLE_LOG(ERROR) << status.error_message();
   } else {
     // Retrieves information from response if RPC call was successful.
-    RetrieveLMScores(response, normalization, count_idx_pair_vector);
+    RetrieveLMScores(response, normalization, prob_idx_pair_vector);
   }
   return status.ok();
 }

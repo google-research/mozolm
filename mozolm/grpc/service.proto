@@ -45,7 +45,7 @@ message UpdateLMScoresRequest {
 }
 
 service MozoLMServer {
-  // Returns the counts and normalization for given state.
+  // Returns the probs and normalization for given state.
   rpc GetLMScores(GetContextRequest) returns (LMScores) {
     // errors: invalid state;
   }

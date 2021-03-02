@@ -67,7 +67,7 @@ class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
                                const GetContextRequest* request,
                                NextState* response);
 
-  // Updates the counts/norm by count and advances state, returning counts at
+  // Updates the counts/norm by count and advances state, returning probs at
   // new state.
   ::grpc::Status HandleRequest(::grpc::ServerContext* context,
                                const UpdateLMScoresRequest* request,

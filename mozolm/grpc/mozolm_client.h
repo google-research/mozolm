@@ -41,11 +41,11 @@ class MozoLMClient {
   bool RandGen(const std::string& context_string, std::string* result);
 
  private:
-  // Requests LMScores from model, populates vector of count/index pairs and
+  // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
   bool GetLMScores(const std::string& context_string, int initial_state,
-                   int64* normalization,
-                   std::vector<std::pair<int64, int32>>* count_idx_pair_vector);
+                   double* normalization,
+                   std::vector<std::pair<double, int32>>* prob_idx_pair_vector);
 
   // Requests next state from model and returns result.
   int64 GetNextState(const std::string& context_string, int initial_state);

@@ -30,6 +30,8 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
+constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
+
 using ::grpc::Status;
 using ::grpc::ServerContext;
 
@@ -53,7 +55,7 @@ void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
 }
 
 // Check that a call to GetLMScores succeeds and returns the expected
-// counts and normalization.
+// probabilities and normalization.
 void CheckGetLMScores(int state) {
   MozoLMServerAsyncImplMock server;
   ServerContext context;
@@ -63,10 +65,11 @@ void CheckGetLMScores(int state) {
   const GetContextRequest* request_ptr(&request);
   Status status = server.HandleRequest(&context, request_ptr, &response);
   ASSERT_TRUE(status.ok());
-  ASSERT_EQ(response.counts_size(), 28);
-  ASSERT_EQ(response.normalization(), 28);
+  ASSERT_EQ(response.probabilities_size(), 28);
+  ASSERT_NEAR(response.normalization(), 28.0, kFloatDelta);
+  double uniform_value = static_cast<double>(1.0) / static_cast<double>(28);
   for (int i = 0; i < 28; i++) {
-    ASSERT_EQ(response.counts(i), 1);
+    ASSERT_NEAR(response.probabilities(i), uniform_value, kFloatDelta);
   }
 }
 
@@ -99,13 +102,18 @@ void CheckUpdateLMScoresContent(int state, int count) {
   Status status = server.HandleRequest(&context, request_ptr, &response);
   ASSERT_TRUE(status.ok());
   // Check if the response matches the request
-  ASSERT_EQ(response.counts_size(), 28);
-  ASSERT_EQ(response.normalization(), 28 + count);
+  ASSERT_EQ(response.probabilities_size(), 28);
+  ASSERT_NEAR(response.normalization(), 28.0 + count, kFloatDelta);
+  double rest_value =
+      static_cast<double>(1.0) / static_cast<double>(28 + count);
   for (int i = 0; i < 28; i++) {
     if (i == state) {
-      ASSERT_EQ(response.counts(i), 1 + count);
+      ASSERT_NEAR(
+          response.probabilities(i),
+          static_cast<double>(1 + count) / static_cast<double>(28 + count),
+          kFloatDelta);
     } else {
-      ASSERT_EQ(response.counts(i), 1);
+      ASSERT_NEAR(response.probabilities(i), rest_value, kFloatDelta);
     }
   }
 }
