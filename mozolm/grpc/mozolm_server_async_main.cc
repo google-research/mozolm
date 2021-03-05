@@ -17,6 +17,9 @@
 // Example usage:
 // --------------
 // DATADIR=mozolm/data
+//
+// Using the simple_char_bigram models:
+//
 // VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
 // COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 // bazel-bin/mozolm/grpc/mozolm_server_async \
@@ -24,6 +27,18 @@
 //   credential_type:INSECURE server_config { model_config { \
 //   type:SIMPLE_CHAR_BIGRAM storage { vocabulary_file:\"$VOCAB\" \
 //   model_file:\"$COUNTS\" } } wait_for_clients:true }"
+//
+// Will wait for queries in terminal, Ctrl-C to quit.
+//
+// Using the PPM models:
+//
+// TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
+// bazel-bin/mozolm/grpc/mozolm_server_async \
+//   --client_server_config="server_port:\"localhost:50051\" \
+//   credential_type:INSECURE server_config { model_config { \
+//   type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
+//   ppm_options { max_order: 4 static_model: false } } } \
+//   wait_for_clients:true }"
 //
 // Will wait for queries in terminal, Ctrl-C to quit.
 

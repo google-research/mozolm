@@ -28,12 +28,16 @@ int LanguageModel::ContextState(const std::string &context, int init_state) {
     const std::vector<std::string> context_utf8 = utf8::StrSplitByChar(context);
     for (const auto& sym : context_utf8) {
       char32 utf8_code;
-      const int num_bytes = utf8::DecodeUnicodeChar(sym, &utf8_code);
-      const bool utf8_ok = (utf8_code != utf8::kBadUTF8Char && num_bytes >= 1);
-      GOOGLE_CHECK(utf8_ok) << "Symbol " << sym << " has invalid UTF8 encoding!";
-      this_state = NextState(this_state, static_cast<int>(utf8_code));
-      if (this_state < 0)
-        this_state = start_state_;  // if not found, go back to start state.
+      if (!utf8::DecodeSingleUnicodeChar(sym, &utf8_code)) {
+        this_state = -1;
+      } else {
+        this_state = NextState(this_state, static_cast<int>(utf8_code));
+      }
+      if (this_state < 0) {
+        // Returns to start state if symbol not found.
+        // TODO: should it return to a null context state?
+        this_state = start_state_;
+      }
     }
   }
   return this_state;

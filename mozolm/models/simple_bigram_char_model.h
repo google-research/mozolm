@@ -36,9 +36,6 @@ class SimpleBigramCharModel : public LanguageModel {
   absl::Status Read(const ModelStorage &storage)
       ABSL_EXCLUSIVE_LOCKS_REQUIRED(normalizer_lock_, counts_lock_) override;
 
-  // Provides the state associated with the symbol.
-  int SymState(int utf8_sym);
-
   // Provides the symbol associated with the state.
   int StateSym(int state) override;
 
@@ -54,6 +51,9 @@ class SimpleBigramCharModel : public LanguageModel {
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
 
  private:
+  // Provides the state associated with the symbol.
+  int SymState(int utf8_sym);
+
   std::vector<int32> utf8_indices_;   // utf8 symbols in vocabulary.
   std::vector<int32> vocab_indices_;  // dimension is utf8 symbol, stores index.
   // stores normalization constant for each item in vocabulary.

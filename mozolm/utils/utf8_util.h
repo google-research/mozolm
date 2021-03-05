@@ -38,6 +38,10 @@ std::vector<std::string> StrSplitByChar(const std::string &input);
 // `kBadUTF8Char` in the result `first_char` and returns 1.
 int DecodeUnicodeChar(const std::string &input, char32 *first_char);
 
+// Returns true of input string is a single codepoint with valid UTF-8 value,
+// which is stored in utf8_value.
+bool DecodeSingleUnicodeChar(const std::string &input, char32 *utf8_value);
+
 // Encodes single Unicode codepoint value as UTF-8.
 std::string EncodeUnicodeChar(char32 input);
 

@@ -34,11 +34,16 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
+// Returns random probability threshold between 0 and 1.
+double GetUniformThreshold() {
+  absl::BitGen gen;
+  return absl::Uniform(gen, 0, 100000) / static_cast<double>(100000);
+}
+
 // Uses random number to choose position according to returned distribution.
 int GetRandomPosition(
     const std::vector<std::pair<double, int32>>& prob_idx_pair_vector) {
-  absl::BitGen gen;
-  const double thresh = absl::Uniform(gen, 0, 100);
+  const double thresh = GetUniformThreshold();
   double total_prob = 0.0;
   int pos = 0;
   while (total_prob < thresh &&
@@ -54,10 +59,16 @@ int GetRandomPosition(
 bool MozoLMClient::GetLMScores(
     const std::string& context_string, int initial_state, double* normalization,
     std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
-  GOOGLE_CHECK_NE(completion_client_, nullptr);
-  GOOGLE_CHECK(completion_client_->GetLMScore(context_string, initial_state,
+  if (completion_client_ == nullptr) {
+    GOOGLE_LOG(ERROR) << "completion_client_ not initialized.";
+    return false;
+  }
+  if (!completion_client_->GetLMScore(context_string, initial_state,
                                               timeout_, normalization,
-                                              prob_idx_pair_vector));
+                                      prob_idx_pair_vector)) {
+    GOOGLE_LOG(ERROR) << "Failed to retrieve LM score";
+    return false;
+  }
   return *normalization > 0;
 }
 

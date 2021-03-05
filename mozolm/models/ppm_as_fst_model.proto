@@ -12,30 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Concise information about the model.
+// Message encapsulating configuation options for PPM model.
 
 syntax = "proto3";
 
 package mozolm;
 
-import "mozolm/models/model_storage.proto";
+// Next available ID: 7
+message PpmAsFstOptions {
+  // Maximum order for the model.  Uses default if not set.
+  int32 max_order = 1;
 
-// Next available ID: 3
-message ModelConfig {
-  enum ModelType {
-    // Simple text-based bigram model.
-    SIMPLE_CHAR_BIGRAM = 0;
+  // Alpha hyper-parameter for the PPM.  Uses default if not set.
+  double alpha = 2;
 
-    // OpenGrm NGram character model.
-    OPENGRM_CHAR_NGRAM = 1;
+  // Beta hyper-parameter for the PPM.  Uses default if not set.
+  double beta = 3;
 
-    // OpenGrm NGram character model.
-    PPM_AS_FST = 2;
-  }
+  // Whether the model is to be dynamic or static.
+  bool static_model = 4;
 
-  // Type of the model.
-  ModelType type = 1;
+  // Whether the model to be initialized is in Fst format, otherwise text.
+  bool model_is_fst = 5;
 
-  // Storage and options information.
-  ModelStorage storage = 2;
+  // Maximum number of states to cache. Uses default if not set.
+  int64 max_cache_size = 6;
 }

@@ -18,6 +18,7 @@
 
 #include "mozolm/models/simple_bigram_char_model.h"
 #include "mozolm/models/opengrm_ngram_char_model.h"
+#include "mozolm/models/ppm_as_fst_model.h"
 
 namespace mozolm {
 namespace models {
@@ -29,6 +30,8 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
     model.reset(new SimpleBigramCharModel);
   } else if (model_type == ModelConfig::OPENGRM_CHAR_NGRAM) {
     model.reset(new OpenGrmNGramCharModel);
+  } else if (model_type == ModelConfig::PPM_AS_FST) {
+    model.reset(new PpmAsFstModel);
   } else {  // Shouldn't be here.
     return absl::UnimplementedError("Unsupported model type!");
   }

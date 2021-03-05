@@ -32,12 +32,13 @@ class LanguageModel {
   // Reads the model from the model storage.
   virtual absl::Status Read(const ModelStorage &storage) = 0;
 
-  // Provides the symbol associated with the state.
+  // Provides the last symbol to reach the state.
   virtual int StateSym(int state) {
     return -1;  // Requires a derived class to complete.
   }
 
   // Provides the state reached from state following utf8_sym.
+  // TODO: move from giving utf8_sym to const string input.
   virtual int NextState(int state, int utf8_sym) {
     return -1;  // Requires a derived class to complete.
   }
@@ -59,6 +60,9 @@ class LanguageModel {
 
  protected:
   LanguageModel() : start_state_(0) {}
+
+  // Allows derived classes to set the start state of the model.
+  void set_start_state(int32 state) { start_state_ = state; }
 
  private:
   int32 start_state_;

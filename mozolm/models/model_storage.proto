@@ -22,7 +22,9 @@ syntax = "proto3";
 
 package mozolm;
 
-// Next available ID: 3
+import "mozolm/models/ppm_as_fst_model.proto";
+
+// Next available ID: 4
 message ModelStorage {
   // Actual model file. For example, this can be a text file in ARPA format or
   // a binary file in some other format.
@@ -30,4 +32,7 @@ message ModelStorage {
 
   // Vocabulary file.
   string vocabulary_file = 2;
+
+  // Options for PPM model.
+  PpmAsFstOptions ppm_options = 3;
 }
