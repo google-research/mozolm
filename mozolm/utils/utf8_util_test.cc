@@ -15,6 +15,7 @@
 #include "mozolm/utils/utf8_util.h"
 
 #include "gmock/gmock.h"
+#include "mozolm/stubs/status-matchers.h"
 #include "gtest/gtest.h"
 
 using ::testing::ElementsAre;

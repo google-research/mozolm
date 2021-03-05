@@ -35,6 +35,7 @@ cc_test(
     srcs = ["utf8_util_test.cc"],
     deps = [
         ":utf8_util",
+        "//mozolm/stubs:status-matchers",
         "@com_google_googletest//:gtest_main",
     ],
 )

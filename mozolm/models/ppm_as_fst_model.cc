@@ -17,9 +17,9 @@
 #include <cmath>
 #include <fstream>
 
-#include "fst//arcsort.h"
-#include "fst//symbol-table.h"
-#include "fst//vector-fst.h"
+#include "fst/arcsort.h"
+#include "fst/symbol-table.h"
+#include "fst/vector-fst.h"
 #include "ngram/ngram-count.h"
 #include "ngram/ngram-model.h"
 #include "absl/container/flat_hash_set.h"

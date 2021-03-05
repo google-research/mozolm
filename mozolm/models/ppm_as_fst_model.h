@@ -68,8 +68,8 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "mozolm/stubs/logging.h"
-#include "fst//symbol-table.h"
-#include "fst//vector-fst.h"
+#include "fst/symbol-table.h"
+#include "fst/vector-fst.h"
 #include "ngram/ngram-count.h"
 #include "absl/status/statusor.h"
 #include "mozolm/models/language_model.h"
