@@ -112,12 +112,8 @@ cc_library(
 
 cc_library(
     name = "ppm_as_fst_model",
-    srcs = [
-        "ppm_as_fst_model.cc",
-    ],
-    hdrs = [
-        "ppm_as_fst_model.h",
-    ],
+    srcs = ["ppm_as_fst_model.cc"],
+    hdrs = ["ppm_as_fst_model.h"],
     deps = [
         ":language_model",
         ":model_storage_cc_proto",
@@ -135,6 +131,21 @@ cc_library(
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_test(
+    name = "ppm_as_fst_model_test",
+    size = "small",
+    srcs = ["ppm_as_fst_model_test.cc"],
+    deps = [
+        ":model_storage_cc_proto",
+        ":ppm_as_fst_model",
+        "//mozolm/stubs:status-matchers",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@org_openfst//:fst",
+        "@org_openfst//:symbol-table",
     ],
 )
 

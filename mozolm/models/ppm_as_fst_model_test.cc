@@ -16,11 +16,10 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <string>
 
-#include "file/base/file.h"
-#include "file/base/helpers.h"
-#include "file/base/options.h"
-#include "file/base/path.h"
 #include "fst/arcsort.h"
 #include "fst/isomorphic.h"
 #include "fst/symbol-table.h"
@@ -124,22 +123,25 @@ class PpmAsFstTest : public ::testing::Test {
 
   // Creates corpus file for testing text file model initialization.
   void CreateCorpusFile() {
-    File *output_file;
-    GOOGLE_CHECK_OK(file::Open(corpus_file_, "w", &output_file, file::Defaults()));
-    GOOGLE_CHECK_OK(file::WriteString(output_file, absl::StrCat("abaab", "\n"),
-                               file::Defaults()));
-    GOOGLE_CHECK_OK(file::WriteString(output_file, absl::StrCat("aabab", "\n"),
-                               file::Defaults()));
-    GOOGLE_CHECK_OK(output_file->Close(file::Defaults()));
+    std::ofstream output_file(corpus_file_);
+    ASSERT_TRUE(output_file.good()) << "Failed to open: " << corpus_file_;
+    output_file << absl::StrCat("abaab", "\n");
+    output_file << absl::StrCat("aabab", "\n");
+    ASSERT_TRUE(output_file.good()) << "Failed to write to " << corpus_file_;
   }
 
   void SetUp() override {
-    trigram_count_file_ =
-        file::JoinPath(absl::GetFlag(FLAGS_test_tmpdir), "trigram_count.fst");
+    // Setup the treegram count file.
+    const std::filesystem::path tmp_dir =
+        std::filesystem::temp_directory_path();
+    trigram_count_file_ = tmp_dir / "trigram_count.fst";
     CreateFstTrigramCountFile();
-    corpus_file_ =
-        file::JoinPath(absl::GetFlag(FLAGS_test_tmpdir), "corpus.txt");
+
+    // Setup the training set.
+    corpus_file_ = tmp_dir / "corpus.txt";
     CreateCorpusFile();
+
+    // Configure the model.
     max_order_ = 3;
     storage_.set_model_file(trigram_count_file_);
     storage_.mutable_ppm_options()->set_max_order(max_order_);
@@ -179,7 +181,7 @@ TEST_F(PpmAsFstTest, InitializingFromFstOrTextTheSameDynamic) {
   storage_file.mutable_ppm_options()->set_static_model(false);
   storage_file.mutable_ppm_options()->set_model_is_fst(false);
   ASSERT_OK(model_from_text.Read(storage_file));
-  const string test_string = "babbbabababba";
+  const std::string test_string = "babbbabababba";
   auto sym_indices_status = model_from_fst.GetSymsVector(test_string);
   ASSERT_TRUE(sym_indices_status.ok());
   std::vector<int> sym_indices_a = sym_indices_status.value();
@@ -203,7 +205,7 @@ TEST_F(PpmAsFstTest, StaticProbsMatchHand) {
   PpmAsFstModel model;
   ModelStorage storage = storage_;
   ASSERT_OK(model.Read(storage));
-  const string test_string = "bab";
+  const std::string test_string = "bab";
   auto sym_indices_status = model.GetSymsVector(test_string);
   ASSERT_TRUE(sym_indices_status.ok());
   std::vector<int> sym_indices = sym_indices_status.value();
@@ -254,7 +256,7 @@ TEST_F(PpmAsFstTest, DynamicProbsMatchHand) {
   ModelStorage storage = storage_;
   storage.mutable_ppm_options()->set_static_model(false);
   ASSERT_OK(model.Read(storage));
-  const string test_string = "bab";
+  const std::string test_string = "bab";
   auto sym_indices_status = model.GetSymsVector(test_string);
   ASSERT_TRUE(sym_indices_status.ok());
   std::vector<int> sym_indices = sym_indices_status.value();

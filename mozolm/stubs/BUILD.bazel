@@ -54,3 +54,14 @@ cc_library(
     hdrs = ["status_macros.h"],
     deps = ["@com_google_absl//absl/status"],
 )
+
+cc_library(
+    name = "status-matchers",
+    hdrs = ["status-matchers.h"],
+    deps = [
+        ":status_macros",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_googletest//:gtest",
+    ],
+)
