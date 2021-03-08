@@ -134,11 +134,13 @@ class PpmAsFstTest : public ::testing::Test {
     // Setup the treegram count file.
     const std::filesystem::path tmp_dir =
         std::filesystem::temp_directory_path();
-    trigram_count_file_ = tmp_dir / "trigram_count.fst";
+    std::filesystem::path file_path = tmp_dir / "trigram_count.fst";
+    trigram_count_file_ = file_path.string();
     CreateFstTrigramCountFile();
 
     // Setup the training set.
-    corpus_file_ = tmp_dir / "corpus.txt";
+    file_path = tmp_dir / "corpus.txt";
+    corpus_file_ = file_path.string();
     CreateCorpusFile();
 
     // Configure the model.
