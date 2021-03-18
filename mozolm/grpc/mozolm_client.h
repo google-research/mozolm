@@ -43,9 +43,10 @@ class MozoLMClient {
  private:
   // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
-  bool GetLMScores(const std::string& context_string, int initial_state,
-                   double* normalization,
-                   std::vector<std::pair<double, int32>>* prob_idx_pair_vector);
+  bool GetLMScores(
+      const std::string& context_string, int initial_state,
+      double* normalization,
+      std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   // Requests next state from model and returns result.
   int64 GetNextState(const std::string& context_string, int initial_state);

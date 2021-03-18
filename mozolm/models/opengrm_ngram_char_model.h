@@ -18,7 +18,7 @@
 #define MOZOLM_MOZOLM_MODELS_OPENGRM_NGRAM_CHAR_MODEL_H_
 
 #include <memory>
-#include <string>
+#include <vector>
 
 #include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
@@ -45,8 +45,9 @@ class OpenGrmNGramCharModel : public LanguageModel {
   // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
 
-  // Updates the count for the utf8_sym and normalization at the current state.
-  bool UpdateLMCounts(int32 state, int32 utf8_sym, int64 count) override;
+  // Updates the count for the utf8_syms at the current state.
+  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
+                      int64 count) override;
 
  private:
   std::unique_ptr<ngram::NGramModel<ngram::StdArc>> model_;

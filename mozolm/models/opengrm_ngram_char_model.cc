@@ -33,7 +33,8 @@ bool OpenGrmNGramCharModel::ExtractLMScores(int state, LMScores* response) {
   return false;
 }
 
-bool OpenGrmNGramCharModel::UpdateLMCounts(int32 state, int32 utf8_sym,
+bool OpenGrmNGramCharModel::UpdateLMCounts(int32 state,
+                                           const std::vector<int>& utf8_syms,
                                            int64 count) {
   GOOGLE_LOG(FATAL) << "Not implemented";
   return false;

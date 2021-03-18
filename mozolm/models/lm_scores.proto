@@ -19,7 +19,7 @@ package mozolm;
 // Next available ID: 4
 message LMScores {
   // Individual symbols for which counts are returned.
-  repeated int32 utf8_syms = 1;
+  repeated string symbols = 1;
 
   // Probabilities for each of the symbols.
   repeated double probabilities = 2;

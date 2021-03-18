@@ -29,6 +29,7 @@
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "mozolm/utils/utf8_util.h"
 
 namespace mozolm {
 namespace models {
@@ -328,8 +329,14 @@ TEST_F(PpmAsFstTest, ExtractLMScores) {
   std::vector<double> extracted_probs(3);
   ASSERT_EQ(lm_scores.probabilities_size(), 3);
   for (int i = 0; i < lm_scores.probabilities_size(); i++) {
-    int idx = lm_scores.utf8_syms(i) == 0 ? lm_scores.utf8_syms(i)
-                                          : lm_scores.utf8_syms(i) - 96;
+    int idx = 0;
+    if (!lm_scores.symbols(i).empty()) {
+      char32 utf8_code;
+      ASSERT_TRUE(
+          utf8::DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
+      // Offset converts from codepoint index for 'a' and 'b' to symbol idx.
+      idx = static_cast<int>(utf8_code) - 96;
+    }
     ASSERT_LT(idx, 3);
     ASSERT_GE(idx, 0);
     extracted_probs[idx] = lm_scores.probabilities(i);
@@ -350,8 +357,10 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   // Add a single count at the start state for both "b" and </S>. Since these
   // are unobserved, the start state count goes to 1 for each and the unigram
   // count increases by 1 for each; they remain equiprobable at that state.
-  ASSERT_TRUE(model.UpdateLMCounts(start_state, 98, 1));  // updates "b" count.
-  ASSERT_TRUE(model.UpdateLMCounts(start_state, 0, 1));   // updates </S> count.
+  ASSERT_TRUE(
+      model.UpdateLMCounts(start_state, {98}, 1));  // updates "b" count.
+  ASSERT_TRUE(
+      model.UpdateLMCounts(start_state, {0}, 1));  // updates </S> count.
   LMScores lm_scores;
   ASSERT_TRUE(model.ExtractLMScores(start_state, &lm_scores));
 
@@ -367,8 +376,14 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   std::vector<double> extracted_probs(3);
   ASSERT_EQ(lm_scores.probabilities_size(), 3);
   for (int i = 0; i < lm_scores.probabilities_size(); i++) {
-    int idx = lm_scores.utf8_syms(i) == 0 ? lm_scores.utf8_syms(i)
-                                          : lm_scores.utf8_syms(i) - 96;
+    int idx = 0;
+    if (!lm_scores.symbols(i).empty()) {
+      char32 utf8_code;
+      ASSERT_TRUE(
+          utf8::DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
+      // Offset converts from codepoint index for 'a' and 'b' to symbol idx.
+      idx = static_cast<int>(utf8_code) - 96;
+    }
     ASSERT_LT(idx, 3);
     ASSERT_GE(idx, 0);
     extracted_probs[idx] = lm_scores.probabilities(i);

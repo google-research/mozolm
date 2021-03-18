@@ -16,6 +16,7 @@
 #define MOZOLM_MOZOLM_MODELS_LANGUAGE_MODEL_H_
 
 #include <string>
+#include <vector>
 
 #include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
@@ -38,9 +39,8 @@ class LanguageModel {
   }
 
   // Provides the state reached from state following utf8_sym.
-  // TODO: move from giving utf8_sym to const string input.
   virtual int NextState(int state, int utf8_sym) {
-    return -1;  // Requires a derived class to complete.
+     return -1;  // Requires a derived class to complete.
   }
 
   // Provides the state reached from the init_state after consuming the context
@@ -53,8 +53,9 @@ class LanguageModel {
     return false;  // Requires a derived class to complete.
   }
 
-  // Updates the count for the utf8_sym and normalization at the current state.
-  virtual bool UpdateLMCounts(int32 state, int32 utf8_sym, int64 count) {
+  // Updates the count for the utf8_syms at the current state.
+  virtual bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
+                              int64 count) {
     return false;  // Requires a derived class to complete.
   }
 

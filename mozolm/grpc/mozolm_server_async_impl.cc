@@ -281,11 +281,17 @@ bool MozoLMServerAsyncImpl::StartServer(const std::string& server_port,
 
 bool MozoLMServerAsyncImpl::ManageUpdateLMScores(
     const UpdateLMScoresRequest* request, LMScores* response) {
-  return model_->UpdateLMCounts(request->state(), request->utf8_sym(),
+  const int utf8_sym_size = request->utf8_sym_size();
+  std::vector<int> utf8_syms(utf8_sym_size);
+  int curr_state = request->state();
+  for (int i = 0; i < utf8_sym_size; ++i) {
+    // Adds each symbol to vector and finds next state.
+    utf8_syms[i] = request->utf8_sym(i);
+    curr_state = model_->NextState(curr_state, utf8_syms[i]);
+  }
+  return model_->UpdateLMCounts(request->state(), utf8_syms,
                                 request->count()) &&
-         model_->ExtractLMScores(
-             model_->NextState(request->state(), request->utf8_sym()),
-             response);
+         model_->ExtractLMScores(curr_state, response);
 }
 
 }  // namespace grpc

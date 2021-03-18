@@ -26,6 +26,7 @@
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_factory.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "mozolm/utils/utf8_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -82,7 +83,7 @@ void CheckUpdateLMScoresError(int state, int utf8_sym, int count,
   UpdateLMScoresRequest request;
   LMScores response;
   request.set_state(state);
-  request.set_utf8_sym(utf8_sym);
+  request.add_utf8_sym(utf8_sym);
   request.set_count(count);
   const UpdateLMScoresRequest* request_ptr(&request);
   Status status = server.HandleRequest(&context, request_ptr, &response);
@@ -97,18 +98,21 @@ void CheckUpdateLMScoresContent(int state, int count) {
   LMScores response;
   request.set_state(state);
   // same symbol as context for ease of checking updates.
-  request.set_utf8_sym(server.ModelStateSym(state));
+  const std::string symbol =
+      utf8::EncodeUnicodeChar(server.ModelStateSym(state));
+  request.add_utf8_sym(server.ModelStateSym(state));
   request.set_count(count);
   const UpdateLMScoresRequest* request_ptr(&request);
   Status status = server.HandleRequest(&context, request_ptr, &response);
   ASSERT_TRUE(status.ok());
   // Check if the response matches the request
   ASSERT_EQ(response.probabilities_size(), 28);
+  ASSERT_EQ(response.symbols_size(), 28);
   ASSERT_NEAR(response.normalization(), 28.0 + count, kFloatDelta);
   double rest_value =
       static_cast<double>(1.0) / static_cast<double>(28 + count);
   for (int i = 0; i < 28; i++) {
-    if (i == state) {
+    if (response.symbols(i) == symbol) {
       ASSERT_NEAR(
           response.probabilities(i),
           static_cast<double>(1 + count) / static_cast<double>(28 + count),

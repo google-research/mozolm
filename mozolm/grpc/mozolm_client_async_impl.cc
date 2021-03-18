@@ -34,11 +34,11 @@ namespace {
 // normalization.
 void RetrieveLMScores(
     LMScores response, double* normalization,
-    std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
+    std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   prob_idx_pair_vector->reserve(response.probabilities_size());
   for (int i = 0; i < response.probabilities_size(); i++) {
     prob_idx_pair_vector->push_back(
-        std::make_pair(response.probabilities(i), response.utf8_syms(i)));
+        std::make_pair(response.probabilities(i), response.symbols(i)));
     }
     std::sort(prob_idx_pair_vector->begin(), prob_idx_pair_vector->end());
     std::reverse(prob_idx_pair_vector->begin(), prob_idx_pair_vector->end());
@@ -60,7 +60,7 @@ MozoLMClientAsyncImpl::MozoLMClientAsyncImpl(
 bool MozoLMClientAsyncImpl::GetLMScore(
     const std::string& context_str, int initial_state, double timeout,
     double* normalization,
-    std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
+    std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   // Sets up ClientContext, request and response.
   ::grpc::ClientContext context;
   context.set_deadline(gpr_time_add(

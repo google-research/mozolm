@@ -15,7 +15,6 @@
 #ifndef MOZOLM_MOZOLM_MODELS_SIMPLE_BIGRAM_CHAR_MODEL_H_
 #define MOZOLM_MOZOLM_MODELS_SIMPLE_BIGRAM_CHAR_MODEL_H_
 
-#include <string>
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
@@ -46,8 +45,9 @@ class SimpleBigramCharModel : public LanguageModel {
   bool ExtractLMScores(int state, LMScores* response)
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
 
-  // Updates the counts for the utf8_sym and normalization at the current state.
-  bool UpdateLMCounts(int32 state, int32 utf8_sym, int64 count)
+  // Updates the counts for the utf8_syms at the current state.
+  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
+                      int64 count)
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
 
  private:

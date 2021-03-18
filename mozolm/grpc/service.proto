@@ -37,8 +37,8 @@ message UpdateLMScoresRequest {
   // State where count should be updated.
   int32 state = 1;
 
-  // Symbol whose count should be updated at that state.
-  int32 utf8_sym = 2;
+  // String of symbols whose count should be updated at that state.
+  repeated int32 utf8_sym = 2;
 
   // Count to add to state and symbol.
   int32 count = 3;

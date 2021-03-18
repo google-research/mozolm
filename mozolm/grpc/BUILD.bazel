@@ -65,6 +65,7 @@ cc_test(
         "//mozolm/models:model_factory",
         "//mozolm/models:model_storage_cc_proto",
         "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",

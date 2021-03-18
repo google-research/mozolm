@@ -42,7 +42,7 @@ double GetUniformThreshold() {
 
 // Uses random number to choose position according to returned distribution.
 int GetRandomPosition(
-    const std::vector<std::pair<double, int32>>& prob_idx_pair_vector) {
+    const std::vector<std::pair<double, std::string>>& prob_idx_pair_vector) {
   const double thresh = GetUniformThreshold();
   double total_prob = 0.0;
   int pos = 0;
@@ -58,7 +58,7 @@ int GetRandomPosition(
 
 bool MozoLMClient::GetLMScores(
     const std::string& context_string, int initial_state, double* normalization,
-    std::vector<std::pair<double, int32>>* prob_idx_pair_vector) {
+    std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   if (completion_client_ == nullptr) {
     GOOGLE_LOG(ERROR) << "completion_client_ not initialized.";
     return false;
@@ -83,36 +83,34 @@ int64 MozoLMClient::GetNextState(const std::string& context_string,
 
 bool MozoLMClient::RandGen(const std::string& context_string,
                            std::string* result) {
-  bool success = true;
-
   // The context string is the prefix to the randomly generated string.
   *result = context_string;
   int max_length = kMaxRandGenLen + result->length();
 
   // Advance state to configured initial state.
   int state = GetNextState(context_string, /*initial_state=*/-1);
-  int chosen = -1;  // Initialize to non-zero to enter loop.
-  while (success && chosen != 0 &&
-         static_cast<int>(result->length()) < max_length) {
-    std::vector<std::pair<double, int32>> prob_idx_pair_vector;
+  bool success;
+  std::string chosen;
+  do {
+    std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
     double normalization;
-    bool success = GetLMScores(/*context_string=*/"", state, &normalization,
-                               &prob_idx_pair_vector);
+    success = GetLMScores(/*context_string=*/"", state, &normalization,
+                          &prob_idx_pair_vector);
     if (success) {
       const int pos = GetRandomPosition(prob_idx_pair_vector);
       GOOGLE_CHECK_GE(pos, 0);
       GOOGLE_CHECK_LT(pos, prob_idx_pair_vector.size());
       chosen = prob_idx_pair_vector[pos].second;
-      if (chosen > 0) {
-        // Only updates if not end-of-string.
-        const std::string next_sym = utf8::EncodeUnicodeChar(chosen);
-        *result += next_sym;
-        state = GetNextState(next_sym, state);
+      if (!chosen.empty()) {
+        // Only updates if not end-of-string (by convention, empty string).
+        *result += chosen;
+        state = GetNextState(chosen, state);
       }
     } else {
       *result += "(subsequent generation failed)";
     }
-  }
+  } while (success && !chosen.empty() &&
+           static_cast<int>(result->length()) < max_length);
   if (success && static_cast<int>(result->length()) >= max_length) {
     *result += "(reached_length_limit)";
   }
@@ -121,15 +119,14 @@ bool MozoLMClient::RandGen(const std::string& context_string,
 
 bool MozoLMClient::OneKbestSample(int k_best, const std::string& context_string,
                                   std::string* result) {
-  std::vector<std::pair<double, int32>> prob_idx_pair_vector;
+  std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
   double normalization;
   const bool success = GetLMScores(context_string, /*initial_state=*/-1,
                                    &normalization, &prob_idx_pair_vector);
   if (success) {
     *result = std::to_string(k_best) + "-best prob continuations:";
     for (int i = 0; i < k_best; i++) {
-      // TODO: fix for general utf8 symbols.
-      *result = absl::StrFormat("%s %c(%5.2f)", *result,
+      *result = absl::StrFormat("%s %s(%5.2f)", *result,
                                 prob_idx_pair_vector[i].second,
                                 prob_idx_pair_vector[i].first);
     }

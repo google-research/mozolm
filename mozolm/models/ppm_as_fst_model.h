@@ -181,8 +181,9 @@ class PpmAsFstModel : public LanguageModel {
   // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
 
-  // Updates the counts for the utf8_sym and normalization at the current state.
-  bool UpdateLMCounts(int32 state, int32 utf8_sym, int64 count) override;
+  // Updates the counts for the utf8_syms at the current state.
+  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
+                      int64 count) override;
 
   // Converts string to vector of symbol table indices. Requires sticking to
   // allowed symbols.

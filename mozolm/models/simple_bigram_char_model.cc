@@ -19,6 +19,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
@@ -157,7 +158,7 @@ bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
   if (valid_state) {
     response->set_normalization(utf8_normalizer_[state]);
     for (size_t i = 0; i < bigram_counts_[state].size(); i++) {
-      response->add_utf8_syms(utf8_indices_[i]);
+      response->add_symbols(utf8::EncodeUnicodeChar(utf8_indices_[i]));
       response->add_probabilities(
           static_cast<double>(bigram_counts_[state][i]) /
           utf8_normalizer_[state]);
@@ -166,17 +167,24 @@ bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
   return valid_state;
 }
 
-bool SimpleBigramCharModel::UpdateLMCounts(int state, int utf8_sym,
+bool SimpleBigramCharModel::UpdateLMCounts(int state,
+                                           const std::vector<int>& utf8_syms,
                                            int64 count) {
   absl::WriterMutexLock nl(&normalizer_lock_);
   absl::WriterMutexLock cl(&counts_lock_);
-  int next_state = NextState(state, utf8_sym);
-  bool valid_update = state >= 0 &&
-                      state < static_cast<int>(utf8_indices_.size()) &&
-                      next_state >= 0 && count > 0;
-  if (valid_update) {
-    utf8_normalizer_[state] += count;
-    bigram_counts_[state][next_state] += count;
+  bool valid_update = true;
+  for (auto utf8_sym : utf8_syms) {
+    int next_state = NextState(state, utf8_sym);
+    valid_update = state >= 0 &&
+                   state < static_cast<int>(utf8_indices_.size()) &&
+                   next_state >= 0 && count > 0;
+    if (valid_update) {
+      utf8_normalizer_[state] += count;
+      bigram_counts_[state][next_state] += count;
+    } else {
+      return valid_update;
+    }
+    state = next_state;
   }
   return valid_update;
 }

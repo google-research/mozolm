@@ -920,8 +920,15 @@ bool PpmAsFstModel::ExtractLMScores(int state, LMScores* response) {
   return state_cache.FillLMScores(*fst_->InputSymbols(), response);
 }
 
-bool PpmAsFstModel::UpdateLMCounts(int32 state, int32 utf8_sym, int64 count) {
-  if (!static_model_ && utf8_sym >= 0 && count > 0) {
+bool PpmAsFstModel::UpdateLMCounts(int32 state,
+                                   const std::vector<int>& utf8_syms,
+                                   int64 count) {
+  if (static_model_ || count <= 0) return true;
+  for (auto utf8_sym : utf8_syms) {
+    if (utf8_sym < 0) {
+      // Symbol index less than zero.
+      return false;
+    }
     int sym_index = utf8_sym;
     if (utf8_sym > 0) {
       const std::string sym = utf8::EncodeUnicodeChar(utf8_sym);
@@ -940,6 +947,7 @@ bool PpmAsFstModel::UpdateLMCounts(int32 state, int32 utf8_sym, int64 count) {
       update_status = UpdateModel(state, state, sym_index);
       if (update_status.ok()) return false;
     }
+    state = NextState(state, utf8_sym);
   }
   return true;
 }
@@ -1012,14 +1020,10 @@ absl::StatusOr<double> PpmStateCache::NegLogProbability(int sym_index) const {
 bool PpmStateCache::FillLMScores(const SymbolTable& syms,
                                  LMScores* response) const {
   response->set_normalization(exp(-normalization_));
-  response->add_utf8_syms(0);
+  response->add_symbols("");  // Empty string by default end-of-string.
   response->add_probabilities(exp(-neg_log_probabilities_[0]));
   for (size_t i = 1; i < neg_log_probabilities_.size(); i++) {
-    char32 utf8_code;
-    if (!utf8::DecodeSingleUnicodeChar(syms.Find(i), &utf8_code)) {
-      return false;
-    }
-    response->add_utf8_syms(static_cast<int32>(utf8_code));
+    response->add_symbols(syms.Find(i));
     response->add_probabilities(exp(-neg_log_probabilities_[i]));
   }
   return true;

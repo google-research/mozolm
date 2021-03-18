@@ -35,9 +35,10 @@ class MozoLMClientAsyncImpl {
 
   // Seeks the language models scores given the initial state and context
   // string. Any errors are logged.
-  bool GetLMScore(const std::string& context_str, int initial_state,
-                  double timeout, double* normalization,
-                  std::vector<std::pair<double, int32>>* prob_idx_pair_vector);
+  bool GetLMScore(
+      const std::string& context_str, int initial_state, double timeout,
+      double* normalization,
+      std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   // Seeks the next model state given the initial state and context string. Any
   // errors are logged.
