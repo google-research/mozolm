@@ -76,22 +76,31 @@ bool RunServer(const ClientServerConfig& grpc_config) {
   return RunCompletionServer(grpc_config, &builder).ok();
 }
 
-bool RunClient(const ClientServerConfig& grpc_config, int k_best, bool randgen,
-               const std::string& context_string) {
+bool RunClient(const ClientServerConfig& grpc_config) {
   MozoLMClient client(grpc_config);
   bool success;
   std::string result;
-  if (randgen) {
-    success = client.RandGen(context_string, &result);
-  } else {
-    success = client.OneKbestSample(k_best, context_string, &result);
+  switch (grpc_config.client_config().request_type()) {
+    case ClientConfig::RANDGEN:
+      success =
+          client.RandGen(grpc_config.client_config().context_string(), &result);
+      break;
+    case ClientConfig::K_BEST_ITEMS:
+      success = client.OneKbestSample(
+          grpc_config.client_config().k_best(),
+          grpc_config.client_config().context_string(), &result);
+      break;
+    case ClientConfig::BITS_PER_CHAR_CALCULATION:
+      success = client.CalcBitsPerCharacter(
+          grpc_config.client_config().test_corpus(), &result);
+      break;
+    default:
+      success = false;  // Unknown client request type.
   }
   if (success) {
     absl::PrintF("%s\n", result);
-  } else {
-    return false;
   }
-  return true;
+  return success;
 }
 
 }  // namespace grpc

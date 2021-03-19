@@ -15,8 +15,6 @@
 #ifndef MOZOLM_MOZOLM_GRPC_GRPC_UTIL_H_
 #define MOZOLM_MOZOLM_GRPC_GRPC_UTIL_H_
 
-#include <string>
-
 #include "absl/flags/declare.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 
@@ -30,13 +28,11 @@ const char kDefaultServerPort[] = "localhost:50051";
 // Sets default parameters if they have not already been set.
 void ClientServerConfigDefaults(ClientServerConfig* config);
 
-// Launches a language model server according to configuration.  Optionally can
-// also run a client to query the launched server, permitting single process
-// launch and query.
+// Launches a language model server according to configuration.
 bool RunServer(const ClientServerConfig& grpc_config);
 
-bool RunClient(const ClientServerConfig& grpc_config, int k_best, bool randgen,
-               const std::string& context_string);
+// Runs client service according to given configuration.
+bool RunClient(const ClientServerConfig& grpc_config);
 
 }  // namespace grpc
 }  // namespace mozolm

@@ -18,14 +18,25 @@
 // --------------
 // - To randomly generate strings:
 //   bazel-bin/mozolm/grpc/mozolm_client_async \
-//     --randgen \
 //     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE"
+//     credential_type:INSECURE \
+//     client_config { request_type:RANDGEN }"
+//
 // - To get 7-best symbols from context "Ask a q":
 //   bazel-bin/mozolm/grpc/mozolm_client_async \
-//     --k_best=7 --context_string="Ask a q" \
 //     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE"
+//     credential_type:INSECURE \
+//     client_config { request_type:K_BEST_ITEMS \
+//     context_string:\"Ask a q\" }"
+//
+// - To calculate bits-per-character for a given test corpus:
+//   DATADIR=mozolm/data
+//   TESTFILE="${DATADIR}"/en_wiki_100line_dev_sample.txt
+//   bazel-bin/mozolm/grpc/mozolm_client_async \
+//     --client_server_config="server_port:\"localhost:50051\" \
+//     credential_type:INSECURE \
+//     client_config { request_type:BITS_PER_CHAR_CALCULATION \
+//     test_corpus:\"${TESTFILE}\" }"
 
 #include <string>
 
@@ -36,9 +47,6 @@
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client.h"
 
-ABSL_FLAG(int, k_best, 1, "Number of best scoring to return");
-ABSL_FLAG(bool, randgen, false, "Whether to randomly generate");
-ABSL_FLAG(std::string, context_string, "", "context string for query");
 ABSL_FLAG(std::string, client_server_config, "",
               "mozolm_grpc.ClientServerConfig in text format.");
 
@@ -51,9 +59,7 @@ int main(int argc, char** argv) {
         absl::GetFlag(FLAGS_client_server_config), &grpc_config));
   }
   mozolm::grpc::ClientServerConfigDefaults(&grpc_config);
-  if (mozolm::grpc::RunClient(grpc_config, absl::GetFlag(FLAGS_k_best),
-                                 absl::GetFlag(FLAGS_randgen),
-                                 absl::GetFlag(FLAGS_context_string))) {
+  if (mozolm::grpc::RunClient(grpc_config)) {
     return 0;
   }
 

@@ -44,8 +44,33 @@ message ServerConfig {
   bool wait_for_clients = 2;
 }
 
-// Next available ID: 2
+// Next available ID: 6
 message ClientConfig {
+  // Type of request client will be making to the server.
+  ClientRequestType request_type = 2;
+  enum ClientRequestType {
+    // Client request type not set.
+    NOT_SET = 0;
+
+    // Returns k-best items following context_string.
+    K_BEST_ITEMS = 1;
+
+    // Randomly generates string.
+    RANDGEN = 2;
+
+    // Calculates bits-per-char on given test_corpus.
+    BITS_PER_CHAR_CALCULATION = 3;
+  }
+
+  // Number of items to return in k_best extraction.
+  int32 k_best = 3;
+
+  // Context string prior to k_best extraction or random generation.
+  string context_string = 4;
+
+  // Test corpus for calculating bits-per-character.
+  string test_corpus = 5;
+
   // Timeout when waiting for response from server.
   double timeout = 1;
 }

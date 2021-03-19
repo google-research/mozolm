@@ -14,6 +14,7 @@
 
 #include "mozolm/grpc/mozolm_client.h"
 
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@
 #include "absl/memory/memory.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/synchronization/notification.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client_async_impl.h"
@@ -33,6 +35,9 @@
 namespace mozolm {
 namespace grpc {
 namespace {
+
+constexpr int kNumCodepoints = 143859;   // Total possible Unicode codepoints.
+constexpr float kMixEpsilon = 0.00000001;  // Amount to weight uniform prob.
 
 // Returns random probability threshold between 0 and 1.
 double GetUniformThreshold() {
@@ -54,6 +59,39 @@ int GetRandomPosition(
   if (pos > 0) --pos;
   return pos;
 }
+
+// Returns the index for the utf8_sym in the given vector, -1 if not found.
+// Since the vector is in descending probability order, will use linear scan to
+// find match, since this will on average be efficient.
+int FindStringIndex(
+    const std::vector<std::pair<double, std::string>>& prob_idx_pair_vector,
+    const std::string& utf8_sym) {
+  for (int idx = 0; idx < prob_idx_pair_vector.size(); ++idx) {
+    if (utf8_sym == prob_idx_pair_vector[idx].second) {
+      return idx;
+    }
+  }
+  return -1;
+}
+
+// Returns a uniform codepoint probability weighted by epsilon mix parameter.
+double UniformMixValue() {
+  return static_cast<double>(kMixEpsilon) / static_cast<double>(kNumCodepoints);
+}
+
+// Finds value in vector and returns bits.  Mixes with a uniform to ensure full
+// coverage, i.e., probability = (1-\epsilon) P + \epsilon U, where P is the
+// model probability and U is a uniform distribution over unicode codepoints.
+double CalculateBits(
+    int idx,
+    const std::vector<std::pair<double, std::string>>& prob_idx_pair_vector) {
+  double prob = UniformMixValue();
+  if (idx >= 0) {
+    prob += prob_idx_pair_vector[idx].first * (1.0 - kMixEpsilon);
+  }
+  return -log2(prob);
+}
+
 }  // namespace
 
 bool MozoLMClient::GetLMScores(
@@ -126,10 +164,61 @@ bool MozoLMClient::OneKbestSample(int k_best, const std::string& context_string,
   if (success) {
     *result = std::to_string(k_best) + "-best prob continuations:";
     for (int i = 0; i < k_best; i++) {
-      *result = absl::StrFormat("%s %s(%5.2f)", *result,
+      *result = absl::StrFormat("%s %s(%5.3f)", *result,
                                 prob_idx_pair_vector[i].second,
                                 prob_idx_pair_vector[i].first);
     }
+  }
+  return success;
+}
+
+bool MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
+                                        std::string* result) {
+  bool success = true;
+  std::ifstream infile(test_file);
+  if (!infile.is_open()) {
+    success = false;  // Test file could not be accessed.
+  }
+  std::string input_line;
+  int tot_chars = 0;
+  int tot_oov_chars = 0;
+  double tot_bits = 0.0;
+  double unused_normalization;
+  while (success && std::getline(infile, input_line)) {
+    std::vector<std::string> input_chars = utf8::StrSplitByChar(input_line);
+    int state = -1;  // Will start at initial state of the model.
+    for (const auto& utf8_sym : input_chars) {
+      std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
+      success = GetLMScores(/*context_string=*/"", state, &unused_normalization,
+                            &prob_idx_pair_vector);
+      if (!success) break;
+      int idx = FindStringIndex(prob_idx_pair_vector, utf8_sym);
+      if (idx < 0) {
+        GOOGLE_LOG(WARNING) << "OOV symbol found: " << utf8_sym;
+        ++tot_oov_chars;
+      }
+      ++tot_chars;
+      tot_bits += CalculateBits(idx, prob_idx_pair_vector);
+      state = GetNextState(utf8_sym, state);
+    }
+    std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
+    success = GetLMScores(/*context_string=*/"", state, &unused_normalization,
+                          &prob_idx_pair_vector);
+    if (success) {
+      int idx = FindStringIndex(prob_idx_pair_vector, "");
+      ++tot_chars;  // Adds in end-of-string character.
+      tot_bits += CalculateBits(idx, prob_idx_pair_vector);
+    }
+  }
+  if (infile.is_open()) {
+    infile.close();
+  }
+  if (success) {
+    *result = absl::StrJoin(
+        std::make_tuple("Total characters: ", tot_chars, " (", tot_oov_chars,
+                        " OOV); bits per character: ",
+                        tot_bits / static_cast<double>(tot_chars)),
+        "");
   }
   return success;
 }

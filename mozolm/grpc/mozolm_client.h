@@ -40,6 +40,12 @@ class MozoLMClient {
   // Generates a random string prefixed by the context string.
   bool RandGen(const std::string& context_string, std::string* result);
 
+  // Calculates bits per character in test file.  To cover all unicode
+  // codepoints, even those assigned zero probability by the model, we
+  // interpolate with a uniform model over all codepoints, using a very small
+  // interpolation factor for this mixing.
+  bool CalcBitsPerCharacter(const std::string& test_file, std::string* result);
+
  private:
   // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
