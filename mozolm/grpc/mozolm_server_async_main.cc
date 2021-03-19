@@ -53,11 +53,6 @@
 
 ABSL_FLAG(std::string, client_server_config, "",
           "mozolm_grpc.ClientServerConfig in text format.");
-ABSL_FLAG(bool, run_client, false,
-          "Whether to run a client to query server.");
-ABSL_FLAG(int, k_best, 1, "Number of best scoring to return");
-ABSL_FLAG(bool, randgen, false, "Whether to randomly generate");
-ABSL_FLAG(std::string, context_string, "", "context string for query");
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
@@ -67,10 +62,7 @@ int main(int argc, char** argv) {
         absl::GetFlag(FLAGS_client_server_config), &grpc_config));
   }
   mozolm::grpc::ClientServerConfigDefaults(&grpc_config);
-  if (!mozolm::grpc::RunServer(
-          grpc_config, absl::GetFlag(FLAGS_run_client),
-          absl::GetFlag(FLAGS_k_best), absl::GetFlag(FLAGS_randgen),
-          absl::GetFlag(FLAGS_context_string))) {
+  if (!mozolm::grpc::RunServer(grpc_config)) {
     return 0;
   }
   return 1;

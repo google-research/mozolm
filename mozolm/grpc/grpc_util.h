@@ -33,9 +33,7 @@ void ClientServerConfigDefaults(ClientServerConfig* config);
 // Launches a language model server according to configuration.  Optionally can
 // also run a client to query the launched server, permitting single process
 // launch and query.
-bool RunServer(const ClientServerConfig& grpc_config, bool run_client = false,
-               int k_best = 1, bool randgen = false,
-               const std::string& context_string = "");
+bool RunServer(const ClientServerConfig& grpc_config);
 
 bool RunClient(const ClientServerConfig& grpc_config, int k_best, bool randgen,
                const std::string& context_string);

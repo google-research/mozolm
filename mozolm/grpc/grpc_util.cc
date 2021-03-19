@@ -58,8 +58,7 @@ void ClientServerConfigDefaults(ClientServerConfig* config) {
   }
 }
 
-bool RunServer(const ClientServerConfig& grpc_config, bool run_client,
-               int k_best, bool randgen, const std::string& context_string) {
+bool RunServer(const ClientServerConfig& grpc_config) {
   std::shared_ptr<::grpc::ServerCredentials> creds;
   switch (grpc_config.credential_type()) {
     case ClientServerConfig::SSL:
