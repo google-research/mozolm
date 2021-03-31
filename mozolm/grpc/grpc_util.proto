@@ -37,8 +37,8 @@ message ClientServerConfig {
 
 // Next available ID: 3
 message ServerConfig {
-  // Model configuration.
-  ModelConfig model_config = 1;
+  // Model hub configuration.
+  ModelHubConfig model_hub_config = 1;
 
   // Whether the server will wait for client requests.
   bool wait_for_clients = 2;

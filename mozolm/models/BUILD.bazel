@@ -19,6 +19,25 @@ package(default_visibility = ["//mozolm:__subpackages__"])
 licenses(["notice"])
 
 cc_library(
+    name = "language_model_hub",
+    srcs = ["language_model_hub.cc"],
+    hdrs = ["language_model_hub.h"],
+    deps = [
+        ":language_model",
+        ":lm_scores_cc_proto",
+        ":model_config_cc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "//mozolm/utils:utf8_util",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_library(
     name = "language_model",
     srcs = ["language_model.cc"],
     hdrs = ["language_model.h"],
@@ -70,6 +89,7 @@ cc_library(
     hdrs = ["model_factory.h"],
     deps = [
         ":language_model",
+        ":language_model_hub",
         ":model_config_cc_proto",
         ":model_storage_cc_proto",
         ":opengrm_ngram_char_model",

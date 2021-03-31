@@ -39,9 +39,8 @@ using ::grpc::ServerContext;
 
 class MozoLMServerAsyncImplMock : public MozoLMServerAsyncImpl {
  public:
-  MozoLMServerAsyncImplMock() : MozoLMServerAsyncImpl(
-      models::MakeModel(ModelConfig::SIMPLE_CHAR_BIGRAM,
-                        ModelStorage()).value()) {}
+  MozoLMServerAsyncImplMock()
+      : MozoLMServerAsyncImpl(models::MakeModelHub(ModelHubConfig()).value()) {}
 };
 
 // Check that a call to GetLMScores returns the expected status error code.
@@ -58,12 +57,13 @@ void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
 
 // Check that a call to GetLMScores succeeds and returns the expected
 // probabilities and normalization.
-void CheckGetLMScores(int state) {
+void CheckGetLMScores(int state, const std::string& context_str = "") {
   MozoLMServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
   LMScores response;
   request.set_state(state);
+  request.set_context(context_str);
   const GetContextRequest* request_ptr(&request);
   Status status = server.HandleRequest(&context, request_ptr, &response);
   ASSERT_TRUE(status.ok());
@@ -137,7 +137,7 @@ TEST(MozoLMServerAsyncTest, GetLMScores_WorksOnStartState) {
 }
 
 TEST(MozoLMServerAsyncTest, GetLMScores_WorksOnOtherState) {
-  CheckGetLMScores(9);
+  CheckGetLMScores(0, "abcxyzff");
 }
 
 TEST(MozoLMServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadSymbol) {
@@ -153,11 +153,11 @@ TEST(MozoLMServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadCount) {
 }
 
 TEST(MozoLMServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountOne) {
-  CheckUpdateLMScoresContent(1, 1);
+  CheckUpdateLMScoresContent(0, 1);
 }
 
 TEST(MozoLMServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountTen) {
-  CheckUpdateLMScoresContent(1, 10);
+  CheckUpdateLMScoresContent(0, 10);
 }
 
 }  // namespace grpc

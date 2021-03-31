@@ -48,5 +48,24 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
   return MakeModel(config.type(), config.storage());
 }
 
+absl::StatusOr<std::unique_ptr<LanguageModelHub>> MakeModelHub(
+    const ModelHubConfig &config) {
+  std::unique_ptr<LanguageModelHub> model_hub(new LanguageModelHub);
+  if (config.model_config_size() == 0) {
+    // No models specified, adds a single default model.
+    auto model_status = models::MakeModel(ModelConfig());
+    if (!model_status.ok()) return model_status.status();
+    model_hub->AddModel(std::move(model_status.value()));
+  } else {
+    for (auto idx = 0; idx < config.model_config_size(); ++idx) {
+      auto model_status = models::MakeModel(config.model_config(idx));
+      if (!model_status.ok()) return model_status.status();
+      model_hub->AddModel(std::move(model_status.value()));
+    }
+  }
+  model_hub->InitializeModels(config);
+  return std::move(model_hub);
+}
+
 }  // namespace models
 }  // namespace mozolm

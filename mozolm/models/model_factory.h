@@ -15,8 +15,11 @@
 #ifndef MOZOLM_MOZOLM_MODELS_MODEL_FACTORY_H_
 #define MOZOLM_MOZOLM_MODELS_MODEL_FACTORY_H_
 
+#include <memory>
+
 #include "absl/status/statusor.h"
 #include "mozolm/models/language_model.h"
+#include "mozolm/models/language_model_hub.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_storage.pb.h"
 
@@ -32,6 +35,10 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
 // separate arguments.
 absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
     const ModelConfig::ModelType &model_type, const ModelStorage &storage);
+
+// Given model hub configuration, initializes all model instances.
+absl::StatusOr<std::unique_ptr<LanguageModelHub>> MakeModelHub(
+    const ModelHubConfig &config);
 
 }  // namespace models
 }  // namespace mozolm

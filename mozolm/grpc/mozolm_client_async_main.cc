@@ -27,7 +27,7 @@
 //     --client_server_config="server_port:\"localhost:50051\" \
 //     credential_type:INSECURE \
 //     client_config { request_type:K_BEST_ITEMS \
-//     context_string:\"Ask a q\" }"
+//     k_best:7 context_string:\"Ask a q\" }"
 //
 // - To calculate bits-per-character for a given test corpus:
 //   DATADIR=mozolm/data

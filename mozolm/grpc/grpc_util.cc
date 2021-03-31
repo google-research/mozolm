@@ -37,8 +37,8 @@ namespace {
 
 absl::Status RunCompletionServer(const ClientServerConfig& grpc_config,
                                  ::grpc::ServerBuilder* builder) {
-  auto model_status = models::MakeModel(
-      grpc_config.server_config().model_config());
+  auto model_status = models::MakeModelHub(
+      grpc_config.server_config().model_hub_config());
   if (!model_status.ok()) return model_status.status();
   MozoLMServerAsyncImpl mozolm_server(std::move(model_status.value()));
   mozolm_server.StartServer(grpc_config.server_port(), builder);

@@ -27,7 +27,7 @@ cc_library(
     deps = [
         ":service_cc_grpc_proto",
         ":service_cc_proto",
-        "//mozolm/models:language_model",
+        "//mozolm/models:language_model_hub",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:thread_pool",
@@ -60,7 +60,7 @@ cc_test(
     deps = [
         ":mozolm_server_async_impl",
         ":service_cc_grpc_proto",
-        "//mozolm/models:language_model",
+        "//mozolm/models:language_model_hub",
         "//mozolm/models:model_config_cc_proto",
         "//mozolm/models:model_factory",
         "//mozolm/models:model_storage_cc_proto",

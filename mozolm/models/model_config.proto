@@ -20,7 +20,7 @@ package mozolm;
 
 import "mozolm/models/model_storage.proto";
 
-// Next available ID: 3
+// Next available ID: 4
 message ModelConfig {
   enum ModelType {
     // Simple text-based bigram model.
@@ -38,4 +38,34 @@ message ModelConfig {
 
   // Storage and options information.
   ModelStorage storage = 2;
+
+  // Negative log model weight in ensemble.
+  double weight = 3;
+}
+
+// Next available ID: 6
+message ModelHubConfig {
+  // Models to be used by LanguageModelHub.
+  repeated ModelConfig model_config = 1;
+
+  enum MixtureType {
+    // No mixture, just use initial model.
+    NONE = 0;
+
+    // Standard interpolation, using model weights.
+    INTERPOLATION = 1;
+  }
+
+  // Type of the mixture.
+  MixtureType mixture_type = 2;
+
+  // String for establishing character vocabulary of hub.
+  string vocabulary_string = 3;
+
+  // If set to true, vocabulary_string is treated as a filename.
+  bool vocabulary_string_is_filename = 4;
+
+  // Maximum number of ensemble states to maintain. If unset or set to less than
+  // 10, default value will be used.
+  int32 maximim_maintained_states = 5;
 }

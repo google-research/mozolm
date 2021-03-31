@@ -27,7 +27,7 @@
 #include "absl/synchronization/notification.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/grpc/service.pb.h"
-#include "mozolm/models/language_model.h"
+#include "mozolm/models/language_model_hub.h"
 #include "mozolm/stubs/thread_pool.h"
 
 ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
@@ -43,8 +43,8 @@ class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
  public:
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0. An initialized instance of a language model
-  // is required.
-  MozoLMServerAsyncImpl(std::unique_ptr<models::LanguageModel> model);
+  // hub is required.
+  MozoLMServerAsyncImpl(std::unique_ptr<models::LanguageModelHub> model);
 
   // TODO: look into server shutdown methods.
   ~MozoLMServerAsyncImpl() {
@@ -75,7 +75,7 @@ class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
 
   // Returns the model symbol index associated with a state.
   int ModelStateSym(int state) {
-    return model_->StateSym(state);
+    return model_hub_->StateSym(state);
   }
 
   bool StartServer(const std::string& server_port,
@@ -133,8 +133,8 @@ class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
       ::grpc::ServerAsyncResponseWriter<LMScores>* responder, bool ignored_ok)
       ABSL_LOCKS_EXCLUDED(server_shutdown_lock_);
 
-  // Model instance owned by the server.
-  std::unique_ptr<models::LanguageModel> model_;
+  // Model hub instance owned by the server.
+  std::unique_ptr<models::LanguageModelHub> model_hub_;
 
   std::unique_ptr<::grpc::ServerCompletionQueue> cq_;
   MozoLMServer::AsyncService service_;
