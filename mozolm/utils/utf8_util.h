@@ -32,6 +32,10 @@ constexpr char32 kBadUTF8Char = 0xFFFD;
 // Unicode character (codepoint).
 std::vector<std::string> StrSplitByChar(const std::string &input);
 
+// Splits the provided input into equal-length strings consisting of one
+// Unicode character (codepoint), and returns their Unicode codepoint value.
+std::vector<int> StrSplitByCharToUnicode(const std::string &input);
+
 // Decodes the first Unicode codepoint value from a UTF-8 string representation
 // of multiple unicode characters. Returns the number of bytes read from the
 // string.  If the array does not contain valid UTF-8 encoding, stores

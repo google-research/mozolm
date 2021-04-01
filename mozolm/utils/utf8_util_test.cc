@@ -39,6 +39,22 @@ TEST(Utf8UtilTest, CheckStrSplitByChar) {
       "ຍ", "ິ", "ນ", "ດ", "ີ", "ຕ", "້", "ອ", "ນ", "ຮ", "ັ", "ບ"));
 }
 
+TEST(Utf8UtilTest, CheckStrSplitByCharToUnicode) {
+  EXPECT_THAT(StrSplitByCharToUnicode("abcdefg"),
+              ElementsAre(97, 98, 99, 100, 101, 102, 103));
+  EXPECT_THAT(StrSplitByCharToUnicode("Բարեւ"),
+              ElementsAre(1330, 1377, 1408, 1381, 1410));
+  EXPECT_THAT(StrSplitByCharToUnicode("ባህሪ"), ElementsAre(4707, 4613, 4650));
+  EXPECT_THAT(StrSplitByCharToUnicode("ස්වභාවය"),
+              ElementsAre(3523, 3530, 3520, 3511, 3535, 3520, 3514));
+  EXPECT_THAT(StrSplitByCharToUnicode("მოგესალმებით"),
+              ElementsAre(4315, 4317, 4306, 4308, 4321, 4304, 4314, 4315, 4308,
+                          4305, 4312, 4311));
+  EXPECT_THAT(StrSplitByCharToUnicode("ຍິນດີຕ້ອນຮັບ"),
+              ElementsAre(3725, 3764, 3737, 3732, 3765, 3733, 3785, 3757, 3737,
+                          3758, 3761, 3738));
+}
+
 TEST(Utf8UtilTest, CheckDecodeUnicodeChar) {
   char32 code;
   EXPECT_EQ(1, DecodeUnicodeChar("z", &code));

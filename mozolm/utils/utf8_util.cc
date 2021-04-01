@@ -63,6 +63,15 @@ int DecodeUnicodeChar(const std::string &input, char32 *first_char) {
      return pos.base() - input.begin();  // Number of bytes.
 }
 
+std::vector<int> StrSplitByCharToUnicode(const std::string &input) {
+  const std::vector<std::string> input_chars = StrSplitByChar(input);
+  std::vector<int> input_codepoints(input_chars.size());
+  for (int i = 0; i < input_chars.size(); ++i) {
+    DecodeSingleUnicodeChar(input_chars[i], &(input_codepoints[i]));
+  }
+  return input_codepoints;
+}
+
 bool DecodeSingleUnicodeChar(const std::string &input, char32 *utf8_value) {
   const std::vector<std::string> split_input = StrSplitByChar(input);
   if (split_input.size() != 1) {

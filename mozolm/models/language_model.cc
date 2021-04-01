@@ -22,17 +22,13 @@
 namespace mozolm {
 namespace models {
 
-int LanguageModel::ContextState(const std::string &context, int init_state) {
+int LanguageModel::ContextState(const std::string& context, int init_state) {
   int this_state = init_state < 0 ? start_state_ : init_state;
   if (!context.empty()) {
-    const std::vector<std::string> context_utf8 = utf8::StrSplitByChar(context);
+    const std::vector<int> context_utf8 =
+        utf8::StrSplitByCharToUnicode(context);
     for (const auto& sym : context_utf8) {
-      char32 utf8_code;
-      if (!utf8::DecodeSingleUnicodeChar(sym, &utf8_code)) {
-        this_state = -1;
-      } else {
-        this_state = NextState(this_state, static_cast<int>(utf8_code));
-      }
+      this_state = NextState(this_state, static_cast<int>(sym));
       if (this_state < 0) {
         // Returns to start state if symbol not found.
         // TODO: should it return to a null context state?
