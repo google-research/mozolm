@@ -207,14 +207,10 @@ int LanguageModelHub::ContextState(const std::string& context, int init_state) {
   // Sets initial state to start state if not otherwise valid.
   int this_state = init_state < 0 ? 0 : init_state;
   if (!context.empty()) {
-    const std::vector<std::string> context_utf8 = utf8::StrSplitByChar(context);
-    for (const auto& sym : context_utf8) {
-      char32 utf8_code;
-      if (!utf8::DecodeSingleUnicodeChar(sym, &utf8_code)) {
-        this_state = -1;
-      } else {
-        this_state = NextState(this_state, static_cast<int>(utf8_code));
-      }
+    const std::vector<int> context_utf8 =
+        utf8::StrSplitByCharToUnicode(context);
+    for (const auto& utf8_code : context_utf8) {
+      this_state = NextState(this_state, utf8_code);
       if (this_state < 0) {
         // Returns to start state if symbol not found.
         // TODO: should it return to a null context state?
@@ -261,7 +257,50 @@ bool LanguageModelHub::UpdateLMCounts(int32 state,
         hub_states_[state]->model_state(idx), utf8_syms, count);
     ++idx;
   }
+  if (result) {
+    result = VerifyOrCorrectModelStates(state, utf8_syms);
+  }
   return result;
+}
+
+bool LanguageModelHub::VerifyOrCorrectModelStates(
+    int32 state, const std::vector<int>& utf8_syms) {
+  for (int utf8_sym : utf8_syms) {
+    // Checks for next state; if there, verifies (and updates if needed) model
+    // state information.
+    int next_state = hub_states_[state]->next_state(utf8_sym);
+    bool result;
+    if (next_state >= 0) {
+      // Collects model next state vector to double check.
+      std::vector<int> next_states(language_models_.size());
+      for (auto idx = 0; idx < next_states.size(); ++idx) {
+        next_states[idx] = language_models_[idx]->NextState(
+            hub_states_[state]->model_state(idx), utf8_sym);
+      }
+      result = hub_states_[next_state]->VerifyOrCorrectModelStates(
+          state, utf8_sym, next_states);
+    } else {
+      // Returns true, since new states will be created anyhow for all
+      // continuations from this point.
+      return true;
+    }
+    if (!result) {
+      return false;
+    }
+    state = next_state;
+  }
+  return true;
+}
+
+bool LanguageModelHubState::VerifyOrCorrectModelStates(
+    int prev_state, int utf8_sym, const std::vector<int>& model_states) {
+  if (prev_state_ != prev_state || state_sym_ != utf8_sym) {
+    return false;
+  }
+  for (auto idx = 0; idx < model_states.size(); ++idx) {
+    model_states_[idx] = model_states[idx];
+  }
+  return true;
 }
 
 absl::StatusOr<std::vector<int>> LanguageModelHubState::UpdateHubState(

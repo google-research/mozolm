@@ -111,12 +111,24 @@ bool MozoLMClient::GetLMScores(
 }
 
 int64 MozoLMClient::GetNextState(const std::string& context_string,
-                                  int initial_state) {
+                                 int initial_state) {
   int64 next_state;
   GOOGLE_CHECK_NE(completion_client_, nullptr);
   GOOGLE_CHECK(completion_client_->GetNextState(context_string, initial_state,
                                                 timeout_, &next_state));
   return next_state;
+}
+
+bool MozoLMClient::UpdateCountGetDestStateScore(
+    const std::string& context_string, int initial_state, int32 count,
+    int64* next_state, double* normalization,
+    std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
+  if (completion_client_ == nullptr) {
+    return false;
+  }
+  return completion_client_->UpdateCountGetDestStateScore(
+      context_string, initial_state, timeout_, count, next_state, normalization,
+      prob_idx_pair_vector);
 }
 
 bool MozoLMClient::RandGen(const std::string& context_string,
@@ -126,23 +138,26 @@ bool MozoLMClient::RandGen(const std::string& context_string,
   int max_length = kMaxRandGenLen + result->length();
 
   // Advance state to configured initial state.
-  int state = GetNextState(context_string, /*initial_state=*/-1);
-  bool success;
+  int64 state = GetNextState(context_string, /*initial_state=*/-1);
   std::string chosen;
+  std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
+  double normalization;
+  bool success = GetLMScores(/*context_string=*/"", state, &normalization,
+                             &prob_idx_pair_vector);
   do {
-    std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
-    double normalization;
-    success = GetLMScores(/*context_string=*/"", state, &normalization,
-                          &prob_idx_pair_vector);
     if (success) {
       const int pos = GetRandomPosition(prob_idx_pair_vector);
-      GOOGLE_CHECK_GE(pos, 0);
-      GOOGLE_CHECK_LT(pos, prob_idx_pair_vector.size());
+      if (pos < 0 || pos >= prob_idx_pair_vector.size()) {
+        return false;
+      }
       chosen = prob_idx_pair_vector[pos].second;
       if (!chosen.empty()) {
         // Only updates if not end-of-string (by convention, empty string).
         *result += chosen;
-        state = GetNextState(chosen, state);
+        prob_idx_pair_vector.clear();
+        success =
+            UpdateCountGetDestStateScore(chosen, state, /*count=*/1, &state,
+                                         &normalization, &prob_idx_pair_vector);
       }
     } else {
       *result += "(subsequent generation failed)";
@@ -186,28 +201,25 @@ bool MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
   double unused_normalization;
   while (success && std::getline(infile, input_line)) {
     std::vector<std::string> input_chars = utf8::StrSplitByChar(input_line);
-    int state = -1;  // Will start at initial state of the model.
-    for (const auto& utf8_sym : input_chars) {
-      std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
-      success = GetLMScores(/*context_string=*/"", state, &unused_normalization,
-                            &prob_idx_pair_vector);
-      if (!success) break;
-      int idx = FindStringIndex(prob_idx_pair_vector, utf8_sym);
-      if (idx < 0) {
-        GOOGLE_LOG(WARNING) << "OOV symbol found: " << utf8_sym;
-        ++tot_oov_chars;
-      }
-      ++tot_chars;
-      tot_bits += CalculateBits(idx, prob_idx_pair_vector);
-      state = GetNextState(utf8_sym, state);
-    }
+    input_chars.push_back("");  // End-of-string character.
+    int64 state = 0;  // Will start at initial state of the model.
     std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
     success = GetLMScores(/*context_string=*/"", state, &unused_normalization,
                           &prob_idx_pair_vector);
-    if (success) {
-      int idx = FindStringIndex(prob_idx_pair_vector, "");
-      ++tot_chars;  // Adds in end-of-string character.
+    for (const auto& utf8_sym : input_chars) {
+      if (!success) {
+        break;
+      }
+      int idx = FindStringIndex(prob_idx_pair_vector, utf8_sym);
       tot_bits += CalculateBits(idx, prob_idx_pair_vector);
+      if (idx < 0) {
+         ++tot_oov_chars;
+      }
+      ++tot_chars;
+      prob_idx_pair_vector.clear();
+      success = UpdateCountGetDestStateScore(utf8_sym, state, /*count=*/1,
+                                             &state, &unused_normalization,
+                                             &prob_idx_pair_vector);
     }
   }
   if (infile.is_open()) {

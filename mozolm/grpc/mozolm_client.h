@@ -57,6 +57,12 @@ class MozoLMClient {
   // Requests next state from model and returns result.
   int64 GetNextState(const std::string& context_string, int initial_state);
 
+  // Updates counts in model and returns destination state and prob/index pairs.
+  bool UpdateCountGetDestStateScore(
+      const std::string& context_string, int initial_state, int32 count,
+      int64* next_state, double* normalization,
+      std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
+
   double timeout_;  // Timeout when waiting for server.
   std::shared_ptr<::grpc::Channel> channel_;
   std::unique_ptr<MozoLMClientAsyncImpl> completion_client_;

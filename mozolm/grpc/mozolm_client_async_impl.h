@@ -45,7 +45,19 @@ class MozoLMClientAsyncImpl {
   bool GetNextState(const std::string& context_str, int initial_state,
                     double timeout, int64* next_state);
 
+  // Updates counts and retrieves probabilities from destination state.
+  bool UpdateCountGetDestStateScore(
+      const std::string& context_str, int initial_state, double timeout,
+      int32 count, int64* next_state, double* normalization,
+      std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
+
  private:
+  // Updates counts and retrieves probabilities from destination state.
+  ::grpc::Status UpdateCountGetDestStateScore(
+      const std::vector<int>& context_str, int initial_state, double timeout,
+      int32 count, double* normalization,
+      std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
+
   std::unique_ptr<MozoLMServer::Stub> stub_;
 };
 

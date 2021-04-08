@@ -67,12 +67,7 @@ Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,
 Status MozoLMServerAsyncImpl::HandleRequest(
     ServerContext* context, const UpdateLMScoresRequest* request,
     LMScores* response) {
-  if (!ManageUpdateLMScores(request, response)) {
-    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
-                  "State or utf8 symbol invalid");
-  } else {
-    return Status::OK;
-  }
+  return ManageUpdateLMScores(request, response);
 }
 
 void MozoLMServerAsyncImpl::DriveCQ() {
@@ -271,6 +266,7 @@ bool MozoLMServerAsyncImpl::StartServer(const std::string& server_port,
     // Requests one RPC of each type to start the queue going.
     RequestNextGetNextState();
     RequestNextGetLMScore();
+    RequestNextUpdateLMScores();
 
     // Proceed to the server's main loop.
     DriveCQ();
@@ -279,7 +275,7 @@ bool MozoLMServerAsyncImpl::StartServer(const std::string& server_port,
   return true;
 }
 
-bool MozoLMServerAsyncImpl::ManageUpdateLMScores(
+Status MozoLMServerAsyncImpl::ManageUpdateLMScores(
     const UpdateLMScoresRequest* request, LMScores* response) {
   const int utf8_sym_size = request->utf8_sym_size();
   std::vector<int> utf8_syms(utf8_sym_size);
@@ -289,9 +285,17 @@ bool MozoLMServerAsyncImpl::ManageUpdateLMScores(
     utf8_syms[i] = request->utf8_sym(i);
     curr_state = model_hub_->NextState(curr_state, utf8_syms[i]);
   }
-  return model_hub_->UpdateLMCounts(request->state(), utf8_syms,
-                                    request->count()) &&
-         model_hub_->ExtractLMScores(curr_state, response);
+  if (!model_hub_->UpdateLMCounts(request->state(), utf8_syms,
+                                  request->count())) {
+    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                  "Failed to update language model counts.");
+  }
+  if (model_hub_->ExtractLMScores(curr_state, response)) {
+    return Status::OK;
+  } else {
+    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                  "Failed to extract scores.");
+  }
 }
 
 }  // namespace grpc

@@ -67,6 +67,11 @@ class LanguageModelHubState {
   absl::StatusOr<std::vector<int>> UpdateHubState(
       const LanguageModelHubState& hub_state);
 
+  // For a given hub state, this verifies model state information which may have
+  // changed due to count updates. Returns false if base information is wrong.
+  bool VerifyOrCorrectModelStates(int prev_state, int utf8_sym,
+                                  const std::vector<int>& model_states);
+
   // Resets previous state when previous state has been overwritten.
   void ResetPrevState() {
     prev_state_ = -1;
@@ -124,6 +129,10 @@ class LanguageModelHub {
 
   // Initializes already allocated start hub state with start states.
   absl::Status InitializeStartHubState();
+
+  // Verifies model states after updating counts, and corrects if they differ.
+  bool VerifyOrCorrectModelStates(int32 state,
+                                  const std::vector<int>& utf8_syms);
 
   // States in the model hub, tracking states in all component models.
   std::vector<std::unique_ptr<LanguageModelHubState>> hub_states_;

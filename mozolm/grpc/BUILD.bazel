@@ -82,6 +82,7 @@ cc_library(
         ":service_cc_grpc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",

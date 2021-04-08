@@ -91,8 +91,8 @@ class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
   bool StartWithCompletionQueue(::grpc::ServerBuilder* builder);
 
   // Manages the UpdateLMScores steps.
-  bool ManageUpdateLMScores(const UpdateLMScoresRequest* request,
-                            LMScores* response);
+  ::grpc::Status ManageUpdateLMScores(const UpdateLMScoresRequest* request,
+                                      LMScores* response);
 
   // Steps for handling a GetNextState request: 1) initializes request and
   // starts waiting for new requests; 2) processes and finishes received

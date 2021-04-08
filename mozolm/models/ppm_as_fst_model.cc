@@ -923,31 +923,34 @@ bool PpmAsFstModel::ExtractLMScores(int state, LMScores* response) {
 bool PpmAsFstModel::UpdateLMCounts(int32 state,
                                    const std::vector<int>& utf8_syms,
                                    int64 count) {
-  if (static_model_ || count <= 0) return true;
+  // TODO: needs Mutex locks for model updating.
+  if (static_model_ || count <= 0) {
+    // Returns true, nothing to update.
+    return true;
+  }
   for (auto utf8_sym : utf8_syms) {
-    if (utf8_sym < 0) {
-      // Symbol index less than zero.
-      return false;
-    }
     int sym_index = utf8_sym;
     if (utf8_sym > 0) {
       const std::string sym = utf8::EncodeUnicodeChar(utf8_sym);
       sym_index = fst_->InputSymbols()->Find(sym);
-      if (sym_index < 0) {
-        return false;
+    }
+    if (sym_index < 0) {
+      // Symbol not in model, ignoring and moves to start state.
+      // TODO: Possible to add symbol not covered in model?
+      state = start_state();
+    } else {
+      auto origin_state_status = GetArcOriginState(state, sym_index);
+      if (!origin_state_status.ok()) return false;
+      auto update_status =
+          UpdateModel(state, origin_state_status.value(), sym_index);
+      if (!update_status.ok()) return false;
+      for (int c = 1; c < count; c++) {
+        // Any subsequent observations accrue only at state.
+        update_status = UpdateModel(state, state, sym_index);
+        if (update_status.ok()) return false;
       }
+      state = NextState(state, utf8_sym);
     }
-    auto origin_state_status = GetArcOriginState(state, sym_index);
-    if (!origin_state_status.ok()) return false;
-    auto update_status =
-        UpdateModel(state, origin_state_status.value(), sym_index);
-    if (!update_status.ok()) return false;
-    for (int c = 1; c < count; c++) {
-      // Any subsequent observations accrue only at state.
-      update_status = UpdateModel(state, state, sym_index);
-      if (update_status.ok()) return false;
-    }
-    state = NextState(state, utf8_sym);
   }
   return true;
 }
