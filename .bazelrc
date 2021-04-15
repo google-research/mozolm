@@ -15,8 +15,6 @@ build:ios --noenable_platform_specific_config
 
 # Only enable cross-compiling for android configs.
 build:linux --distinct_host_configuration=false
-build:macos --distinct_host_configuration=false
-build:windows --distinct_host_configuration=false
 
 # Compiler options:
 #     c++17:                  Build with C++17 options (links with libc++)

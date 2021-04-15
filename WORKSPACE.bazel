@@ -19,7 +19,7 @@ workspace(name = "com_google_mozolm")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # ------------------------------------
-# gRPC package for Bazel:
+# gRPC (C++) package for Bazel:
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
@@ -30,6 +30,36 @@ http_archive(
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
     sha256 = "57af3077f31fdc99bb1e54c4a079c720b8572c1301b6e1671f1c7432a1644dbb",
     strip_prefix = "grpc-%s" % grpc_version,
+)
+
+# --------------------------------------------------------
+# External Java rules and Maven (required for gRPC Java):
+# --------------------------------------------------------
+# See https://github.com/bazelbuild/rules_jvm_external
+
+rules_jvm_version = "4.0"
+
+http_archive(
+    name = "rules_jvm_external",
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % rules_jvm_version,
+    strip_prefix = "rules_jvm_external-%s" % rules_jvm_version,
+    sha256 = "31701ad93dbfe544d597dbe62c9a1fdd76d81d8a9150c2bf1ecf928ecdf97169",
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+# ------------------------------------
+# gRPC (Java) package for Bazel:
+# ------------------------------------
+# See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
+
+grpc_version = "1.37.0"
+
+http_archive(
+    name = "com_github_grpc_grpc_java",
+    urls = ["https://github.com/grpc/grpc-java/archive/v%s.tar.gz" % grpc_version],
+    sha256 = "4796b6e434545ecc9e827f9ba52c0604a3c84e175c54f0882121965b1ee5c367",
+    strip_prefix = "grpc-java-%s" % grpc_version,
 )
 
 # ------------------------------------
@@ -99,6 +129,28 @@ android_configure(name = "local_config_android")
 
 load("@local_config_android//:android.bzl", "android_workspace")
 android_workspace()
+
+# ------------------------------------------------------------------------------
+# Java version of gRPC: Miscellaneous required dependencies for supporting
+# the `java_grpc_libray` rule. See:
+#   https://github.com/grpc/grpc-java/blob/master/examples/WORKSPACE
+# ------------------------------------------------------------------------------
+
+load("@com_github_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS")
+load("@com_github_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
+
+maven_install(
+    artifacts = IO_GRPC_GRPC_JAVA_ARTIFACTS,
+    generate_compat_repositories = True,
+    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
+    repositories = ["https://repo.maven.apache.org/maven2/"],
+)
+
+load("@maven//:compat.bzl", "compat_repositories")
+compat_repositories()
+
+load("@com_github_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
+grpc_java_repositories()
 
 # Local Variables:
 # mode: bazel-build-mode

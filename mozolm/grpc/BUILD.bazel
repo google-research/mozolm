@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+load("@com_github_grpc_grpc_java//:java_grpc_library.bzl", "java_grpc_library")
 
 package(default_visibility = ["//mozolm:__subpackages__"])
 
@@ -157,6 +158,18 @@ cc_grpc_library(
     deps = [":service_cc_proto"],
 )
 
+# TODO: Consider adding support for `lite` protobufs.
+java_proto_library(
+    name = "service_java_proto",
+    deps = [":service_proto"],
+)
+
+java_grpc_library(
+    name = "service_java_grpc_proto",
+    srcs = [":service_proto"],
+    deps = [":service_java_proto"],
+)
+
 proto_library(
     name = "grpc_util_proto",
     srcs = ["grpc_util.proto"],
@@ -165,5 +178,11 @@ proto_library(
 
 cc_proto_library(
     name = "grpc_util_cc_proto",
+    deps = [":grpc_util_proto"],
+)
+
+# TODO: Consider adding support for `lite` protobufs.
+java_proto_library(
+    name = "grpc_util_java_proto",
     deps = [":grpc_util_proto"],
 )
