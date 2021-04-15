@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Container for storing the language model scores.
+
 syntax = "proto3";
 
 package mozolm;
+
+option java_outer_classname = "LMScoresProto";
 
 // Next available ID: 4
 message LMScores {
