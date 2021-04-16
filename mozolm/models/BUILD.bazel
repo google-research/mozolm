@@ -61,6 +61,11 @@ cc_proto_library(
     deps = [":lm_scores_proto"],
 )
 
+java_proto_library(
+    name = "lm_scores_java_proto",
+    deps = [":lm_scores_proto"],
+)
+
 proto_library(
     name = "model_storage_proto",
     srcs = ["model_storage.proto"],
@@ -72,6 +77,11 @@ cc_proto_library(
     deps = [":model_storage_proto"],
 )
 
+java_proto_library(
+    name = "model_storage_java_proto",
+    deps = [":model_storage_proto"],
+)
+
 proto_library(
     name = "model_config_proto",
     srcs = ["model_config.proto"],
@@ -80,6 +90,11 @@ proto_library(
 
 cc_proto_library(
     name = "model_config_cc_proto",
+    deps = [":model_config_proto"],
+)
+
+java_proto_library(
+    name = "model_config_java_proto",
     deps = [":model_config_proto"],
 )
 
@@ -178,5 +193,10 @@ proto_library(
 
 cc_proto_library(
     name = "ppm_as_fst_model_cc_proto",
+    deps = [":ppm_as_fst_model_proto"],
+)
+
+java_proto_library(
+    name = "ppm_as_fst_model_java_proto",
     deps = [":ppm_as_fst_model_proto"],
 )
