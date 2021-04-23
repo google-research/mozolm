@@ -307,7 +307,7 @@ absl::StatusOr<int> PpmAsFstModel::CalculateStateOrder(int s) {
     return absl::InternalError(
         "No backoff state found when computing state orders.");
   }
-  auto backoff_state_order_status = CalculateStateOrder(backoff_state);
+  const auto backoff_state_order_status = CalculateStateOrder(backoff_state);
   if (!backoff_state_order_status.ok()) {
     return backoff_state_order_status.status();
   }
@@ -322,7 +322,7 @@ absl::Status PpmAsFstModel::CalculateStateOrders(bool save_state_orders) {
   state_orders_[unigram_state] = 0;
   int max_state_order = 1;
   for (int s = 0; s < state_orders_.size(); ++s) {
-    auto this_state_order_status = CalculateStateOrder(s);
+    const auto this_state_order_status = CalculateStateOrder(s);
     if (!this_state_order_status.ok()) {
       return this_state_order_status.status();
     }
@@ -354,7 +354,7 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
   bool syms_added = false;
   for (SymbolTableIterator syms_iter(*syms_); !syms_iter.Done();
        syms_iter.Next()) {
-    int64 sym = syms_iter.Value();
+    const int64 sym = syms_iter.Value();
     if (sym > 0) {
       if (!has_unigram.contains(sym)) {
         // Adds unigram looping arc for possible characters without unigram.
@@ -371,7 +371,7 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
 
 absl::StatusOr<std::vector<int>> PpmAsFstModel::GetSymsVector(
     const std::string& input_string, bool add_sym) {
-  std::vector<std::string> syms = utf8::StrSplitByChar(input_string);
+  const std::vector<std::string> syms = utf8::StrSplitByChar(input_string);
   std::vector<int> unicode_syms(syms.size());
   for (size_t i = 0; i < syms.size(); ++i) {
     unicode_syms[i] = syms_->Find(syms[i]);
@@ -393,7 +393,7 @@ absl::StatusOr<StdVectorFst> PpmAsFstModel::String2Fst(
   StdVectorFst fst;
   int curr_state = fst.AddState();
   fst.SetStart(curr_state);
-  auto syms_vector_status = GetSymsVector(input_string, /*add_sym=*/true);
+  const auto syms_vector_status = GetSymsVector(input_string, /*add_sym=*/true);
   if (!syms_vector_status.ok()) {
     return syms_vector_status.status();
   }
@@ -432,7 +432,7 @@ absl::Status PpmAsFstModel::TrainFromText(
   } else {
     for (const auto& input_line : istrings) {
       if (!input_line.empty()) {
-        auto fst_status = String2Fst(input_line);
+        const auto fst_status = String2Fst(input_line);
         if (!fst_status.ok()) {
           return fst_status.status();
         }
@@ -485,7 +485,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
                         : kMaxCache;
   if (!storage.model_file().empty() && ppm_as_fst_config.model_is_fst()) {
     fst_ = absl::WrapUnique(StdVectorFst::Read(storage.model_file()));
-    auto syms = *fst_->InputSymbols();
+    const auto syms = *fst_->InputSymbols();
     syms_ = absl::make_unique<SymbolTable>(syms);
   } else {
     // Train ppm from given text file if non-empty, empty Fst otherwise.
@@ -528,7 +528,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
   return read_status;
 }
 
-int PpmAsFstModel::FindOldestLastAccessedCache() {
+int PpmAsFstModel::FindOldestLastAccessedCache() const {
   int least_accessed_cache = 0;
   int oldest_access = state_cache_[0].last_accessed();
   for (size_t i = 1; i < state_cache_.size(); ++i) {
@@ -545,8 +545,8 @@ absl::Status PpmAsFstModel::GetNewCacheIndex(StdArc::StateId s) {
     cache_index_[s] = state_cache_.size();
     state_cache_.push_back(PpmStateCache(s));
   } else {
-    int index_to_update = FindOldestLastAccessedCache();
-    StdArc::StateId old_state = state_cache_[index_to_update].state();
+    const int index_to_update = FindOldestLastAccessedCache();
+    const StdArc::StateId old_state = state_cache_[index_to_update].state();
     if (cache_index_[old_state] != index_to_update) {
       return absl::InternalError("Cache index not updated correctly.");
     }
@@ -557,10 +557,11 @@ absl::Status PpmAsFstModel::GetNewCacheIndex(StdArc::StateId s) {
   return absl::OkStatus();
 }
 
-std::vector<int> PpmAsFstModel::InitCacheStates(StdArc::StateId s,
-                                           StdArc::StateId backoff_state,
-                                           const PpmStateCache& backoff_cache,
-                                           bool arc_origin) {
+std::vector<int> PpmAsFstModel::InitCacheStates(
+    StdArc::StateId s,
+    StdArc::StateId backoff_state,
+    const PpmStateCache& backoff_cache,
+    bool arc_origin) const {
   std::vector<int> cache_states;
   if (backoff_state >= 0) {
     cache_states = arc_origin ? backoff_cache.arc_origin_states()
@@ -571,10 +572,11 @@ std::vector<int> PpmAsFstModel::InitCacheStates(StdArc::StateId s,
   return cache_states;
 }
 
-std::vector<double> PpmAsFstModel::InitCacheProbs(StdArc::StateId s,
-                                             StdArc::StateId backoff_state,
-                                             const PpmStateCache& backoff_cache,
-                                             double denominator) {
+std::vector<double> PpmAsFstModel::InitCacheProbs(
+    StdArc::StateId s,
+    StdArc::StateId backoff_state,
+    const PpmStateCache& backoff_cache,
+    double denominator) const {
   std::vector<double> cache_probs;
   if (backoff_state >= 0) {
     cache_probs = backoff_cache.neg_log_probabilities();
@@ -582,7 +584,7 @@ std::vector<double> PpmAsFstModel::InitCacheProbs(StdArc::StateId s,
     if (fst_->Final(s) == StdArc::Weight::Zero()) {
       --num_continuations;
     }
-    double gamma =
+    const double gamma =
         ngram::NegLogSum(-log(num_continuations) - log(beta_), -log(alpha_)) -
         denominator;
     for (size_t i = 0; i < cache_probs.size(); ++i) {
@@ -639,7 +641,7 @@ absl::Status PpmAsFstModel::UpdateCacheAtNonEmptyState(
       InitCacheStates(s, backoff_state, backoff_cache, /*arc_origin=*/true);
   std::vector<int> destination_states =
       InitCacheStates(s, backoff_state, backoff_cache, /*arc_origin=*/false);
-  double denominator =
+  const double denominator =
       ngram::NegLogSum(impl::GetTotalStateCount(*fst_, s), -log(alpha_));
   std::vector<double> neg_log_probabilities =
       InitCacheProbs(s, backoff_state, backoff_cache, denominator);
@@ -664,7 +666,7 @@ absl::Status PpmAsFstModel::UpdateCacheAtState(StdArc::StateId s) {
   if (s >= fst_->NumStates()) {
     return absl::InternalError("State index out of bounds");
   }
-  int backoff_state = impl::GetBackoffState(*fst_, s);
+  const int backoff_state = impl::GetBackoffState(*fst_, s);
   PpmStateCache backoff_cache(-1);
   if (backoff_state >= 0) {
     ASSIGN_OR_RETURN(backoff_cache, EnsureCacheAtState(backoff_state));
@@ -683,8 +685,9 @@ absl::Status PpmAsFstModel::UpdateCacheAtState(StdArc::StateId s) {
   return absl::OkStatus();
 }
 
-absl::StatusOr<bool> PpmAsFstModel::NeedsNewState(StdArc::StateId curr_state,
-                                                  StdArc::StateId next_state) {
+absl::StatusOr<bool> PpmAsFstModel::NeedsNewState(
+    StdArc::StateId curr_state,
+    StdArc::StateId next_state) const {
   if (state_orders_[next_state] > state_orders_[curr_state]) {
     // No need to add a new state if the arc ascends in order.
     return false;
@@ -700,9 +703,9 @@ absl::StatusOr<bool> PpmAsFstModel::NeedsNewState(StdArc::StateId curr_state,
   return true;
 }
 
-bool PpmAsFstModel::LowerOrderCacheUpdated(StdArc::StateId s) {
+bool PpmAsFstModel::LowerOrderCacheUpdated(StdArc::StateId s) const {
   if (cache_index_[s] < 0) return true;
-  int last_updated = state_cache_[cache_index_[s]].last_updated();
+  const int last_updated = state_cache_[cache_index_[s]].last_updated();
   int backoff_state = impl::GetBackoffState(*fst_, s);
   while (backoff_state >= 0) {
     if (cache_index_[backoff_state] >= 0 &&
@@ -760,15 +763,17 @@ absl::StatusOr<std::vector<double>> PpmAsFstModel::GetNegLogProbs(
                      GetNegLogProb(curr_state, sym_indices[i]));
     if (return_bits) neg_log_probs[i] = impl::BitsFromNats(neg_log_probs[i]);
     if (!static_model_) {
-      auto origin_state_status = GetArcOriginState(curr_state, sym_indices[i]);
+      const auto origin_state_status = GetArcOriginState(curr_state,
+                                                         sym_indices[i]);
       if (!origin_state_status.ok()) {
         return origin_state_status.status();
       }
-      auto update_status =
+      const auto update_status =
           UpdateModel(curr_state, origin_state_status.value(), sym_indices[i]);
       if (!update_status.ok()) return update_status.status();
     }
-    auto dest_state_status = GetDestinationState(curr_state, sym_indices[i]);
+    const auto dest_state_status = GetDestinationState(curr_state,
+                                                       sym_indices[i]);
     if (!dest_state_status.ok()) {
       return dest_state_status.status();
     }
@@ -823,7 +828,8 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
       if (arc.ilabel == sym_index) {
         // Determines if new destination state required and increments count.
         old_next_state = arc.nextstate;
-        auto needs_new_state_status = NeedsNewState(curr_state, arc.nextstate);
+        const auto needs_new_state_status = NeedsNewState(curr_state,
+                                                          arc.nextstate);
         if (!needs_new_state_status.ok()) {
           return needs_new_state_status.status();
         }
@@ -841,7 +847,7 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
     }
     if (new_next_state >= 0) {
       // Adds required new destination state.
-      auto add_new_state_status = AddNewState(old_next_state);
+      const auto add_new_state_status = AddNewState(old_next_state);
       if (!add_new_state_status.ok()) {
         return add_new_state_status.status();
       }
@@ -853,7 +859,7 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
 absl::Status PpmAsFstModel::UpdateNotFoundState(
     StdArc::StateId curr_state, StdArc::StateId highest_found_state,
     StdArc::StateId backoff_state, int sym_index) {
-  auto update_status =
+  const auto update_status =
       UpdateModel(backoff_state, highest_found_state, sym_index);
   if (!update_status.ok()) return update_status.status();
   int backoff_dest_state = update_status.value();
@@ -861,13 +867,14 @@ absl::Status PpmAsFstModel::UpdateNotFoundState(
     fst_->SetFinal(curr_state, 0.0);
   } else {
     // No arc with sym_index found at current state.
-    auto needs_new_state_status = NeedsNewState(curr_state, backoff_dest_state);
+    const auto needs_new_state_status = NeedsNewState(curr_state,
+                                                      backoff_dest_state);
     if (!needs_new_state_status.ok()) {
       return needs_new_state_status.status();
     }
     int dest_state = backoff_dest_state;
     if (needs_new_state_status.value()) {
-      auto add_new_state_status = AddNewState(backoff_dest_state);
+      const auto add_new_state_status = AddNewState(backoff_dest_state);
       if (!add_new_state_status.ok()) {
         return add_new_state_status.status();
       }
@@ -882,7 +889,7 @@ absl::StatusOr<StdArc::StateId> PpmAsFstModel::UpdateModel(
     StdArc::StateId curr_state, StdArc::StateId highest_found_state,
     int sym_index) {
   absl::Status update_status;
-  int backoff_state =
+  const int backoff_state =
       impl::IncrementBackoffArcReturnBackoffState(fst_.get(), curr_state);
   if (highest_found_state == curr_state) {
     update_status = UpdateHighestFoundState(curr_state, sym_index);
@@ -901,9 +908,9 @@ absl::StatusOr<StdArc::StateId> PpmAsFstModel::UpdateModel(
 
 int PpmAsFstModel::NextState(int state, int utf8_sym) {
   const std::string sym = utf8::EncodeUnicodeChar(utf8_sym);
-  int sym_index = fst_->InputSymbols()->Find(sym);
+  const int sym_index = fst_->InputSymbols()->Find(sym);
   if (sym_index > 0) {
-    auto dest_state_status = GetDestinationState(state, sym_index);
+    const auto dest_state_status = GetDestinationState(state, sym_index);
     if (dest_state_status.ok()) {
       return dest_state_status.value();
     }
@@ -914,7 +921,7 @@ int PpmAsFstModel::NextState(int state, int utf8_sym) {
 }
 
 bool PpmAsFstModel::ExtractLMScores(int state, LMScores* response) {
-  auto ensure_status = EnsureCacheAtState(state);
+  const auto ensure_status = EnsureCacheAtState(state);
   if (!ensure_status.ok()) return false;
   const PpmStateCache state_cache = ensure_status.value();
   return state_cache.FillLMScores(*fst_->InputSymbols(), response);
@@ -939,7 +946,7 @@ bool PpmAsFstModel::UpdateLMCounts(int32 state,
       // TODO: Possible to add symbol not covered in model?
       state = start_state();
     } else {
-      auto origin_state_status = GetArcOriginState(state, sym_index);
+      const auto origin_state_status = GetArcOriginState(state, sym_index);
       if (!origin_state_status.ok()) return false;
       auto update_status =
           UpdateModel(state, origin_state_status.value(), sym_index);
@@ -991,7 +998,7 @@ absl::Status PpmStateCache::VerifyAccess(int sym_index,
 }
 
 absl::StatusOr<int> PpmStateCache::ArcOriginState(int sym_index) const {
-  absl::Status verify_status =
+  const absl::Status verify_status =
       VerifyAccess(sym_index, arc_origin_states_.size());
   if (verify_status == absl::OkStatus()) {
     return arc_origin_states_[sym_index];
@@ -1001,7 +1008,7 @@ absl::StatusOr<int> PpmStateCache::ArcOriginState(int sym_index) const {
 }
 
 absl::StatusOr<int> PpmStateCache::DestinationState(int sym_index) const {
-  absl::Status verify_status =
+  const absl::Status verify_status =
       VerifyAccess(sym_index, destination_states_.size());
   if (verify_status == absl::OkStatus()) {
     return destination_states_[sym_index];
@@ -1011,7 +1018,7 @@ absl::StatusOr<int> PpmStateCache::DestinationState(int sym_index) const {
 }
 
 absl::StatusOr<double> PpmStateCache::NegLogProbability(int sym_index) const {
-  absl::Status verify_status =
+  const absl::Status verify_status =
       VerifyAccess(sym_index, neg_log_probabilities_.size());
   if (verify_status == absl::OkStatus()) {
     return neg_log_probabilities_[sym_index];

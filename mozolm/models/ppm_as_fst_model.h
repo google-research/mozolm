@@ -220,7 +220,7 @@ class PpmAsFstModel : public LanguageModel {
 
   // Determines whether new state needs to be created for arc.
   absl::StatusOr<bool> NeedsNewState(fst::StdArc::StateId curr_state,
-                                     fst::StdArc::StateId next_state);
+                                     fst::StdArc::StateId next_state) const;
 
   // Adds extra characters to unigram of model if provided.
   absl::Status AddExtraCharacters(const std::string& input_string);
@@ -235,13 +235,13 @@ class PpmAsFstModel : public LanguageModel {
   std::vector<double> InitCacheProbs(fst::StdArc::StateId s,
                                      fst::StdArc::StateId backoff_state,
                                      const PpmStateCache& backoff_cache,
-                                     double denominator);
+                                     double denominator) const;
 
   // Initializes the origin and destination states for cache based on backoff.
   std::vector<int> InitCacheStates(fst::StdArc::StateId s,
                                    fst::StdArc::StateId backoff_state,
                                    const PpmStateCache& backoff_cache,
-                                   bool arc_origin);
+                                   bool arc_origin) const;
 
   // Fills in values for states and probs vectors from state for cache.
   absl::Status UpdateCacheStatesAndProbs(
@@ -258,13 +258,13 @@ class PpmAsFstModel : public LanguageModel {
       const PpmStateCache& backoff_cache);
 
   // Checks if lower order state caches have updated more recently.
-  bool LowerOrderCacheUpdated(fst::StdArc::StateId s);
+  bool LowerOrderCacheUpdated(fst::StdArc::StateId s) const;
 
   // Ensures cache exists for state, creates it if not.
   absl::StatusOr<PpmStateCache> EnsureCacheAtState(fst::StdArc::StateId s);
 
   // Finds cache entry with oldest last access, for replacement.
-  int FindOldestLastAccessedCache();
+  int FindOldestLastAccessedCache() const;
 
   // Establishes cache index, after performing garbage collection if needed.
   absl::Status GetNewCacheIndex(fst::StdArc::StateId s);
