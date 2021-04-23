@@ -52,6 +52,12 @@ build:short_logs --output_filter=DONT_MATCH_ANYTHING
 build --incompatible_remove_legacy_whole_archive
 
 # ------------------------------
+# Android STL:
+# ------------------------------
+build:android --copt=-DANDROID_STL=c++_shared
+build:android --host_copt=-DANDROID_STL=c++_shared
+
+# ------------------------------
 # gRPC++ options:
 # ------------------------------
 
