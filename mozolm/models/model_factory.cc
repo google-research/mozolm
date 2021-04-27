@@ -16,8 +16,8 @@
 
 #include <utility>
 
+#include "mozolm/models/ngram_char_fst_model.h"
 #include "mozolm/models/simple_bigram_char_model.h"
-#include "mozolm/models/opengrm_ngram_char_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"
 
 namespace mozolm {
@@ -28,8 +28,8 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
   std::unique_ptr<LanguageModel> model;
   if (model_type == ModelConfig::SIMPLE_CHAR_BIGRAM) {
     model.reset(new SimpleBigramCharModel);
-  } else if (model_type == ModelConfig::OPENGRM_CHAR_NGRAM) {
-    model.reset(new OpenGrmNGramCharModel);
+  } else if (model_type == ModelConfig::CHAR_NGRAM_FST) {
+    model.reset(new NGramCharFstModel);
   } else if (model_type == ModelConfig::PPM_AS_FST) {
     model.reset(new PpmAsFstModel);
   } else {  // Shouldn't be here.

@@ -27,7 +27,7 @@ message ModelConfig {
     SIMPLE_CHAR_BIGRAM = 0;
 
     // OpenGrm NGram character model.
-    OPENGRM_CHAR_NGRAM = 1;
+    CHAR_NGRAM_FST = 1;
 
     // OpenGrm NGram character model.
     PPM_AS_FST = 2;

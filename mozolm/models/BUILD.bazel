@@ -107,7 +107,7 @@ cc_library(
         ":language_model_hub",
         ":model_config_cc_proto",
         ":model_storage_cc_proto",
-        ":opengrm_ngram_char_model",
+        ":ngram_char_fst_model",
         ":ppm_as_fst_model",
         ":simple_bigram_char_model",
         "@com_google_absl//absl/status:statusor",
@@ -133,9 +133,9 @@ cc_library(
 )
 
 cc_library(
-    name = "opengrm_ngram_char_model",
-    srcs = ["opengrm_ngram_char_model.cc"],
-    hdrs = ["opengrm_ngram_char_model.h"],
+    name = "ngram_char_fst_model",
+    srcs = ["ngram_char_fst_model.cc"],
+    hdrs = ["ngram_char_fst_model.h"],
     deps = [
         ":language_model",
         ":model_storage_cc_proto",

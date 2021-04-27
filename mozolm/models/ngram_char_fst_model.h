@@ -14,8 +14,8 @@
 
 // Character n-gram model in OpenFst format served by OpenGrm NGram library.
 
-#ifndef MOZOLM_MOZOLM_MODELS_OPENGRM_NGRAM_CHAR_MODEL_H_
-#define MOZOLM_MOZOLM_MODELS_OPENGRM_NGRAM_CHAR_MODEL_H_
+#ifndef MOZOLM_MOZOLM_MODELS_NGRAM_CHAR_FST_MODEL_H_
+#define MOZOLM_MOZOLM_MODELS_NGRAM_CHAR_FST_MODEL_H_
 
 #include <memory>
 #include <vector>
@@ -31,10 +31,10 @@ namespace models {
 
 // TODO: This class is an empty stub at the moment. It is
 // provided for demonstration purposes to show how to hook up OpenGrm APIs.
-class OpenGrmNGramCharModel : public LanguageModel {
+class NGramCharFstModel : public LanguageModel {
  public:
-  OpenGrmNGramCharModel() = default;
-  ~OpenGrmNGramCharModel() override = default;
+  NGramCharFstModel() = default;
+  ~NGramCharFstModel() override = default;
 
   // Reads the model from the model storage.
   absl::Status Read(const ModelStorage &storage) override;
@@ -56,4 +56,4 @@ class OpenGrmNGramCharModel : public LanguageModel {
 }  // namespace models
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_MODELS_OPENGRM_NGRAM_CHAR_MODEL_H_
+#endif  // MOZOLM_MOZOLM_MODELS_NGRAM_CHAR_FST_MODEL_H_
