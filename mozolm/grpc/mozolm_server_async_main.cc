@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Simple utility binary for launching server.
+// Simple utility binary for launching gRPC server.
 //
 // Example usage:
 // --------------
@@ -69,7 +69,8 @@
 #include "mozolm/grpc/grpc_util.pb.h"
 
 ABSL_FLAG(std::string, client_server_config, "",
-          "mozolm_grpc.ClientServerConfig in text format.");
+          "Configuration (`mozolm_grpc.ClientServerConfig`) protocol buffer in "
+          "text format.");
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
@@ -79,8 +80,10 @@ int main(int argc, char** argv) {
         absl::GetFlag(FLAGS_client_server_config), &grpc_config));
   }
   mozolm::grpc::ClientServerConfigDefaults(&grpc_config);
-  if (!mozolm::grpc::RunServer(grpc_config)) {
-    return 0;
+  const auto status = mozolm::grpc::RunServer(grpc_config);
+  if (!status.ok()) {
+    GOOGLE_LOG(ERROR) << "Failed to run server: " << status.ToString();
+    return 1;
   }
-  return 1;
+  return 0;
 }

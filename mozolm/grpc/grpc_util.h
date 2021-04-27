@@ -16,6 +16,7 @@
 #define MOZOLM_MOZOLM_GRPC_GRPC_UTIL_H_
 
 #include "absl/flags/declare.h"
+#include "absl/status/status.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 
 ABSL_DECLARE_FLAG(double, mozolm_client_timeout);
@@ -29,10 +30,10 @@ const char kDefaultServerPort[] = "localhost:50051";
 void ClientServerConfigDefaults(ClientServerConfig* config);
 
 // Launches a language model server according to configuration.
-bool RunServer(const ClientServerConfig& grpc_config);
+absl::Status RunServer(const ClientServerConfig& grpc_config);
 
 // Runs client service according to given configuration.
-bool RunClient(const ClientServerConfig& grpc_config);
+absl::Status RunClient(const ClientServerConfig& grpc_config);
 
 }  // namespace grpc
 }  // namespace mozolm

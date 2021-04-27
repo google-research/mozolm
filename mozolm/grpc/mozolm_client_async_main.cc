@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Simple utility binary for querying launched server.
+// Simple utility binary for querying live gRPC server.
 //
 // Example usage:
 // --------------
@@ -59,9 +59,10 @@ int main(int argc, char** argv) {
         absl::GetFlag(FLAGS_client_server_config), &grpc_config));
   }
   mozolm::grpc::ClientServerConfigDefaults(&grpc_config);
-  if (mozolm::grpc::RunClient(grpc_config)) {
-    return 0;
+  const auto status = mozolm::grpc::RunClient(grpc_config);
+  if (!status.ok()) {
+    GOOGLE_LOG(ERROR) << "Failed to run client: " << status.ToString();
+    return 1;
   }
-
-  return 1;
+  return 0;
 }

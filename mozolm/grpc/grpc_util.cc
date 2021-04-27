@@ -21,7 +21,6 @@
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
 #include "absl/flags/flag.h"
-#include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client.h"
@@ -29,7 +28,7 @@
 #include "mozolm/models/model_factory.h"
 
 ABSL_FLAG(double, mozolm_client_timeout, 10.0,
-          "timeout to wait for response in seconds");
+          "Timeout to wait for response in seconds.");
 
 namespace mozolm {
 namespace grpc {
@@ -58,7 +57,7 @@ void ClientServerConfigDefaults(ClientServerConfig* config) {
   }
 }
 
-bool RunServer(const ClientServerConfig& grpc_config) {
+absl::Status RunServer(const ClientServerConfig& grpc_config) {
   std::shared_ptr<::grpc::ServerCredentials> creds;
   switch (grpc_config.credential_type()) {
     case ClientServerConfig::SSL:
@@ -69,38 +68,38 @@ bool RunServer(const ClientServerConfig& grpc_config) {
       creds = ::grpc::InsecureServerCredentials();
       break;
     default:
-      return false;  // Unknown credential type.
+      return absl::InvalidArgumentError("Unknown credential type");
   }
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(grpc_config.server_port(), creds);
-  return RunCompletionServer(grpc_config, &builder).ok();
+  return RunCompletionServer(grpc_config, &builder);
 }
 
-bool RunClient(const ClientServerConfig& grpc_config) {
+absl::Status RunClient(const ClientServerConfig& grpc_config) {
   MozoLMClient client(grpc_config);
-  bool success;
+  absl::Status status;
   std::string result;
   switch (grpc_config.client_config().request_type()) {
     case ClientConfig::RANDGEN:
-      success =
+      status =
           client.RandGen(grpc_config.client_config().context_string(), &result);
       break;
     case ClientConfig::K_BEST_ITEMS:
-      success = client.OneKbestSample(
+      status = client.OneKbestSample(
           grpc_config.client_config().k_best(),
           grpc_config.client_config().context_string(), &result);
       break;
     case ClientConfig::BITS_PER_CHAR_CALCULATION:
-      success = client.CalcBitsPerCharacter(
+      status = client.CalcBitsPerCharacter(
           grpc_config.client_config().test_corpus(), &result);
       break;
     default:
-      success = false;  // Unknown client request type.
+      return absl::InvalidArgumentError("Unknown client request type");
   }
-  if (success) {
+  if (status.ok()) {
     absl::PrintF("%s\n", result);
   }
-  return success;
+  return status;
 }
 
 }  // namespace grpc

@@ -14,23 +14,26 @@
 
 #include "mozolm/grpc/mozolm_client.h"
 
+#include <cmath>
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"
 #include "absl/memory/memory.h"
 #include "absl/random/random.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/synchronization/notification.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client_async_impl.h"
 #include "mozolm/utils/utf8_util.h"
+#include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
 namespace grpc {
@@ -89,33 +92,41 @@ double CalculateBits(
   if (idx >= 0) {
     prob += prob_idx_pair_vector[idx].first * (1.0 - kMixEpsilon);
   }
-  return -log2(prob);
+  return -std::log2(prob);
 }
 
 }  // namespace
 
-bool MozoLMClient::GetLMScores(
+absl::Status MozoLMClient::GetLMScores(
     const std::string& context_string, int initial_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   if (completion_client_ == nullptr) {
-    GOOGLE_LOG(ERROR) << "completion_client_ not initialized.";
-    return false;
+    return absl::InternalError("completion client not initialized");
   }
   if (!completion_client_->GetLMScore(context_string, initial_state,
-                                              timeout_, normalization,
+                                      timeout_, normalization,
                                       prob_idx_pair_vector)) {
-    GOOGLE_LOG(ERROR) << "Failed to retrieve LM score";
-    return false;
+    return absl::UnavailableError("Failed to retrieve LM score");
   }
-  return *normalization > 0;
+  if (*normalization <= 0) {
+    return absl::InternalError(absl::StrCat(
+        "Invalid normalization factor: ", *normalization));
+  } else {
+    return absl::OkStatus();
+  }
 }
 
-int64 MozoLMClient::GetNextState(const std::string& context_string,
-                                 int initial_state) {
+absl::StatusOr<int64> MozoLMClient::GetNextState(
+    const std::string& context_string,
+    int initial_state) {
   int64 next_state;
   GOOGLE_CHECK_NE(completion_client_, nullptr);
-  GOOGLE_CHECK(completion_client_->GetNextState(context_string, initial_state,
-                                                timeout_, &next_state));
+  if (!completion_client_->GetNextState(context_string, initial_state,
+                                        timeout_, &next_state)) {
+    return absl::InternalError(absl::StrCat(
+        "Getting next state failed for initial state ", initial_state,
+        " in context \"", context_string, "\""));
+  }
   return next_state;
 }
 
@@ -131,24 +142,27 @@ bool MozoLMClient::UpdateCountGetDestStateScore(
       prob_idx_pair_vector);
 }
 
-bool MozoLMClient::RandGen(const std::string& context_string,
-                           std::string* result) {
+absl::Status MozoLMClient::RandGen(const std::string& context_string,
+                                   std::string* result) {
   // The context string is the prefix to the randomly generated string.
   *result = context_string;
-  int max_length = kMaxRandGenLen + result->length();
+  const int max_length = kMaxRandGenLen + result->length();
 
   // Advance state to configured initial state.
-  int64 state = GetNextState(context_string, /*initial_state=*/-1);
+  const auto state_status = GetNextState(context_string, /*initial_state=*/-1);
+  if (!state_status.ok()) return state_status.status();
+  int64 state = state_status.value();
   std::string chosen;
   std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
   double normalization;
-  bool success = GetLMScores(/*context_string=*/"", state, &normalization,
-                             &prob_idx_pair_vector);
+  RETURN_IF_ERROR(GetLMScores(/*context_string=*/"", state, &normalization,
+                              &prob_idx_pair_vector));
+  bool success = true;
   do {
     if (success) {
       const int pos = GetRandomPosition(prob_idx_pair_vector);
       if (pos < 0 || pos >= prob_idx_pair_vector.size()) {
-        return false;
+        return absl::InternalError(absl::StrCat("Invalid position: ", pos));
       }
       chosen = prob_idx_pair_vector[pos].second;
       if (!chosen.empty()) {
@@ -167,33 +181,36 @@ bool MozoLMClient::RandGen(const std::string& context_string,
   if (success && static_cast<int>(result->length()) >= max_length) {
     *result += "(reached_length_limit)";
   }
-  return success;
+  if (!success) {
+    return absl::InternalError("Count update failed");
+  } else {
+    return absl::OkStatus();
+  }
 }
 
-bool MozoLMClient::OneKbestSample(int k_best, const std::string& context_string,
-                                  std::string* result) {
+absl::Status MozoLMClient::OneKbestSample(int k_best,
+                                          const std::string& context_string,
+                                          std::string* result) {
   std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
   double normalization;
-  const bool success = GetLMScores(context_string, /*initial_state=*/-1,
-                                   &normalization, &prob_idx_pair_vector);
-  if (success) {
-    *result = std::to_string(k_best) + "-best prob continuations:";
-    for (int i = 0; i < k_best; i++) {
-      *result = absl::StrFormat("%s %s(%5.3f)", *result,
-                                prob_idx_pair_vector[i].second,
-                                prob_idx_pair_vector[i].first);
-    }
+  RETURN_IF_ERROR(GetLMScores(context_string, /*initial_state=*/-1,
+                              &normalization, &prob_idx_pair_vector));
+  *result = std::to_string(k_best) + "-best prob continuations:";
+  for (int i = 0; i < k_best; i++) {
+    *result = absl::StrFormat("%s %s(%5.3f)", *result,
+                              prob_idx_pair_vector[i].second,
+                              prob_idx_pair_vector[i].first);
   }
-  return success;
+  return absl::OkStatus();
 }
 
-bool MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
-                                        std::string* result) {
-  bool success = true;
+absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
+                                                std::string* result) {
   std::ifstream infile(test_file);
   if (!infile.is_open()) {
-    success = false;  // Test file could not be accessed.
+    return absl::NotFoundError("Test file could not be accessed");
   }
+  bool success = true;
   std::string input_line;
   int tot_chars = 0;
   int tot_oov_chars = 0;
@@ -204,13 +221,13 @@ bool MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
     input_chars.push_back("");  // End-of-string character.
     int64 state = 0;  // Will start at initial state of the model.
     std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
-    success = GetLMScores(/*context_string=*/"", state, &unused_normalization,
-                          &prob_idx_pair_vector);
+    RETURN_IF_ERROR(GetLMScores(/*context_string=*/"", state,
+                                &unused_normalization, &prob_idx_pair_vector));
     for (const auto& utf8_sym : input_chars) {
       if (!success) {
         break;
       }
-      int idx = FindStringIndex(prob_idx_pair_vector, utf8_sym);
+      const int idx = FindStringIndex(prob_idx_pair_vector, utf8_sym);
       tot_bits += CalculateBits(idx, prob_idx_pair_vector);
       if (idx < 0) {
          ++tot_oov_chars;
@@ -231,8 +248,10 @@ bool MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
                         " OOV); bits per character: ",
                         tot_bits / static_cast<double>(tot_chars)),
         "");
+    return absl::OkStatus();
+  } else {
+    return absl::InternalError("Count update failed");
   }
-  return success;
 }
 
 MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {

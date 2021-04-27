@@ -21,41 +21,45 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/create_channel.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client_async_impl.h"
 
 namespace mozolm {
 namespace grpc {
 
-const int kMaxRandGenLen = 128;
+constexpr int kMaxRandGenLen = 128;
 
 class MozoLMClient {
  public:
   explicit MozoLMClient(const ClientServerConfig& grpc_config);
 
   // Generates a k-best list from the model given the context.
-  bool OneKbestSample(int k_best, const std::string& context_string,
-                      std::string* result);
+  absl::Status OneKbestSample(int k_best, const std::string& context_string,
+                              std::string* result);
 
   // Generates a random string prefixed by the context string.
-  bool RandGen(const std::string& context_string, std::string* result);
+  absl::Status RandGen(const std::string& context_string, std::string* result);
 
   // Calculates bits per character in test file.  To cover all unicode
   // codepoints, even those assigned zero probability by the model, we
   // interpolate with a uniform model over all codepoints, using a very small
   // interpolation factor for this mixing.
-  bool CalcBitsPerCharacter(const std::string& test_file, std::string* result);
+  absl::Status CalcBitsPerCharacter(const std::string& test_file,
+                                    std::string* result);
 
  private:
   // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
-  bool GetLMScores(
+  absl::Status GetLMScores(
       const std::string& context_string, int initial_state,
       double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   // Requests next state from model and returns result.
-  int64 GetNextState(const std::string& context_string, int initial_state);
+  absl::StatusOr<int64> GetNextState(const std::string& context_string,
+                                     int initial_state);
 
   // Updates counts in model and returns destination state and prob/index pairs.
   bool UpdateCountGetDestStateScore(
