@@ -101,13 +101,11 @@ absl::Status MozoLMClient::GetLMScores(
     const std::string& context_string, int initial_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   if (completion_client_ == nullptr) {
-    return absl::InternalError("completion client not initialized");
+    return absl::InternalError("Completion client not initialized");
   }
-  if (!completion_client_->GetLMScore(context_string, initial_state,
-                                      timeout_, normalization,
-                                      prob_idx_pair_vector)) {
-    return absl::UnavailableError("Failed to retrieve LM score");
-  }
+  RETURN_IF_ERROR(completion_client_->GetLMScore(context_string, initial_state,
+                                                 timeout_, normalization,
+                                                 prob_idx_pair_vector));
   if (*normalization <= 0) {
     return absl::InternalError(absl::StrCat(
         "Invalid normalization factor: ", *normalization));
@@ -121,21 +119,22 @@ absl::StatusOr<int64> MozoLMClient::GetNextState(
     int initial_state) {
   int64 next_state;
   GOOGLE_CHECK_NE(completion_client_, nullptr);
-  if (!completion_client_->GetNextState(context_string, initial_state,
-                                        timeout_, &next_state)) {
+  const absl::Status status = completion_client_->GetNextState(
+      context_string, initial_state, timeout_, &next_state);
+  if (!status.ok()) {
     return absl::InternalError(absl::StrCat(
         "Getting next state failed for initial state ", initial_state,
-        " in context \"", context_string, "\""));
+        " in context \"", context_string, "\": ", status.ToString()));
   }
   return next_state;
 }
 
-bool MozoLMClient::UpdateCountGetDestStateScore(
+absl::Status MozoLMClient::UpdateCountGetDestStateScore(
     const std::string& context_string, int initial_state, int32 count,
     int64* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   if (completion_client_ == nullptr) {
-    return false;
+    return absl::InternalError("Completion client not initialized");
   }
   return completion_client_->UpdateCountGetDestStateScore(
       context_string, initial_state, timeout_, count, next_state, normalization,
@@ -171,7 +170,8 @@ absl::Status MozoLMClient::RandGen(const std::string& context_string,
         prob_idx_pair_vector.clear();
         success =
             UpdateCountGetDestStateScore(chosen, state, /*count=*/1, &state,
-                                         &normalization, &prob_idx_pair_vector);
+                                         &normalization,
+                                         &prob_idx_pair_vector).ok();
       }
     } else {
       *result += "(subsequent generation failed)";
@@ -210,13 +210,13 @@ absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
   if (!infile.is_open()) {
     return absl::NotFoundError("Test file could not be accessed");
   }
-  bool success = true;
+  absl::Status status = absl::OkStatus();
   std::string input_line;
   int tot_chars = 0;
   int tot_oov_chars = 0;
   double tot_bits = 0.0;
   double unused_normalization;
-  while (success && std::getline(infile, input_line)) {
+  while (status.ok() && std::getline(infile, input_line)) {
     std::vector<std::string> input_chars = utf8::StrSplitByChar(input_line);
     input_chars.push_back("");  // End-of-string character.
     int64 state = 0;  // Will start at initial state of the model.
@@ -224,9 +224,6 @@ absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
     RETURN_IF_ERROR(GetLMScores(/*context_string=*/"", state,
                                 &unused_normalization, &prob_idx_pair_vector));
     for (const auto& utf8_sym : input_chars) {
-      if (!success) {
-        break;
-      }
       const int idx = FindStringIndex(prob_idx_pair_vector, utf8_sym);
       tot_bits += CalculateBits(idx, prob_idx_pair_vector);
       if (idx < 0) {
@@ -234,24 +231,21 @@ absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
       }
       ++tot_chars;
       prob_idx_pair_vector.clear();
-      success = UpdateCountGetDestStateScore(utf8_sym, state, /*count=*/1,
-                                             &state, &unused_normalization,
-                                             &prob_idx_pair_vector);
+      status = UpdateCountGetDestStateScore(utf8_sym, state, /*count=*/1,
+                                            &state, &unused_normalization,
+                                            &prob_idx_pair_vector);
+      if (!status.ok()) break;
     }
   }
   if (infile.is_open()) {
     infile.close();
   }
-  if (success) {
-    *result = absl::StrJoin(
-        std::make_tuple("Total characters: ", tot_chars, " (", tot_oov_chars,
-                        " OOV); bits per character: ",
-                        tot_bits / static_cast<double>(tot_chars)),
-        "");
-    return absl::OkStatus();
-  } else {
-    return absl::InternalError("Count update failed");
-  }
+  if (!status.ok()) return status;
+  *result = absl::StrJoin(
+      std::make_tuple("Total characters: ", tot_chars, " (", tot_oov_chars,
+                      " OOV); bits per character: ",
+                      tot_bits / static_cast<double>(tot_chars)), "");
+  return absl::OkStatus();
 }
 
 MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {

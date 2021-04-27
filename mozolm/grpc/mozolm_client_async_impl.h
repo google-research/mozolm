@@ -15,13 +15,14 @@
 #ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
 #define MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
 
-#include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
+#include "absl/status/status.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 
 namespace mozolm {
@@ -35,18 +36,18 @@ class MozoLMClientAsyncImpl {
 
   // Seeks the language models scores given the initial state and context
   // string. Any errors are logged.
-  bool GetLMScore(
+  absl::Status GetLMScore(
       const std::string& context_str, int initial_state, double timeout,
       double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   // Seeks the next model state given the initial state and context string. Any
   // errors are logged.
-  bool GetNextState(const std::string& context_str, int initial_state,
-                    double timeout, int64* next_state);
+  absl::Status GetNextState(const std::string& context_str, int initial_state,
+                            double timeout, int64* next_state);
 
   // Updates counts and retrieves probabilities from destination state.
-  bool UpdateCountGetDestStateScore(
+  absl::Status UpdateCountGetDestStateScore(
       const std::string& context_str, int initial_state, double timeout,
       int32 count, int64* next_state, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);

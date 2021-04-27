@@ -62,7 +62,7 @@ class MozoLMClient {
                                      int initial_state);
 
   // Updates counts in model and returns destination state and prob/index pairs.
-  bool UpdateCountGetDestStateScore(
+  absl::Status UpdateCountGetDestStateScore(
       const std::string& context_string, int initial_state, int32 count,
       int64* next_state, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
