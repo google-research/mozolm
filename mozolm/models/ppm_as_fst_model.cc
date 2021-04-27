@@ -17,6 +17,7 @@
 #include <cmath>
 #include <fstream>
 
+#include "mozolm/stubs/logging.h"
 #include "fst/arcsort.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
@@ -25,6 +26,8 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
@@ -406,17 +409,19 @@ absl::StatusOr<StdVectorFst> PpmAsFstModel::String2Fst(
   return fst;
 }
 
-absl::Status PpmAsFstModel::TrainFromText(const std::string& ifile) {
+absl::Status PpmAsFstModel::TrainFromText(const std::string& input_file) {
   std::vector<std::string> istrings;
-  std::ifstream infile(ifile);
+  std::ifstream infile(input_file);
   if (!infile.is_open()) {
-    return absl::NotFoundError(absl::StrCat("File not found: ", ifile));
+    return absl::NotFoundError(absl::StrCat("File not found: ", input_file));
   }
+  GOOGLE_LOG(INFO) << "Loading from \"" << input_file << "\" ...";
   std::string input_line;
   while (std::getline(infile, input_line)) {
     istrings.push_back(input_line);
   }
   infile.close();
+  GOOGLE_LOG(INFO) << "Constructing ...";
   return TrainFromText(istrings);
 }
 
@@ -465,7 +470,6 @@ void PpmAsFstModel::WriteFst(const std::string& ofile) {
 }
 
 absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
-  absl::Status read_status = absl::OkStatus();
   const PpmAsFstOptions ppm_as_fst_config = storage.ppm_options();
   max_order_ = ppm_as_fst_config.max_order() > 0 ? ppm_as_fst_config.max_order()
                                                  : kMaxOrder;
@@ -499,8 +503,10 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     syms_->AddSymbol("<epsilon>");
     ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
-    read_status = TrainFromText(storage.model_file());
-    if (read_status != absl::OkStatus()) return read_status;
+    const absl::Time before_t = absl::Now();
+    RETURN_IF_ERROR(TrainFromText(storage.model_file()));
+    GOOGLE_LOG(INFO) << "Constructed in " << (absl::Now() - before_t) /
+        absl::Milliseconds(1) << " msec.";
   }
   if (!storage.vocabulary_file().empty()) {
     std::ifstream infile(storage.vocabulary_file());
@@ -510,22 +516,19 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     }
     std::string input_line;
     while (std::getline(infile, input_line)) {
-      read_status = AddExtraCharacters(input_line);
-      if (read_status != absl::OkStatus()) return read_status;
+      RETURN_IF_ERROR(AddExtraCharacters(input_line));
     }
     infile.close();
   }
-  read_status = CalculateStateOrders(/*save_state_orders=*/!static_model_);
-  if (read_status == absl::OkStatus()) {
-    if (max_cache_size_ < max_order_) {
-      // To descent backoff needs at least max_order_ worth of cache.
-      max_cache_size_ = max_order_ + 1;
-    }
-    cache_accessed_ = 0;
-    cache_index_.resize(fst_->NumStates(), -1);
-    set_start_state(fst_->Start());
+  RETURN_IF_ERROR(CalculateStateOrders(/*save_state_orders=*/!static_model_));
+  if (max_cache_size_ < max_order_) {
+    // To descent backoff needs at least max_order_ worth of cache.
+    max_cache_size_ = max_order_ + 1;
   }
-  return read_status;
+  cache_accessed_ = 0;
+  cache_index_.resize(fst_->NumStates(), -1);
+  set_start_state(fst_->Start());
+  return absl::OkStatus();
 }
 
 int PpmAsFstModel::FindOldestLastAccessedCache() const {
