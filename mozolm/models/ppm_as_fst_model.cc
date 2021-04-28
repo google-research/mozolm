@@ -464,9 +464,13 @@ absl::Status PpmAsFstModel::TrainFromText(
   return train_status;
 }
 
-void PpmAsFstModel::WriteFst(const std::string& ofile) {
+absl::Status PpmAsFstModel::WriteFst(const std::string& ofile) {
   ArcSort(fst_.get(), ILabelCompare<StdArc>());
-  fst_->Write(ofile);
+  if (!fst_->Write(ofile)) {
+    return absl::InternalError(absl::StrCat("Failed to write to ", ofile));
+  } else {
+    return absl::OkStatus();
+  }
 }
 
 absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {

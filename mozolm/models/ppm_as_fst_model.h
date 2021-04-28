@@ -169,7 +169,7 @@ class PpmAsFstModel : public LanguageModel {
   absl::Status Read(const ModelStorage& storage) override;
 
   // Writes fst_ model to file.
-  void WriteFst(const std::string& ofile);
+  absl::Status WriteFst(const std::string& ofile);
 
   // Returns fst_.
   const fst::StdVectorFst GetFst() const { return *fst_; }
