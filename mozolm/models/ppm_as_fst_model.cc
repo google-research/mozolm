@@ -79,7 +79,7 @@ absl::StatusOr<std::vector<bool>> DetermineBackoffStates(
     const StdVectorFst& fst) {
   std::vector<bool> backoff_states(fst.NumStates());
   for (StdArc::StateId s = 0; s < backoff_states.size(); ++s) {
-    int backoff_state = GetBackoffState(fst, s);
+    const int backoff_state = GetBackoffState(fst, s);
     if (backoff_state >= static_cast<int>(backoff_states.size())) {
       return absl::InternalError("Backoff state index out of bounds.");
     }
@@ -103,14 +103,14 @@ absl::StatusOr<double> AggregateAndLogCounts(StdArc::StateId s,
         return absl::InternalError("Arc weight <= 0.0.");
       }
       sum_counts += arc.weight.Value();
-      arc.weight = -log(arc.weight.Value());
+      arc.weight = -std::log(arc.weight.Value());
       arc_iterator.SetValue(arc);
     }
   }
   if (fst->Final(s) != StdArc::Weight::Zero()) {
     // Also includes final count if final state, and converts to -log.
     sum_counts += fst->Final(s).Value();
-    fst->SetFinal(s, -log(fst->Final(s).Value()));
+    fst->SetFinal(s, -std::log(fst->Final(s).Value()));
   }
   return sum_counts;
 }
@@ -129,7 +129,7 @@ absl::Status FinalizeLowerOrderCounts(const std::vector<bool>& backoff_states,
         if (sum_counts <= 0.0) {
           return absl::InternalError("Sum of counts <= 0.0.");
         }
-        arc.weight = -log(sum_counts);
+        arc.weight = -std::log(sum_counts);
         arc_iterator.SetValue(arc);
       }
     }
@@ -160,9 +160,9 @@ void ZeroOutLowerOrderCounts(const std::vector<bool>& backoff_states,
 // Increments lower-order counts for symbols leaving each state.
 void IncrementLowerOrderCounts(StdVectorFst* fst) {
   for (StdArc::StateId s = 0; s < fst->NumStates(); ++s) {
-    int backoff_state = GetBackoffState(*fst, s);
+    const int backoff_state = GetBackoffState(*fst, s);
     if (backoff_state >= 0) {
-      absl::flat_hash_set<int> arc_labels = GetArcLabelSet(*fst, s);
+      const absl::flat_hash_set<int> arc_labels = GetArcLabelSet(*fst, s);
       for (MutableArcIterator<StdVectorFst> arc_iterator(fst, backoff_state);
            !arc_iterator.Done(); arc_iterator.Next()) {
         StdArc arc = arc_iterator.Value();
@@ -207,7 +207,7 @@ bool NoObservations(const StdVectorFst& fst, StdArc::StateId s) {
 // found, increments the count on the backoff arc by 1, unless there are no
 // prior observations from the state, in which case no need to increment.
 int IncrementBackoffArcReturnBackoffState(StdVectorFst* fst, StdArc::StateId s) {
-  bool increment_count = !NoObservations(*fst, s);
+  const bool increment_count = !NoObservations(*fst, s);
   int backoff_state = -1;
   MutableArcIterator<StdVectorFst> arc_iterator(fst, s);
   StdArc arc = arc_iterator.Value();
@@ -226,7 +226,7 @@ double GetTotalStateCount(const StdVectorFst& fst, StdArc::StateId s) {
   double state_count = fst.Final(s).Value();
   for (ArcIterator<StdVectorFst> arc_iterator(fst, s); !arc_iterator.Done();
        arc_iterator.Next()) {
-    StdArc arc = arc_iterator.Value();
+    const StdArc arc = arc_iterator.Value();
     if (arc.ilabel == 0) {
       // State count stored on epsilon arc, if it is there.
       state_count = arc.weight.Value();
@@ -276,7 +276,7 @@ void SoftmaxRenormalize(std::vector<double>* neg_log_probabilities) {
 
 // Converts from nats (base e) to bits (base 2).
 double BitsFromNats(double nats) {
-  return nats / log(2.0);
+  return nats / std::log(2.0);
 }
 
 }  // namespace
@@ -592,8 +592,8 @@ std::vector<double> PpmAsFstModel::InitCacheProbs(
       --num_continuations;
     }
     const double gamma =
-        ngram::NegLogSum(-log(num_continuations) - log(beta_), -log(alpha_)) -
-        denominator;
+        ngram::NegLogSum(-std::log(num_continuations) - std::log(beta_),
+                         -std::log(alpha_)) - denominator;
     for (size_t i = 0; i < cache_probs.size(); ++i) {
       // Adds in gamma factor to backoff probabilities.
       cache_probs[i] += gamma;
@@ -614,8 +614,9 @@ absl::Status PpmAsFstModel::UpdateCacheStatesAndProbs(
     (*destination_states)[0] = fst_->Start();
     ASSIGN_OR_RETURN(
         (*neg_log_probabilities)[0],
-        impl::UpdateIndexProb(fst_->Final(s).Value(), -log(beta_), denominator,
-                              (*neg_log_probabilities)[0], backoff_state < 0));
+        impl::UpdateIndexProb(fst_->Final(s).Value(), -std::log(beta_),
+                              denominator, (*neg_log_probabilities)[0],
+                              backoff_state < 0));
   } else if (backoff_state < 0) {
     return absl::InternalError("Unigram state has zero final cost.");
   }
@@ -631,7 +632,8 @@ absl::Status PpmAsFstModel::UpdateCacheStatesAndProbs(
       (*destination_states)[arc.ilabel] = arc.nextstate;
       ASSIGN_OR_RETURN(
           (*neg_log_probabilities)[arc.ilabel],
-          impl::UpdateIndexProb(arc.weight.Value(), -log(beta_), denominator,
+          impl::UpdateIndexProb(arc.weight.Value(), -std::log(beta_),
+                                denominator,
                                 (*neg_log_probabilities)[arc.ilabel],
                                 backoff_state < 0));
     }
@@ -649,7 +651,7 @@ absl::Status PpmAsFstModel::UpdateCacheAtNonEmptyState(
   std::vector<int> destination_states =
       InitCacheStates(s, backoff_state, backoff_cache, /*arc_origin=*/false);
   const double denominator =
-      ngram::NegLogSum(impl::GetTotalStateCount(*fst_, s), -log(alpha_));
+      ngram::NegLogSum(impl::GetTotalStateCount(*fst_, s), -std::log(alpha_));
   std::vector<double> neg_log_probabilities =
       InitCacheProbs(s, backoff_state, backoff_cache, denominator);
   update_status = UpdateCacheStatesAndProbs(
@@ -1036,12 +1038,12 @@ absl::StatusOr<double> PpmStateCache::NegLogProbability(int sym_index) const {
 
 bool PpmStateCache::FillLMScores(const SymbolTable& syms,
                                  LMScores* response) const {
-  response->set_normalization(exp(-normalization_));
+  response->set_normalization(std::exp(-normalization_));
   response->add_symbols("");  // Empty string by default end-of-string.
-  response->add_probabilities(exp(-neg_log_probabilities_[0]));
+  response->add_probabilities(std::exp(-neg_log_probabilities_[0]));
   for (size_t i = 1; i < neg_log_probabilities_.size(); i++) {
     response->add_symbols(syms.Find(i));
-    response->add_probabilities(exp(-neg_log_probabilities_[i]));
+    response->add_probabilities(std::exp(-neg_log_probabilities_[i]));
   }
   return true;
 }
