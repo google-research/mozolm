@@ -14,9 +14,6 @@
 
 #include "mozolm/models/language_model.h"
 
-#include <vector>
-
-#include "mozolm/stubs/logging.h"
 #include "mozolm/utils/utf8_util.h"
 
 namespace mozolm {

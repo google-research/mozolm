@@ -34,7 +34,7 @@
 namespace mozolm {
 namespace models {
 
-static const float kFloatDelta = 0.00001;  // Delta for float comparisons.
+static constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
@@ -319,7 +319,6 @@ TEST_F(PpmAsFstTest, ExtractLMScores) {
   int start_state = model.ContextState("");
   LMScores lm_scores;
   ASSERT_TRUE(model.ExtractLMScores(start_state, &lm_scores));
-
 
   // Probability of "b" and </S> at the start state are equiprobable (same
   // number of observations at the unigram state, not seen at the start state).
