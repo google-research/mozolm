@@ -16,9 +16,13 @@
 
 #include <utility>
 
+#include "mozolm/stubs/logging.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "mozolm/models/ngram_char_fst_model.h"
-#include "mozolm/models/simple_bigram_char_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"
+#include "mozolm/models/simple_bigram_char_model.h"
+#include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
 namespace models {
@@ -35,12 +39,12 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
   } else {  // Shouldn't be here.
     return absl::UnimplementedError("Unsupported model type!");
   }
-  const absl::Status status = model->Read(storage);
-  if (status.ok()) {
-    return std::move(model);
-  } else {
-    return status;
-  }
+  GOOGLE_LOG(INFO) << "Reading ...";
+  const absl::Time before_t = absl::Now();
+  RETURN_IF_ERROR(model->Read(storage));
+  GOOGLE_LOG(INFO) << "Model read in " << (absl::Now() - before_t) /
+      absl::Milliseconds(1) << " msec.";
+  return std::move(model);
 }
 
 absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(

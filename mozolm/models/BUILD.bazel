@@ -110,7 +110,11 @@ cc_library(
         ":ngram_char_fst_model",
         ":ppm_as_fst_model",
         ":simple_bigram_char_model",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/time",
     ],
 )
 
