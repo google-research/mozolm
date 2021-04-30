@@ -18,6 +18,10 @@ package mozolm.grpc;
 
 import "mozolm/models/lm_scores.proto";
 
+option java_package = "com.google.mozolm.grpc";
+option java_outer_classname = "ServiceProto";
+option java_multiple_files = true;
+
 // Next available ID: 3
 message GetContextRequest {
   // Initial state for getting state information.

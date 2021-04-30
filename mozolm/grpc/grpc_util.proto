@@ -18,6 +18,10 @@ package mozolm.grpc;
 
 import "mozolm/models/model_config.proto";
 
+option java_package = "com.google.mozolm.grpc";
+option java_outer_classname = "GrpcUtilProto";
+option java_multiple_files = true;
+
 // Next available ID: 5
 message ClientServerConfig {
   // String representing the port where the server will listen.

@@ -18,7 +18,9 @@ syntax = "proto3";
 
 package mozolm;
 
+option java_package = "com.google.mozolm";
 option java_outer_classname = "LMScoresProto";
+option java_multiple_files = true;
 
 // Next available ID: 4
 message LMScores {
