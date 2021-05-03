@@ -14,6 +14,10 @@
 
 #include "mozolm/models/language_model.h"
 
+#include <algorithm>
+
+#include "ngram/ngram-model.h"
+#include "absl/strings/str_cat.h"
 #include "mozolm/utils/utf8_util.h"
 
 namespace mozolm {
@@ -34,6 +38,48 @@ int LanguageModel::ContextState(const std::string& context, int init_state) {
     }
   }
   return this_state;
+}
+
+absl::StatusOr<std::vector<std::pair<double, std::string>>>
+GetTopHypotheses(const LMScores &scores, int top_n) {
+  const int num_entries = scores.probabilities().size();
+  if (num_entries != scores.symbols().size()) {
+    return absl::InternalError(absl::StrCat(
+        "Mismatching number of probabilities (", num_entries,
+        ") and symbols (", scores.symbols().size(), ")"));
+  }
+  if (num_entries <= top_n) {
+    return absl::InternalError(absl::StrCat(
+        "Too many candidates requested: ", top_n));
+  } else if (num_entries == 0) {
+    return absl::InternalError("No scores to return");
+  }
+  std::vector<std::pair<double, std::string>> hyps;
+  hyps.reserve(num_entries);
+  for (int i = 0; i < num_entries; ++i) {
+    hyps.push_back({ scores.probabilities(i), scores.symbols(i) });
+  }
+  std::sort(hyps.begin(), hyps.end(),
+            [](const std::pair<double, std::string> &a,
+               const std::pair<double, std::string> &b) {
+              return a.first > b.first;
+            });
+  if (top_n > 0) {
+    hyps = std::vector(hyps.begin(), hyps.begin() + top_n);
+  }
+  return std::move(hyps);
+}
+
+void SoftmaxRenormalize(std::vector<double> *neg_log_probs) {
+  double tot_prob = (*neg_log_probs)[0];
+  double kahan_factor = 0.0;
+  for (int i = 1; i < neg_log_probs->size(); ++i) {
+    tot_prob =
+        ngram::NegLogSum(tot_prob, (*neg_log_probs)[i], &kahan_factor);
+  }
+  for (int i = 0; i < neg_log_probs->size(); ++i) {
+    (*neg_log_probs)[i] -= tot_prob;
+  }
 }
 
 }  // namespace models

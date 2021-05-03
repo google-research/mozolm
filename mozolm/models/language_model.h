@@ -16,10 +16,12 @@
 #define MOZOLM_MOZOLM_MODELS_LANGUAGE_MODEL_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "mozolm/models/lm_scores.pb.h"
 #include "mozolm/models/model_storage.pb.h"
 
@@ -70,6 +72,16 @@ class LanguageModel {
  private:
   int32 start_state_;
 };
+
+// Given the protocol buffer containing the language model scores and the
+// corresponding vocabulary returns the sorted list of tuples containing the
+// top requested hypotheses. If `top_n` is negative (default) returns all
+// hypotheses, otherwise returns the most likely `top_n`.
+absl::StatusOr<std::vector<std::pair<double, std::string>>> GetTopHypotheses(
+    const LMScores &scores, int top_n = -1);
+
+// Renormalizes negative log probabilities over vector.
+void SoftmaxRenormalize(std::vector<double> *neg_log_probs);
 
 }  // namespace models
 }  // namespace mozolm

@@ -48,6 +48,20 @@ cc_library(
         "//mozolm/stubs:logging",
         "//mozolm/utils:utf8_util",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_test(
+    name = "language_model_test",
+    srcs = ["language_model_test.cc"],
+    deps = [
+        ":language_model",
+        ":lm_scores_cc_proto",
+        "//mozolm/stubs:status-matchers",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -145,8 +159,29 @@ cc_library(
         ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/utils:utf8_util",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@org_openfst//:fst",
+        "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_test(
+    name = "ngram_char_fst_model_test",
+    srcs = ["ngram_char_fst_model_test.cc"],
+    data = ["testdata/gutenberg_en_char_ngram_o4_wb.fst"],
+    deps = [
+        ":model_storage_cc_proto",
+        ":ngram_char_fst_model",
+        "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:utf8_util",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@org_openfst//:fst",
     ],
 )
 

@@ -206,7 +206,8 @@ bool NoObservations(const StdVectorFst& fst, StdArc::StateId s) {
 // Returns the backoff state for the current state if exists, otherwise -1. If
 // found, increments the count on the backoff arc by 1, unless there are no
 // prior observations from the state, in which case no need to increment.
-int IncrementBackoffArcReturnBackoffState(StdVectorFst* fst, StdArc::StateId s) {
+int IncrementBackoffArcReturnBackoffState(StdVectorFst* fst,
+                                          StdArc::StateId s) {
   const bool increment_count = !NoObservations(*fst, s);
   int backoff_state = -1;
   MutableArcIterator<StdVectorFst> arc_iterator(fst, s);
@@ -259,19 +260,6 @@ absl::StatusOr<double> UpdateIndexProb(double count, double neg_log_beta,
         lower_order_prob, ngram::NegLogDiff(count, neg_log_beta) - denominator);
   }
   return sym_prob;
-}
-
-// Renormalizes negative log probabilities over vector.
-void SoftmaxRenormalize(std::vector<double>* neg_log_probabilities) {
-  double tot_prob = (*neg_log_probabilities)[0];
-  double kahan_factor = 0.0;
-  for (int i = 1; i < neg_log_probabilities->size(); ++i) {
-    tot_prob =
-        ngram::NegLogSum(tot_prob, (*neg_log_probabilities)[i], &kahan_factor);
-  }
-  for (int i = 0; i < neg_log_probabilities->size(); ++i) {
-    (*neg_log_probabilities)[i] -= tot_prob;
-  }
 }
 
 // Converts from nats (base e) to bits (base 2).
@@ -638,7 +626,7 @@ absl::Status PpmAsFstModel::UpdateCacheStatesAndProbs(
                                 backoff_state < 0));
     }
   }
-  impl::SoftmaxRenormalize(neg_log_probabilities);
+  SoftmaxRenormalize(neg_log_probabilities);
   return absl::OkStatus();
 }
 

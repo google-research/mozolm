@@ -18,46 +18,57 @@
 // --------------
 // DATADIR=mozolm/data
 //
-// Using the simple_char_bigram models:
+// o Using the simple_char_bigram models:
 //
-// VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
-// COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
-// bazel-bin/mozolm/grpc/mozolm_server_async \
-//   --client_server_config="server_port:\"localhost:50051\" \
-//   credential_type:INSECURE server_config { model_hub_config { \
-//   model_config { type:SIMPLE_CHAR_BIGRAM storage { \
-//   vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
-//   wait_for_clients:true }"
+//   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
+//   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
+//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//     --client_server_config="server_port:\"localhost:50051\" \
+//     credential_type:INSECURE server_config { model_hub_config { \
+//     model_config { type:SIMPLE_CHAR_BIGRAM storage { \
+//     vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
+//     wait_for_clients:true }"
 //
-// Will wait for queries in terminal, Ctrl-C to quit.
+//   Will wait for queries in terminal, Ctrl-C to quit.
 //
-// Using the PPM models:
+// o Using the PPM models:
 //
-// TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
-// bazel-bin/mozolm/grpc/mozolm_server_async \
-//   --client_server_config="server_port:\"localhost:50051\" \
-//   credential_type:INSECURE server_config { model_hub_config { \
-//   model_config { type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
-//   ppm_options { max_order: 4 static_model: false } } } } \
-//   wait_for_clients:true }"
+//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
+//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//     --client_server_config="server_port:\"localhost:50051\" \
+//     credential_type:INSECURE server_config { model_hub_config { \
+//     model_config { type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
+//     ppm_options { max_order: 4 static_model: false } } } } \
+//     wait_for_clients:true }"
 //
-// Will wait for queries in terminal, Ctrl-C to quit.
+//   Will wait for queries in terminal, Ctrl-C to quit.
 //
-// Using an equal mixture of PPM and simple_char_bigram models:
+// o Using the character n-gram FST model:
 //
-// VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
-// COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
-// TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
-// bazel-bin/mozolm/grpc/mozolm_server_async \
-//   --client_server_config="server_port:\"localhost:50051\" \
-//   credential_type:INSECURE server_config { model_hub_config { \
-//   mixture_type:INTERPOLATION model_config { type:PPM_AS_FST \
-//   storage { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
-//   static_model: false } } }  model_config { type:SIMPLE_CHAR_BIGRAM \
-//   storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
-//   wait_for_clients:true }"
+//   MODELFILE=${DATADIR}/models/testdata/gutenberg_en_char_ngram_o4_wb.fst
+//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//     --client_server_config="server_port:\"localhost:50051\" \
+//     credential_type:INSECURE server_config { model_hub_config { \
+//     model_config { type:CHAR_NGRAM_FST storage { model_file:\"$MODELFILE\" \
+//     } } } wait_for_clients:true }" --logtostderr
 //
-// Will wait for queries in terminal, Ctrl-C to quit.
+//   Will wait for queries in terminal, Ctrl-C to quit.
+//
+// o Using an equal mixture of PPM and simple_char_bigram models:
+//
+//   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
+//   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
+//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
+//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//     --client_server_config="server_port:\"localhost:50051\" \
+//     credential_type:INSECURE server_config { model_hub_config { \
+//     mixture_type:INTERPOLATION model_config { type:PPM_AS_FST \
+//     storage { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
+//     static_model: false } } }  model_config { type:SIMPLE_CHAR_BIGRAM \
+//     storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
+//     wait_for_clients:true }"
+//
+//   Will wait for queries in terminal, Ctrl-C to quit.
 
 #include <string>
 

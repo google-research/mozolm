@@ -30,7 +30,8 @@ message ModelStorage {
   // a binary file in some other format.
   string model_file = 1;
 
-  // Vocabulary file.
+  // Vocabulary file. This field will be ignored if the model already contains
+  // the vocabulary.
   string vocabulary_file = 2;
 
   // Options for PPM model.
