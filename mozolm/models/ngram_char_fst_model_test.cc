@@ -26,9 +26,9 @@
 #include "gmock/gmock.h"
 #include "mozolm/stubs/status-matchers.h"
 #include "gtest/gtest.h"
-#include "absl/flags/flag.h"
 #include "absl/strings/str_join.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "mozolm/utils/file_util.h"
 #include "mozolm/utils/utf8_util.h"
 
 using fst::StdArc;
@@ -37,7 +37,7 @@ namespace mozolm {
 namespace models {
 namespace {
 
-const char kModelPath[] = "mozolm/models/testdata";
+const char kModelPath[] = "com_google_mozolm/mozolm/models/testdata";
 const char kModelName[] = "gutenberg_en_char_ngram_o4_wb.fst";
 const char kSampleText[] = R"(
     His manner was not effusive. It seldom was; but he was glad, I think,
@@ -58,9 +58,11 @@ class NGramCharFstModelTest : public ::testing::Test {
  protected:
   void SetUp() override {
     const std::filesystem::path model_path = (
-        std::filesystem::current_path() /
-        kModelPath / kModelName).make_preferred();
-    model_storage_.set_model_file(model_path.string());
+        std::filesystem::path(kModelPath) / kModelName).make_preferred();
+    const auto path_status = file::GetRunfilesResourcePath(model_path.string());
+    ASSERT_TRUE(path_status.ok()) << "Failed to get runfile path: "
+                                  << path_status.status().ToString();
+    model_storage_.set_model_file(path_status.value());
     const auto read_status = model_.Read(model_storage_);
     ASSERT_TRUE(read_status.ok()) << "Failed to read model: "
                                   << read_status.ToString();
