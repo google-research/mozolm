@@ -44,6 +44,12 @@ build:windows --cxxopt=/std:c++17
 build:windows --host_cxxopt=/std:c++17
 build:windows --copt=/W0
 
+# Generation of `runfiles` directories on Windows has to be explicitly enabled.
+# See https://github.com/bazelbuild/bazel/issues/8843.
+build:windows --enable_runfiles
+test:windows --enable_runfiles
+test:windows --test_output=errors
+
 # Suppress C++ compiler warnings, otherwise build logs become 10s of MBs.
 build:short_logs --output_filter=DONT_MATCH_ANYTHING
 
