@@ -17,6 +17,7 @@
 
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/status/status.h"
 
 namespace mozolm {
@@ -31,16 +32,18 @@ namespace mozolm {
       rexpr)
 
 #define ASSIGN_OR_RETURN_IMPL(statusor, lhs, rexpr) \
-  const auto statusor = (rexpr);                    \
-  if (!statusor.ok()) {                             \
-    return statusor.status();                       \
-  }                                                 \
-  lhs = std::move(statusor.value())
+  do {                                              \
+    const auto statusor = (rexpr);                  \
+    if (ABSL_PREDICT_FALSE(!statusor.ok())) {       \
+      return statusor.status();                     \
+    }                                               \
+    lhs = std::move(statusor.value());              \
+  } while (false)
 
 #define RETURN_IF_ERROR_IMPL(__local_status, __status) \
   do {                                                 \
     const auto __local_status = __status;              \
-    if (!__local_status.ok()) {                        \
+    if (ABSL_PREDICT_FALSE(!__local_status.ok())) {    \
       return __local_status;                           \
     }                                                  \
   } while (false)

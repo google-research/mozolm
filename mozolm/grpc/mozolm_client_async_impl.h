@@ -28,10 +28,10 @@
 namespace mozolm {
 namespace grpc {
 
-// A completion-queue asynchronous client for the lm_score server.
+// A completion-queue asynchronous client for the LM server.
 class MozoLMClientAsyncImpl {
  public:
-  // Constructs a client to use the given lm_score server.
+  // Constructs a client to use the given LM server.
   explicit MozoLMClientAsyncImpl(std::unique_ptr<MozoLMServer::Stub> stub);
 
   // Seeks the language models scores given the initial state and context

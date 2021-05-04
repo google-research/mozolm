@@ -14,33 +14,18 @@
 
 #include "mozolm/grpc/mozolm_client_async_impl.h"
 
-#include <algorithm>
-
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/client_context.h"
 #include "include/grpcpp/completion_queue.h"
 #include "include/grpcpp/support/async_stream.h"
 #include "absl/memory/memory.h"
+#include "mozolm/models/language_model.h"
 #include "mozolm/utils/utf8_util.h"
+#include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
 namespace grpc {
 namespace {
-
-// Retrieves reverse probability sorted vector of prob/utf8-symbol pairs and
-// normalization.
-void RetrieveLMScores(
-    const LMScores &response, double* normalization,
-    std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
-  prob_idx_pair_vector->reserve(response.probabilities_size());
-  for (int i = 0; i < response.probabilities_size(); i++) {
-    prob_idx_pair_vector->push_back(
-        std::make_pair(response.probabilities(i), response.symbols(i)));
-    }
-    std::sort(prob_idx_pair_vector->begin(), prob_idx_pair_vector->end());
-    std::reverse(prob_idx_pair_vector->begin(), prob_idx_pair_vector->end());
-  *normalization = response.normalization();
-}
 
 void WaitAndCheck(::grpc::CompletionQueue* cq) {
   void* got_tag;
@@ -76,6 +61,7 @@ absl::Status MozoLMClientAsyncImpl::GetLMScore(
   request.set_state(initial_state);
   request.set_context(context_str);
 
+  // Fetches the response.
   ::grpc::CompletionQueue cq;
   std::unique_ptr<::grpc::ClientAsyncResponseReader<LMScores>> rpc(
       stub_->AsyncGetLMScores(
@@ -86,8 +72,10 @@ absl::Status MozoLMClientAsyncImpl::GetLMScore(
   if (!status.ok()) {
     return absl::InternalError(status.error_message());
   }
+
   // Retrieves information from response if RPC call was successful.
-  RetrieveLMScores(response, normalization, prob_idx_pair_vector);
+  ASSIGN_OR_RETURN(*prob_idx_pair_vector, models::GetTopHypotheses(response));
+  *normalization = response.normalization();
   return absl::OkStatus();
 }
 
@@ -154,7 +142,11 @@ absl::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
 
   if (status.ok()) {
     // Retrieves information from response if RPC call was successful.
-    RetrieveLMScores(response, normalization, prob_idx_pair_vector);
+    const auto probs_status = models::GetTopHypotheses(response);
+    if (probs_status.ok()) {
+      *prob_idx_pair_vector = std::move(probs_status.value());
+      *normalization = response.normalization();
+    }
   }
   return status;
 }

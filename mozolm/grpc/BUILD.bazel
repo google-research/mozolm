@@ -81,8 +81,10 @@ cc_library(
     hdrs = ["mozolm_client_async_impl.h"],
     deps = [
         ":service_cc_grpc_proto",
+        "//mozolm/models:language_model",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
         "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
