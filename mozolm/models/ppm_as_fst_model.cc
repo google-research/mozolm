@@ -1027,7 +1027,10 @@ absl::StatusOr<double> PpmStateCache::NegLogProbability(int sym_index) const {
 bool PpmStateCache::FillLMScores(const SymbolTable& syms,
                                  LMScores* response) const {
   response->set_normalization(std::exp(-normalization_));
+  const int num_scores = neg_log_probabilities_.size() + 1;
+  response->mutable_symbols()->Reserve(num_scores);
   response->add_symbols("");  // Empty string by default end-of-string.
+  response->mutable_probabilities()->Reserve(num_scores);
   response->add_probabilities(std::exp(-neg_log_probabilities_[0]));
   for (size_t i = 1; i < neg_log_probabilities_.size(); i++) {
     response->add_symbols(syms.Find(i));

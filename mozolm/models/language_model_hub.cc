@@ -15,6 +15,7 @@
 #include "mozolm/models/language_model_hub.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "mozolm/stubs/logging.h"
 #include "ngram/ngram-model.h"
@@ -35,14 +36,14 @@ double MixResults(const LMScores& lm_scores, double mix_weight,
                   absl::flat_hash_map<std::string, double>* mixed_values) {
   for (int i = 0; i < lm_scores.probabilities_size(); i++) {
     const std::string key = lm_scores.symbols(i);
-    double value = -log(lm_scores.probabilities(i)) + mix_weight;
+    double value = -std::log(lm_scores.probabilities(i)) + mix_weight;
     if (mixed_values->contains(key)) {
       value = ngram::NegLogSum(value, mixed_values->find(key)->second);
     }
     mixed_values->insert_or_assign(key, value);
   }
   // Weights the normalization value by the mixture weight.
-  return lm_scores.normalization() * exp(-mix_weight);
+  return lm_scores.normalization() * std::exp(-mix_weight);
 }
 
 void ExtractMixture(
@@ -61,9 +62,11 @@ void ExtractMixture(
   }
   // Sorts in lexicographic order, normalizes and converts from -log to probs.
   std::sort(values.begin(), values.end());
+  response->mutable_symbols()->Reserve(values.size());
+  response->mutable_probabilities()->Reserve(values.size());
   for (int i = 0; i < values.size(); ++i) {
     response->add_symbols(values[i].first);
-    response->add_probabilities(exp(-values[i].second + norm));
+    response->add_probabilities(std::exp(-values[i].second + norm));
   }
   response->set_normalization(mixed_normalization);
 }
@@ -319,7 +322,7 @@ absl::StatusOr<std::vector<int>> LanguageModelHubState::UpdateHubState(
   }
   prev_state_ = hub_state.prev_state();
   state_sym_ = hub_state.state_sym();
-  return old_next_states;
+  return std::move(old_next_states);
 }
 
 }  // namespace models
