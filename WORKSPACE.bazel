@@ -152,6 +152,41 @@ compat_repositories()
 load("@com_github_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 grpc_java_repositories()
 
+# ------------------------------------
+# Pure JavaScript for Bazel & gRPC:
+# ------------------------------------
+# See:
+#   https://github.com/rules-proto-grpc/rules_proto_grpc
+#   https://rules-proto-grpc.aliddell.com/en/latest/lang/js.html
+
+proto_grpc_version = "3.1.1"
+
+http_archive(
+    name = "rules_proto_grpc",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/refs/tags/%s.tar.gz" % (
+        proto_grpc_version)],
+    strip_prefix = "rules_proto_grpc-%s" % proto_grpc_version,
+    sha256 = "7954abbb6898830cd10ac9714fbcacf092299fda00ed2baf781172f545120419",
+)
+
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains")
+
+rules_proto_grpc_toolchains()
+
+load("@rules_proto_grpc//js:repositories.bzl", rules_proto_grpc_js_repos = "js_repos")
+
+rules_proto_grpc_js_repos()
+
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
+
+yarn_install(
+    name = "npm",
+    # This should be changed to your local package.json which should contain the
+    # dependencies required.
+    package_json = "@rules_proto_grpc//js:requirements/package.json",
+    yarn_lock = "@rules_proto_grpc//js:requirements/yarn.lock",
+)
+
 # Local Variables:
 # mode: bazel-build-mode
 # End:

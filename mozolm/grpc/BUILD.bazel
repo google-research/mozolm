@@ -15,6 +15,8 @@
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 load("@com_github_grpc_grpc_java//:java_grpc_library.bzl", "java_grpc_library")
 
+load("//bazel:js_build_defs.bzl", "jspb_proto_library", "js_grpc_web_library")
+
 package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
@@ -173,6 +175,17 @@ java_grpc_library(
     name = "service_java_grpc_proto",
     srcs = [":service_proto"],
     deps = [":service_java_proto"],
+)
+
+jspb_proto_library(
+    name = "service_jspb_proto",
+    deps = [":service_proto"],
+)
+
+js_grpc_web_library(
+    name = "service_js_grpc_proto",
+    src = "service.proto",
+    deps = [":service_jspb_proto"],
 )
 
 proto_library(

@@ -14,6 +14,8 @@
 
 # Language modeling package.
 
+load("//bazel:js_build_defs.bzl", "jspb_proto_library")
+
 package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
@@ -80,6 +82,11 @@ java_proto_library(
     deps = [":lm_scores_proto"],
 )
 
+jspb_proto_library(
+    name = "lm_scores_jspb_proto",
+    deps = [":lm_scores_proto"],
+)
+
 proto_library(
     name = "model_storage_proto",
     srcs = ["model_storage.proto"],
@@ -96,6 +103,11 @@ java_proto_library(
     deps = [":model_storage_proto"],
 )
 
+jspb_proto_library(
+    name = "model_storage_jspb_proto",
+    deps = [":model_storage_proto"],
+)
+
 proto_library(
     name = "model_config_proto",
     srcs = ["model_config.proto"],
@@ -109,6 +121,11 @@ cc_proto_library(
 
 java_proto_library(
     name = "model_config_java_proto",
+    deps = [":model_config_proto"],
+)
+
+jspb_proto_library(
+    name = "model_config_jspb_proto",
     deps = [":model_config_proto"],
 )
 
@@ -235,5 +252,10 @@ cc_proto_library(
 
 java_proto_library(
     name = "ppm_as_fst_model_java_proto",
+    deps = [":ppm_as_fst_model_proto"],
+)
+
+jspb_proto_library(
+    name = "ppm_as_fst_model_jspb_proto",
     deps = [":ppm_as_fst_model_proto"],
 )
