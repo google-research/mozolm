@@ -28,56 +28,10 @@ cc_library(
         "source/utf8/unchecked.h",
         "source/utf8/core.h",
         "source/utf8/cpp11.h",
+        "source/utf8/cpp17.h",
     ],
 )
 
-cc_binary(
-    name = "docsample",
-    srcs = ["samples/docsample.cpp"],
-    deps = [":utfcpp"],
-)
-
-cc_test(
-    name = "test_checked_api",
-    srcs = ["tests/test_checked_api.cpp"],
-    deps = [
-        ":utfcpp",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "test_checked_iterator",
-    srcs = ["tests/test_checked_iterator.cpp"],
-    deps = [
-        ":utfcpp",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "test_unchecked_api",
-    srcs = ["tests/test_unchecked_api.cpp"],
-    deps = [
-        ":utfcpp",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "test_unchecked_iterator",
-    srcs = ["tests/test_unchecked_iterator.cpp"],
-    deps = [
-        ":utfcpp",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "test_cpp11",
-    srcs = ["tests/test_cpp11.cpp"],
-    deps = [
-        ":utfcpp",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
+# Local Variables:
+# mode: bazel-build
+# End:

@@ -83,12 +83,12 @@ grpc_extra_deps()
 # utfcpp: See
 #   https://github.com/nemtrif/utfcpp
 # -------------------------------------------------------------------------
-utfcpp_version = "3.1.2"
+utfcpp_version = "3.2"
 
 http_archive(
     name = "com_github_utfcpp",
     urls = ["https://github.com/nemtrif/utfcpp/archive/v%s.tar.gz" % utfcpp_version],
-    sha256 = "fea3bfa39fb8bd7368077ea5e1e0db9a8951f7e6fb6d9400b00ab3d92b807c6d",
+    sha256 = "cd4f9a66d23dc385bd7ea11bc0abfda8ea1ad1dcf5cd6d3a27bc551e86436364",
     build_file = "@//:bazel/utfcpp.BUILD.bazel",
     strip_prefix = "utfcpp-%s" % utfcpp_version,
 )
@@ -188,5 +188,5 @@ yarn_install(
 )
 
 # Local Variables:
-# mode: bazel-build-mode
+# mode: bazel-build
 # End:

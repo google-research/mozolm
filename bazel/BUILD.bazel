@@ -12,23 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Bazel build file for MozoLM.
+# External dependencies and Starlark helpers.
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
 exports_files(glob(["*.BUILD.bazel", "*.bzl"]))
-
-# Following targets are aliases to the tests under the `utfcpp` library.
-test_suite(
-    name = "utfcpp_tests",
-    visibility = ["//visibility:private"],
-    tests = [
-        "@com_github_utfcpp//:test_checked_api",
-        "@com_github_utfcpp//:test_checked_iterator",
-        "@com_github_utfcpp//:test_cpp11",
-        "@com_github_utfcpp//:test_unchecked_api",
-        "@com_github_utfcpp//:test_unchecked_iterator",
-    ],
-)
