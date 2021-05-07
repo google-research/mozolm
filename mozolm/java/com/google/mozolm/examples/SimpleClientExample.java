@@ -14,8 +14,9 @@
 
 // Simple demonstration of MozoLM client API.
 
-package com.google.mozolm;
+package com.google.mozolm.examples;
 
+import com.google.mozolm.LMScores;
 import com.google.mozolm.grpc.GetContextRequest;
 import com.google.mozolm.grpc.MozoLMServerGrpc;
 import io.grpc.ManagedChannel;
