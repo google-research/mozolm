@@ -57,9 +57,9 @@ cc_binary(
 )
 
 cc_test(
-    name = "mozolm_server_async_test",
+    name = "mozolm_server_async_impl_test",
     size = "small",
-    srcs = ["mozolm_server_async_test.cc"],
+    srcs = ["mozolm_server_async_impl_test.cc"],
     deps = [
         ":mozolm_server_async_impl",
         ":service_cc_grpc_proto",
