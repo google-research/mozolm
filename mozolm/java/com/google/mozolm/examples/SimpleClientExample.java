@@ -18,7 +18,7 @@ package com.google.mozolm.examples;
 
 import com.google.mozolm.LMScores;
 import com.google.mozolm.grpc.GetContextRequest;
-import com.google.mozolm.grpc.MozoLMServerGrpc;
+import com.google.mozolm.grpc.MozoLMServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
@@ -64,8 +64,8 @@ final class SimpleClientExample {
         ManagedChannelBuilder.forTarget(serverSpec).executor(executor).
         usePlaintext().build();
     try {
-      final MozoLMServerGrpc.MozoLMServerBlockingStub blockingStub =
-          MozoLMServerGrpc.newBlockingStub(channel);
+      final MozoLMServiceGrpc.MozoLMServiceBlockingStub blockingStub =
+          MozoLMServiceGrpc.newBlockingStub(channel);
       final ArrayList<Pair<Double, String>> topCands = getTopCandidates(
           blockingStub, "Hello wo");
       // For the "Hello wo..." context above, the next batch of hypotheses
@@ -86,7 +86,7 @@ final class SimpleClientExample {
 
   /** Fetches probabilities for all the symbols continuing the supplied context. */
   private ArrayList<Pair<Double, String>> getTopCandidates(
-      MozoLMServerGrpc.MozoLMServerBlockingStub stub, String contextString)
+      MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, String contextString)
       throws AssertionError {
     final int initialState = -1;
     final GetContextRequest request = GetContextRequest.newBuilder()

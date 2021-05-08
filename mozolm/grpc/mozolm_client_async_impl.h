@@ -32,7 +32,7 @@ namespace grpc {
 class MozoLMClientAsyncImpl {
  public:
   // Constructs a client to use the given LM server.
-  explicit MozoLMClientAsyncImpl(std::unique_ptr<MozoLMServer::Stub> stub);
+  explicit MozoLMClientAsyncImpl(std::unique_ptr<MozoLMService::Stub> stub);
 
   // Seeks the language models scores given the initial state and context
   // string. Any errors are logged.
@@ -59,7 +59,7 @@ class MozoLMClientAsyncImpl {
       int32 count, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
-  std::unique_ptr<MozoLMServer::Stub> stub_;
+  std::unique_ptr<MozoLMService::Stub> stub_;
 };
 
 }  // namespace grpc

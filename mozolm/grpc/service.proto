@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// gRPC Service definitions.
+
 syntax = "proto3";
 
 package mozolm.grpc;
@@ -48,7 +50,7 @@ message UpdateLMScoresRequest {
   int32 count = 3;
 }
 
-service MozoLMServer {
+service MozoLMService {
   // Returns the probs and normalization for given state.
   rpc GetLMScores(GetContextRequest) returns (LMScores) {
     // errors: invalid state;

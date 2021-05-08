@@ -47,7 +47,7 @@ std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_ms) {
 }  // namespace
 
 MozoLMClientAsyncImpl::MozoLMClientAsyncImpl(
-    std::unique_ptr<MozoLMServer::Stub> stub)
+    std::unique_ptr<MozoLMService::Stub> stub)
     : stub_(std::move(stub)) {}
 
 absl::Status MozoLMClientAsyncImpl::GetLMScore(

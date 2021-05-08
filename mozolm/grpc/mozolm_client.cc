@@ -263,7 +263,8 @@ MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {
   }
   channel_ = ::grpc::CreateChannel(grpc_config.server_port(), creds);
   completion_client_ =
-      absl::make_unique<MozoLMClientAsyncImpl>(MozoLMServer::NewStub(channel_));
+      absl::make_unique<MozoLMClientAsyncImpl>(MozoLMService::NewStub(
+          channel_));
   timeout_ = grpc_config.client_config().timeout();
 }
 

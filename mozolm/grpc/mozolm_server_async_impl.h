@@ -37,7 +37,7 @@ namespace grpc {
 
 // A simple lm_score server, that can provide lm_scores given a context string
 // or model state. Asynchronous, based on completion-queue.
-class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
+class MozoLMServerAsyncImpl : public MozoLMService::AsyncService {
   friend class MozoLMServerAsyncTest;
 
  public:
@@ -137,7 +137,7 @@ class MozoLMServerAsyncImpl : public MozoLMServer::AsyncService {
   std::unique_ptr<models::LanguageModelHub> model_hub_;
 
   std::unique_ptr<::grpc::ServerCompletionQueue> cq_;
-  MozoLMServer::AsyncService service_;
+  MozoLMService::AsyncService service_;
   absl::Mutex server_shutdown_lock_;
   std::unique_ptr<::grpc::Server> server_
       ABSL_GUARDED_BY(server_shutdown_lock_);
