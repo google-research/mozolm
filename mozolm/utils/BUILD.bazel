@@ -36,6 +36,7 @@ cc_test(
     deps = [
         ":utf8_util",
         "//mozolm/stubs:status-matchers",
+        "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_googletest//:gtest_main",
     ],
 )

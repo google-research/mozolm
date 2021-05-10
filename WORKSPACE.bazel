@@ -120,6 +120,23 @@ http_archive(
 )
 
 # -------------------------------------------------------------------------
+# Protocol buffer matches (should be part of gmock and gtest, but not yet):
+#   https://github.com/inazarenko/protobuf-matchers
+# -------------------------------------------------------------------------
+
+http_archive(
+    name = "com_googlesource_code_re2",
+    strip_prefix = "re2-master",
+    urls = ["https://github.com/google/re2/archive/master.zip"],
+)
+
+http_archive(
+    name = "com_github_protobuf_matchers",
+    urls = ["https://github.com/inazarenko/protobuf-matchers/archive/refs/heads/master.zip"],
+    strip_prefix = "protobuf-matchers-master",
+)
+
+# -------------------------------------------------------------------------
 # Android cross-compile configuration:
 #   https://github.com/tensorflow/tensorflow/tree/master/third_party/android
 # -------------------------------------------------------------------------

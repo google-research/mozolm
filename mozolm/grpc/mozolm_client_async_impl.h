@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
-#include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
 #include "absl/status/status.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 
@@ -32,34 +31,36 @@ namespace grpc {
 class MozoLMClientAsyncImpl {
  public:
   // Constructs a client to use the given LM server.
-  explicit MozoLMClientAsyncImpl(std::unique_ptr<MozoLMService::Stub> stub);
+  explicit MozoLMClientAsyncImpl(
+      std::unique_ptr<MozoLMService::StubInterface> stub);
 
   // Seeks the language models scores given the initial state and context
-  // string. Any errors are logged.
+  // string.
   absl::Status GetLMScore(
-      const std::string& context_str, int initial_state, double timeout,
+      const std::string& context_str, int initial_state, double timeout_sec,
       double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
-  // Seeks the next model state given the initial state and context string. Any
-  // errors are logged.
+  // Seeks the next model state given the initial state and context string.
   absl::Status GetNextState(const std::string& context_str, int initial_state,
-                            double timeout, int64* next_state);
+                            double timeout_sec, int64* next_state);
 
   // Updates counts and retrieves probabilities from destination state.
   absl::Status UpdateCountGetDestStateScore(
-      const std::string& context_str, int initial_state, double timeout,
+      const std::string& context_str, int initial_state, double timeout_sec,
       int32 count, int64* next_state, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
  private:
+  MozoLMClientAsyncImpl() = delete;
+
   // Updates counts and retrieves probabilities from destination state.
-  ::grpc::Status UpdateCountGetDestStateScore(
-      const std::vector<int>& context_str, int initial_state, double timeout,
-      int32 count, double* normalization,
+  absl::Status UpdateCountGetDestStateScore(
+      const std::vector<int>& context_str, int initial_state,
+      double timeout_sec, int32 count, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
-  std::unique_ptr<MozoLMService::Stub> stub_;
+  std::unique_ptr<MozoLMService::StubInterface> stub_;  // Owned elsewhere.
 };
 
 }  // namespace grpc

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_STUBS_LOGGING_H_
-#define MOZOLM_MOZOLM_STUBS_LOGGING_H_
+#ifndef MOZOLM_MOZOLM_STUBS_GOOGLE_LOGGING_H_
+#define MOZOLM_MOZOLM_STUBS_GOOGLE_LOGGING_H_
 
 #include "google/protobuf/stubs/logging.h"
 
-#endif  // MOZOLM_MOZOLM_STUBS_LOGGING_H_
+#endif  // MOZOLM_MOZOLM_STUBS_GOOGLE_LOGGING_H_

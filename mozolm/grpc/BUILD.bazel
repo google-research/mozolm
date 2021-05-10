@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# MozoLM gRPC-specific packages.
+
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 load("@com_github_grpc_grpc_java//:java_grpc_library.bzl", "java_grpc_library")
 
@@ -70,6 +72,7 @@ cc_test(
         "//mozolm/stubs:status-matchers",
         "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
+        "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
@@ -91,6 +94,23 @@ cc_library(
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "mozolm_client_async_impl_test",
+    srcs = ["mozolm_client_async_impl_test.cc"],
+    deps = [
+        ":mozolm_client_async_impl",
+        ":service_cc_grpc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status-matchers",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/memory",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -162,6 +182,7 @@ cc_grpc_library(
     name = "service_cc_grpc_proto",
     srcs = [":service_proto"],
     grpc_only = True,
+    generate_mocks = True,
     deps = [":service_cc_proto"],
 )
 

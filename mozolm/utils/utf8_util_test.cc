@@ -16,6 +16,7 @@
 
 #include "gmock/gmock.h"
 #include "mozolm/stubs/status-matchers.h"
+#include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 
 using ::testing::ElementsAre;

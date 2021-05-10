@@ -14,11 +14,12 @@
 
 #include "mozolm/grpc/mozolm_client_async_impl.h"
 
-#include "mozolm/stubs/logging.h"
 #include "include/grpcpp/client_context.h"
 #include "include/grpcpp/completion_queue.h"
+#include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
 #include "include/grpcpp/support/async_stream.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_format.h"
 #include "mozolm/models/language_model.h"
 #include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
@@ -27,19 +28,32 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
-void WaitAndCheck(::grpc::CompletionQueue* cq) {
-  void* got_tag;
+// Extracts the next tag from a gRPC completion queue and verify that it matches
+// the given expected tag. Returns OK upon a successful fetch and match.
+absl::Status WaitAndCheck(::grpc::CompletionQueue *cq, int expected_tag) {
+  // Wait until next result arrives.
+  void *got_tag;
   bool ok = false;
-  GOOGLE_CHECK(cq->Next(&got_tag, &ok));  // Wait until next result arrives.
-  GOOGLE_CHECK_EQ(got_tag, (void*)1);     // Verify result matches tag.
+  if (!cq->Next(&got_tag, &ok)) {
+    return absl::InternalError("Completion queue next error");
+  }
+  if (!ok) return absl::InternalError("RPC call failed");
+
+  // Match the tag with the expected tag.
+  if (expected_tag != *static_cast<int *>(got_tag)) {
+    return absl::InternalError(absl::StrFormat(
+        "Completion queue tag mismatch. Expected %d, got %d",
+        expected_tag, *static_cast<int *>(got_tag)));
+  }
+  return absl::OkStatus();
 }
 
-std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_ms) {
+std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_sec) {
   std::unique_ptr<::grpc::ClientContext> context =
       absl::make_unique<::grpc::ClientContext>();
   context->set_deadline(gpr_time_add(
       gpr_now(GPR_CLOCK_REALTIME),
-      gpr_time_from_millis(static_cast<int64>(1000.0 * timeout_ms),
+      gpr_time_from_millis(static_cast<int64>(1000.0 * timeout_sec),
                            GPR_TIMESPAN)));
   return context;
 }
@@ -47,28 +61,30 @@ std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_ms) {
 }  // namespace
 
 MozoLMClientAsyncImpl::MozoLMClientAsyncImpl(
-    std::unique_ptr<MozoLMService::Stub> stub)
-    : stub_(std::move(stub)) {}
+    std::unique_ptr<MozoLMService::StubInterface> stub) : stub_(
+        std::move(stub)) {}
 
 absl::Status MozoLMClientAsyncImpl::GetLMScore(
-    const std::string& context_str, int initial_state, double timeout,
+    const std::string& context_str, int initial_state, double timeout_sec,
     double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
-  // Sets up ClientContext, request and response.
-  std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(timeout);
+  // Sets up client context and the request.
+  std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(
+      timeout_sec);
   GetContextRequest request;
-  LMScores response;
   request.set_state(initial_state);
   request.set_context(context_str);
 
   // Fetches the response.
   ::grpc::CompletionQueue cq;
-  std::unique_ptr<::grpc::ClientAsyncResponseReader<LMScores>> rpc(
+  std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<LMScores>> rpc(
       stub_->AsyncGetLMScores(
           context.get(), request, &cq));  // Performs RPC call.
   ::grpc::Status status;
-  rpc->Finish(&response, &status, reinterpret_cast<void*>(1));
-  WaitAndCheck(&cq);
+  LMScores response;
+  int finish_tag = 1;
+  rpc->Finish(&response, &status, &finish_tag);
+  RETURN_IF_ERROR(WaitAndCheck(&cq, finish_tag));
   if (!status.ok()) {
     return absl::InternalError(status.error_message());
   }
@@ -80,75 +96,80 @@ absl::Status MozoLMClientAsyncImpl::GetLMScore(
 }
 
 absl::Status MozoLMClientAsyncImpl::GetNextState(
-    const std::string& context_str, int initial_state, double timeout,
+    const std::string& context_str, int initial_state, double timeout_sec,
     int64* next_state) {
-  // Sets up ClientContext, request and response.
-  std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(timeout);
+  // Sets up client context and the request.
+  std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(
+      timeout_sec);
   GetContextRequest request;
-  NextState response;
   request.set_state(initial_state);
   request.set_context(context_str);
 
   ::grpc::CompletionQueue cq;
-  std::unique_ptr<::grpc::ClientAsyncResponseReader<NextState>> rpc(
+  std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<NextState>> rpc(
       stub_->AsyncGetNextState(
           context.get(), request, &cq));  // Performs RPC call.
+  if (!rpc) {  // This will fail if the test mocks are not set up correctly.
+    return absl::InternalError("Got invalid response reader");
+  }
   ::grpc::Status status;
-  rpc->Finish(&response, &status, reinterpret_cast<void*>(1));
-  WaitAndCheck(&cq);
-
+  NextState response;
+  int finish_tag = 1;
+  rpc->Finish(&response, &status, &finish_tag);
+  RETURN_IF_ERROR(WaitAndCheck(&cq, finish_tag));
   if (!status.ok()) {
     return absl::InternalError(status.error_message());
   }
+
   // Sets next_state if RPC call was successful.
   *next_state = response.next_state();
   return absl::OkStatus();
 }
 
 absl::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
-    const std::string& context_str, int initial_state, double timeout,
+    const std::string& context_str, int initial_state, double timeout_sec,
     int count, int64* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
-  const ::grpc::Status status = UpdateCountGetDestStateScore(
-      utf8::StrSplitByCharToUnicode(context_str), initial_state, timeout, count,
-      normalization, prob_idx_pair_vector);
-  if (!status.ok()) {
-    return absl::InternalError(status.error_message());
-  }
-  return GetNextState(context_str, initial_state, timeout, next_state);
+  RETURN_IF_ERROR(UpdateCountGetDestStateScore(
+      utf8::StrSplitByCharToUnicode(context_str), initial_state, timeout_sec,
+      count, normalization, prob_idx_pair_vector));
+  return GetNextState(context_str, initial_state, timeout_sec, next_state);
 }
 
-::grpc::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
-    const std::vector<int>& context_str, int initial_state, double timeout,
+absl::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
+    const std::vector<int>& context_str, int initial_state, double timeout_sec,
     int count, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
-  // Sets up ClientContext, request and response.
-  std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(timeout);
+  // Sets up client context and the request.
+  std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(
+      timeout_sec);
   UpdateLMScoresRequest request;
-  LMScores response;
   request.set_state(initial_state);
   request.mutable_utf8_sym()->Reserve(context_str.size());
   for (auto utf8_sym : context_str) {
     request.add_utf8_sym(utf8_sym);
   }
   request.set_count(count);
+
+  // Fetches the response.
   ::grpc::CompletionQueue cq;
-  std::unique_ptr<::grpc::ClientAsyncResponseReader<LMScores>> rpc(
+  std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<LMScores>> rpc(
       stub_->AsyncUpdateLMScores(context.get(), request,
                                  &cq));  // Performs RPC call.
   ::grpc::Status status;
-  rpc->Finish(&response, &status, reinterpret_cast<void*>(1));
-  WaitAndCheck(&cq);
+  LMScores response;
+  int finish_tag = 1;
+  rpc->Finish(&response, &status, &finish_tag);
+  RETURN_IF_ERROR(WaitAndCheck(&cq, finish_tag));
+  if (!status.ok()) return absl::InternalError(status.error_message());
 
-  if (status.ok()) {
-    // Retrieves information from response if RPC call was successful.
-    const auto probs_status = models::GetTopHypotheses(response);
-    if (probs_status.ok()) {
-      *prob_idx_pair_vector = std::move(probs_status.value());
-      *normalization = response.normalization();
-    }
+  // Retrieves information from response if RPC call was successful.
+  const auto probs_status = models::GetTopHypotheses(response);
+  if (probs_status.ok()) {
+    *prob_idx_pair_vector = std::move(probs_status.value());
+    *normalization = response.normalization();
   }
-  return status;
+  return probs_status.status();
 }
 
 }  // namespace grpc

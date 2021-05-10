@@ -63,6 +63,7 @@ cc_test(
         ":language_model",
         ":lm_scores_cc_proto",
         "//mozolm/stubs:status-matchers",
+        "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -195,6 +196,7 @@ cc_test(
         ":ngram_char_fst_model",
         "//mozolm/stubs:status-matchers",
         "//mozolm/utils:utf8_util",
+        "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
@@ -233,6 +235,7 @@ cc_test(
         ":ppm_as_fst_model",
         "//mozolm/stubs:status-matchers",
         "//mozolm/utils:utf8_util",
+        "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@org_openfst//:fst",

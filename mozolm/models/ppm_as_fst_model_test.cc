@@ -26,6 +26,7 @@
 #include "fst/vector-fst.h"
 #include "gmock/gmock.h"
 #include "mozolm/stubs/status-matchers.h"
+#include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
 #include "mozolm/models/model_storage.pb.h"
