@@ -22,35 +22,22 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "fst/vector-fst.h"
-#include "ngram/ngram-model.h"
 #include "absl/status/status.h"
-#include "mozolm/models/language_model.h"
-#include "mozolm/models/model_storage.pb.h"
+#include "mozolm/models/ngram_fst_model.h"
 
 namespace mozolm {
 namespace models {
 
-class NGramCharFstModel : public LanguageModel {
+class NGramCharFstModel : public NGramFstModel {
  public:
   NGramCharFstModel() = default;
   ~NGramCharFstModel() override = default;
-
-  // Reads the model from the model storage.
-  absl::Status Read(const ModelStorage &storage) override;
 
   // Provides the state reached from state following utf8_sym.
   int NextState(int state, int utf8_sym) override;
 
   // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
-
-  // Updates the count for the utf8_syms at the current state. Since this is a
-  // read-only model, the updates are treated as no-op.
-  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
-                      int64 count) override;
-
-  // Returns underlying FST, which must be initialized.
-  const fst::StdVectorFst &fst() const { return *fst_; }
 
  protected:
   // Computes negative log probability for observing the supplied label in a
@@ -59,23 +46,11 @@ class NGramCharFstModel : public LanguageModel {
                                            fst::StdArc::Label label) const;
 
  private:
-  // Performs model sanity check.
-  absl::Status CheckModel() const;
-
   // Checks the current state which may be the initial state. Depending on the
   // model topology we may choose to start from the initial or the unigram
   // state.
   fst::StdArc::StateId CheckCurrentState(
       fst::StdArc::StateId state) const;
-
-  // Language model represented by vector FST.
-  std::unique_ptr<const fst::StdVectorFst> fst_;
-
-  // N-Gram model helper wrapping the FST above.
-  std::unique_ptr<const ngram::NGramModel<ngram::StdArc>> model_;
-
-  // Label for the unknown symbol, if any.
-  fst::StdArc::Label oov_label_ = fst::kNoSymbol;
 };
 
 }  // namespace models

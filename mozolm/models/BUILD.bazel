@@ -169,21 +169,35 @@ cc_library(
 )
 
 cc_library(
-    name = "ngram_char_fst_model",
-    srcs = ["ngram_char_fst_model.cc"],
-    hdrs = ["ngram_char_fst_model.h"],
+    name = "ngram_fst_model",
+    srcs = ["ngram_fst_model.cc"],
+    hdrs = ["ngram_fst_model.h"],
     deps = [
         ":language_model",
         ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
-        "//mozolm/utils:utf8_util",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_library(
+    name = "ngram_char_fst_model",
+    srcs = ["ngram_char_fst_model.cc"],
+    hdrs = ["ngram_char_fst_model.h"],
+    deps = [
+        ":ngram_fst_model",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/utils:utf8_util",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@org_openfst//:fst",
     ],
 )
 
