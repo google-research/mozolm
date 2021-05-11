@@ -22,7 +22,7 @@
 //
 //   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
 //   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
-//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:SIMPLE_CHAR_BIGRAM storage { \
@@ -34,7 +34,7 @@
 // o Using the PPM models:
 //
 //   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
-//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
@@ -46,7 +46,7 @@
 // o Using the character n-gram FST model:
 //
 //   MODELFILE=${DATADIR}/models/testdata/gutenberg_en_char_ngram_o4_wb.fst
-//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:CHAR_NGRAM_FST storage { model_file:\"$MODELFILE\" \
@@ -59,7 +59,7 @@
 //   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
 //   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 //   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
-//   bazel-bin/mozolm/grpc/mozolm_server_async \
+//   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     mixture_type:INTERPOLATION model_config { type:PPM_AS_FST \

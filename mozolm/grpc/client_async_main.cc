@@ -17,12 +17,12 @@
 // Example usage:
 // --------------
 // - To randomly generate strings:
-//   bazel-bin/mozolm/grpc/mozolm_client_async \
+//   bazel-bin/mozolm/grpc/client_async \
 //     --client_config="server { port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } } request_type:RANDGEN"
 //
 // - To get 7-best symbols from context "Ask a q":
-//   bazel-bin/mozolm/grpc/mozolm_client_async \
+//   bazel-bin/mozolm/grpc/client_async \
 //     --client_config="server { port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } } request_type:K_BEST_ITEMS \
 //     k_best:7 context_string:\"Ask a q\""
@@ -30,7 +30,7 @@
 // - To calculate bits-per-character for a given test corpus:
 //   DATADIR=mozolm/data
 //   TESTFILE="${DATADIR}"/en_wiki_100line_dev_sample.txt
-//   bazel-bin/mozolm/grpc/mozolm_client_async \
+//   bazel-bin/mozolm/grpc/client_async \
 //     --client_config="server { port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } } \
 //     request_type:BITS_PER_CHAR_CALCULATION test_corpus:\"${TESTFILE}\""
@@ -42,7 +42,6 @@
 #include "absl/flags/parse.h"
 #include "mozolm/grpc/client_config.pb.h"
 #include "mozolm/grpc/grpc_util.h"
-#include "mozolm/grpc/mozolm_client.h"
 
 ABSL_FLAG(std::string, client_config, "",
           "Protocol buffer `mozolm_grpc.ClientConfig` in text format.");

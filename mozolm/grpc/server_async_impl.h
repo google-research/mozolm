@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_SERVER_ASYNC_IMPL_H_
-#define MOZOLM_MOZOLM_GRPC_MOZOLM_SERVER_ASYNC_IMPL_H_
+#ifndef MOZOLM_MOZOLM_GRPC_SERVER_ASYNC_IMPL_H_
+#define MOZOLM_MOZOLM_GRPC_SERVER_ASYNC_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -37,17 +37,17 @@ namespace grpc {
 
 // A simple lm_score server, that can provide lm_scores given a context string
 // or model state. Asynchronous, based on completion-queue.
-class MozoLMServerAsyncImpl : public MozoLMService::AsyncService {
-  friend class MozoLMServerAsyncTest;
+class ServerAsyncImpl : public MozoLMService::AsyncService {
+  friend class ServerAsyncTest;
 
  public:
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0. An initialized instance of a language model
   // hub is required.
-  MozoLMServerAsyncImpl(std::unique_ptr<models::LanguageModelHub> model);
+  ServerAsyncImpl(std::unique_ptr<models::LanguageModelHub> model);
 
   // TODO: look into server shutdown methods.
-  ~MozoLMServerAsyncImpl() {
+  ~ServerAsyncImpl() {
     if (server_ != nullptr) {
       server_->Shutdown();
       // Always shutdown the completion queue after the server.
@@ -55,7 +55,7 @@ class MozoLMServerAsyncImpl : public MozoLMService::AsyncService {
       cq_->Shutdown();
     }
   }
-  MozoLMServerAsyncImpl() = delete;
+  ServerAsyncImpl() = delete;
 
   // Returns the lm_scores given the context.
   ::grpc::Status HandleRequest(::grpc::ServerContext* context,
@@ -158,4 +158,4 @@ class MozoLMServerAsyncImpl : public MozoLMService::AsyncService {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_GRPC_MOZOLM_SERVER_ASYNC_IMPL_H_
+#endif  // MOZOLM_MOZOLM_GRPC_SERVER_ASYNC_IMPL_H_

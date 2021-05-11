@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_H_
-#define MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_H_
+#ifndef MOZOLM_MOZOLM_GRPC_CLIENT_HELPER_H_
+#define MOZOLM_MOZOLM_GRPC_CLIENT_HELPER_H_
 
 #include <memory>
 #include <string>
@@ -23,17 +23,17 @@
 #include "include/grpcpp/create_channel.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/client_config.pb.h"
-#include "mozolm/grpc/mozolm_client_async_impl.h"
 
 namespace mozolm {
 namespace grpc {
 
 constexpr int kMaxRandGenLen = 128;
 
-class MozoLMClient {
+class ClientHelper {
  public:
-  explicit MozoLMClient(const ClientConfig& config);
+  explicit ClientHelper(const ClientConfig& config);
 
   // Generates a k-best list from the model given the context.
   absl::Status OneKbestSample(int k_best, const std::string& context_string,
@@ -50,7 +50,7 @@ class MozoLMClient {
                                     std::string* result);
 
  private:
-  MozoLMClient() = delete;
+  ClientHelper() = delete;
 
   // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
@@ -71,10 +71,10 @@ class MozoLMClient {
 
   double timeout_;  // Timeout when waiting for server.
   std::shared_ptr<::grpc::Channel> channel_;
-  std::unique_ptr<MozoLMClientAsyncImpl> completion_client_;
+  std::unique_ptr<ClientAsyncImpl> completion_client_;
 };
 
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_H_
+#endif  // MOZOLM_MOZOLM_GRPC_CLIENT_HELPER_H_

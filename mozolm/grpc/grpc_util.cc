@@ -22,8 +22,8 @@
 #include "include/grpcpp/security/server_credentials.h"
 #include "absl/flags/flag.h"
 #include "absl/strings/str_format.h"
-#include "mozolm/grpc/mozolm_client.h"
-#include "mozolm/grpc/mozolm_server_async_impl.h"
+#include "mozolm/grpc/client_helper.h"
+#include "mozolm/grpc/server_async_impl.h"
 #include "mozolm/models/model_factory.h"
 
 ABSL_FLAG(double, mozolm_client_timeout, 10.0,
@@ -37,8 +37,8 @@ absl::Status RunCompletionServer(const ServerConfig& config,
                                  ::grpc::ServerBuilder* builder) {
   auto model_status = models::MakeModelHub(config.model_hub_config());
   if (!model_status.ok()) return model_status.status();
-  MozoLMServerAsyncImpl mozolm_server(std::move(model_status.value()));
-  mozolm_server.StartServer(config.port(), builder);
+  ServerAsyncImpl server(std::move(model_status.value()));
+  server.StartServer(config.port(), builder);
   return absl::OkStatus();;
 }
 
@@ -76,7 +76,7 @@ absl::Status RunServer(const ServerConfig& config) {
 }
 
 absl::Status RunClient(const ClientConfig& config) {
-  MozoLMClient client(config);
+  ClientHelper client(config);
   absl::Status status;
   std::string result;
   switch (config.request_type()) {

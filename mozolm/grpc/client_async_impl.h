@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
-#define MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
+#ifndef MOZOLM_MOZOLM_GRPC_CLIENT_ASYNC_IMPL_H_
+#define MOZOLM_MOZOLM_GRPC_CLIENT_ASYNC_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -28,11 +28,10 @@ namespace mozolm {
 namespace grpc {
 
 // A completion-queue asynchronous client for the LM server.
-class MozoLMClientAsyncImpl {
+class ClientAsyncImpl {
  public:
   // Constructs a client to use the given LM server.
-  explicit MozoLMClientAsyncImpl(
-      std::unique_ptr<MozoLMService::StubInterface> stub);
+  explicit ClientAsyncImpl(std::unique_ptr<MozoLMService::StubInterface> stub);
 
   // Seeks the language models scores given the initial state and context
   // string.
@@ -52,7 +51,7 @@ class MozoLMClientAsyncImpl {
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
  private:
-  MozoLMClientAsyncImpl() = delete;
+  ClientAsyncImpl() = delete;
 
   // Updates counts and retrieves probabilities from destination state.
   absl::Status UpdateCountGetDestStateScore(
@@ -66,4 +65,4 @@ class MozoLMClientAsyncImpl {
 }  // namespace grpc
 }  // namespace mozolm
 
-#endif  // MOZOLM_MOZOLM_GRPC_MOZOLM_CLIENT_ASYNC_IMPL_H_
+#endif  // MOZOLM_MOZOLM_GRPC_CLIENT_ASYNC_IMPL_H_

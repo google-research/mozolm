@@ -70,4 +70,4 @@ jobs:
       # Since we're simply cross-compiling here, not running any tests because
       # there are no Android targets, tests are not included. Just quickly check
       # that the client/server architecture builds.
-      run: ./${BAZEL} build -c opt --config=android_arm64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //mozolm/grpc:mozolm_client_async //mozolm/grpc:mozolm_server_async
+      run: ./${BAZEL} build -c opt --config=android_arm64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //mozolm/grpc:client_async //mozolm/grpc:server_async

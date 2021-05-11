@@ -22,7 +22,7 @@
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
-#include "mozolm/grpc/mozolm_server_async_impl.h"
+#include "mozolm/grpc/server_async_impl.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_factory.h"
@@ -38,15 +38,15 @@ constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 using ::grpc::Status;
 using ::grpc::ServerContext;
 
-class MozoLMServerAsyncImplMock : public MozoLMServerAsyncImpl {
+class ServerAsyncImplMock : public ServerAsyncImpl {
  public:
-  MozoLMServerAsyncImplMock()
-      : MozoLMServerAsyncImpl(models::MakeModelHub(ModelHubConfig()).value()) {}
+  ServerAsyncImplMock()
+      : ServerAsyncImpl(models::MakeModelHub(ModelHubConfig()).value()) {}
 };
 
 // Check that a call to GetLMScores returns the expected status error code.
 void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
-  MozoLMServerAsyncImplMock server;
+  ServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
   LMScores response;
@@ -59,7 +59,7 @@ void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
 // Check that a call to GetLMScores succeeds and returns the expected
 // probabilities and normalization.
 void CheckGetLMScores(int state, const std::string& context_str = "") {
-  MozoLMServerAsyncImplMock server;
+  ServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
   LMScores response;
@@ -79,7 +79,7 @@ void CheckGetLMScores(int state, const std::string& context_str = "") {
 // Check that a call to UpdateLMScores returns the expected status code.
 void CheckUpdateLMScoresError(int state, int utf8_sym, int count,
                               ::grpc::StatusCode error_code) {
-  MozoLMServerAsyncImplMock server;
+  ServerAsyncImplMock server;
   ServerContext context;
   UpdateLMScoresRequest request;
   LMScores response;
@@ -93,7 +93,7 @@ void CheckUpdateLMScoresError(int state, int utf8_sym, int count,
 
 // Check that a call to UpdateLMScore updates correctly.
 void CheckUpdateLMScoresContent(int state, int count) {
-  MozoLMServerAsyncImplMock server;
+  ServerAsyncImplMock server;
   ServerContext context;
   UpdateLMScoresRequest request;
   LMScores response;
@@ -129,35 +129,35 @@ void CheckUpdateLMScoresContent(int state, int count) {
 // The following tests are one-liners feeding in different sets of arguments
 // to the fixture methods above.
 
-TEST(MozoLMServerAsyncTest, GetLMScore_ReturnsAppErrorOnBadState) {
+TEST(ServerAsyncTest, GetLMScore_ReturnsAppErrorOnBadState) {
   CheckGetLMScoresError(999, ::grpc::StatusCode::INVALID_ARGUMENT);
 }
 
-TEST(MozoLMServerAsyncTest, GetLMScores_WorksOnStartState) {
+TEST(ServerAsyncTest, GetLMScores_WorksOnStartState) {
   CheckGetLMScores(0);
 }
 
-TEST(MozoLMServerAsyncTest, GetLMScores_WorksOnOtherState) {
+TEST(ServerAsyncTest, GetLMScores_WorksOnOtherState) {
   CheckGetLMScores(0, "abcxyzff");
 }
 
-TEST(MozoLMServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadSymbol) {
+TEST(ServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadSymbol) {
   CheckUpdateLMScoresError(2, 999, 1, ::grpc::StatusCode::INVALID_ARGUMENT);
 }
 
-TEST(MozoLMServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadState) {
+TEST(ServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadState) {
   CheckUpdateLMScoresError(-1, 1, 1, ::grpc::StatusCode::INVALID_ARGUMENT);
 }
 
-TEST(MozoLMServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadCount) {
+TEST(ServerAsyncTest, UpdateLMScore_ReturnsAppErrorOnBadCount) {
   CheckUpdateLMScoresError(2, 2, -1, ::grpc::StatusCode::INVALID_ARGUMENT);
 }
 
-TEST(MozoLMServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountOne) {
+TEST(ServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountOne) {
   CheckUpdateLMScoresContent(0, 1);
 }
 
-TEST(MozoLMServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountTen) {
+TEST(ServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountTen) {
   CheckUpdateLMScoresContent(0, 10);
 }
 

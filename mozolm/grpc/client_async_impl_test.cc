@@ -14,7 +14,7 @@
 
 // Unit test for the client interface.
 
-#include "mozolm/grpc/mozolm_client_async_impl.h"
+#include "mozolm/grpc/client_async_impl.h"
 
 #include <memory>
 
@@ -55,22 +55,22 @@ class LocalMockClientAsyncResponseReader
   MOCK_METHOD(void, Finish, (R *, ::grpc::Status*, void *));
 };
 
-class MozoLMClientAsyncImplTest : public ::testing::Test {
+class ClientAsyncImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
     stub_ = new MockMozoLMServiceStub();
-    client_ = absl::make_unique<MozoLMClientAsyncImpl>(
+    client_ = absl::make_unique<ClientAsyncImpl>(
         std::unique_ptr<MockMozoLMServiceStub>(stub_));
   }
 
   MockMozoLMServiceStub *stub_;  // Owned by the client.
-  std::unique_ptr<MozoLMClientAsyncImpl> client_;
+  std::unique_ptr<ClientAsyncImpl> client_;
 };
 
 // TODO: Currently we only have the following simple example
 // demonstrating injection of the mock stub interface that allows us
 // to test the client channel without making actual RPC calls. Extend.
-TEST_F(MozoLMClientAsyncImplTest, CheckGetNextStateUnaryAsync) {
+TEST_F(ClientAsyncImplTest, CheckGetNextStateUnaryAsync) {
   // Request message.
   GetContextRequest request;
   request.set_state(-1);

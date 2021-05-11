@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/grpc/mozolm_client_async_impl.h"
+#include "mozolm/grpc/client_async_impl.h"
 
 #include "include/grpcpp/client_context.h"
 #include "include/grpcpp/completion_queue.h"
@@ -60,11 +60,11 @@ std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_sec) {
 
 }  // namespace
 
-MozoLMClientAsyncImpl::MozoLMClientAsyncImpl(
+ClientAsyncImpl::ClientAsyncImpl(
     std::unique_ptr<MozoLMService::StubInterface> stub) : stub_(
         std::move(stub)) {}
 
-absl::Status MozoLMClientAsyncImpl::GetLMScore(
+absl::Status ClientAsyncImpl::GetLMScore(
     const std::string& context_str, int initial_state, double timeout_sec,
     double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
@@ -95,7 +95,7 @@ absl::Status MozoLMClientAsyncImpl::GetLMScore(
   return absl::OkStatus();
 }
 
-absl::Status MozoLMClientAsyncImpl::GetNextState(
+absl::Status ClientAsyncImpl::GetNextState(
     const std::string& context_str, int initial_state, double timeout_sec,
     int64* next_state) {
   // Sets up client context and the request.
@@ -126,7 +126,7 @@ absl::Status MozoLMClientAsyncImpl::GetNextState(
   return absl::OkStatus();
 }
 
-absl::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
+absl::Status ClientAsyncImpl::UpdateCountGetDestStateScore(
     const std::string& context_str, int initial_state, double timeout_sec,
     int count, int64* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
@@ -136,7 +136,7 @@ absl::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
   return GetNextState(context_str, initial_state, timeout_sec, next_state);
 }
 
-absl::Status MozoLMClientAsyncImpl::UpdateCountGetDestStateScore(
+absl::Status ClientAsyncImpl::UpdateCountGetDestStateScore(
     const std::vector<int>& context_str, int initial_state, double timeout_sec,
     int count, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {

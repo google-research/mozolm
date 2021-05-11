@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/grpc/mozolm_client.h"
+#include "mozolm/grpc/client_helper.h"
 
 #include <cmath>
 #include <fstream>
@@ -30,7 +30,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/synchronization/notification.h"
-#include "mozolm/grpc/mozolm_client_async_impl.h"
+#include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
@@ -97,7 +97,7 @@ double CalculateBits(
 
 }  // namespace
 
-absl::Status MozoLMClient::GetLMScores(
+absl::Status ClientHelper::GetLMScores(
     const std::string& context_string, int initial_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   if (completion_client_ == nullptr) {
@@ -114,7 +114,7 @@ absl::Status MozoLMClient::GetLMScores(
   }
 }
 
-absl::StatusOr<int64> MozoLMClient::GetNextState(
+absl::StatusOr<int64> ClientHelper::GetNextState(
     const std::string& context_string,
     int initial_state) {
   int64 next_state;
@@ -129,7 +129,7 @@ absl::StatusOr<int64> MozoLMClient::GetNextState(
   return next_state;
 }
 
-absl::Status MozoLMClient::UpdateCountGetDestStateScore(
+absl::Status ClientHelper::UpdateCountGetDestStateScore(
     const std::string& context_string, int initial_state, int32 count,
     int64* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
@@ -141,7 +141,7 @@ absl::Status MozoLMClient::UpdateCountGetDestStateScore(
       prob_idx_pair_vector);
 }
 
-absl::Status MozoLMClient::RandGen(const std::string& context_string,
+absl::Status ClientHelper::RandGen(const std::string& context_string,
                                    std::string* result) {
   // The context string is the prefix to the randomly generated string.
   *result = context_string;
@@ -188,7 +188,7 @@ absl::Status MozoLMClient::RandGen(const std::string& context_string,
   }
 }
 
-absl::Status MozoLMClient::OneKbestSample(int k_best,
+absl::Status ClientHelper::OneKbestSample(int k_best,
                                           const std::string& context_string,
                                           std::string* result) {
   std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
@@ -204,7 +204,7 @@ absl::Status MozoLMClient::OneKbestSample(int k_best,
   return absl::OkStatus();
 }
 
-absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
+absl::Status ClientHelper::CalcBitsPerCharacter(const std::string& test_file,
                                                 std::string* result) {
   std::ifstream infile(test_file);
   if (!infile.is_open()) {
@@ -248,7 +248,7 @@ absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
   return absl::OkStatus();
 }
 
-MozoLMClient::MozoLMClient(const ClientConfig& config) {
+ClientHelper::ClientHelper(const ClientConfig& config) {
   std::shared_ptr<::grpc::ChannelCredentials> creds;
   switch (config.server().auth().credential_type()) {
     case AuthConfig::SSL:
@@ -263,8 +263,7 @@ MozoLMClient::MozoLMClient(const ClientConfig& config) {
   }
   channel_ = ::grpc::CreateChannel(config.server().port(), creds);
   completion_client_ =
-      absl::make_unique<MozoLMClientAsyncImpl>(MozoLMService::NewStub(
-          channel_));
+      absl::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
   timeout_ = config.timeout();
 }
 

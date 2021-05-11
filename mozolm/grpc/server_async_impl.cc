@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/grpc/mozolm_server_async_impl.h"
+#include "mozolm/grpc/server_async_impl.h"
 
 #include <string>
 #include <utility>
@@ -32,7 +32,7 @@ namespace grpc {
 using ::grpc::Status;
 using ::grpc::ServerContext;
 
-MozoLMServerAsyncImpl::MozoLMServerAsyncImpl(
+ServerAsyncImpl::ServerAsyncImpl(
     std::unique_ptr<models::LanguageModelHub> model_hub) {
   const int pool_size = absl::GetFlag(FLAGS_mozolm_server_asynch_pool_size);
   if (pool_size > 0) {
@@ -44,9 +44,9 @@ MozoLMServerAsyncImpl::MozoLMServerAsyncImpl(
   model_hub_ = std::move(model_hub);
 }
 
-Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,
-                                            const GetContextRequest* request,
-                                            LMScores* response) {
+Status ServerAsyncImpl::HandleRequest(ServerContext* context,
+                                      const GetContextRequest* request,
+                                      LMScores* response) {
   if (!model_hub_->ExtractLMScores(
           model_hub_->ContextState(request->context(), request->state()),
           response)) {
@@ -56,21 +56,21 @@ Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,
   return Status::OK;
 }
 
-Status MozoLMServerAsyncImpl::HandleRequest(ServerContext* context,
-                                             const GetContextRequest* request,
-                                             NextState* response) {
+Status ServerAsyncImpl::HandleRequest(ServerContext* context,
+                                      const GetContextRequest* request,
+                                      NextState* response) {
   int64 state = model_hub_->ContextState(request->context(), request->state());
   response->set_next_state(state);
   return Status::OK;
 }
 
-Status MozoLMServerAsyncImpl::HandleRequest(
+Status ServerAsyncImpl::HandleRequest(
     ServerContext* context, const UpdateLMScoresRequest* request,
     LMScores* response) {
   return ManageUpdateLMScores(request, response);
 }
 
-void MozoLMServerAsyncImpl::DriveCQ() {
+void ServerAsyncImpl::DriveCQ() {
   void* tag;  // Matches the async operation started against this cq_.
   bool ok;
   while (true) {
@@ -90,14 +90,14 @@ void MozoLMServerAsyncImpl::DriveCQ() {
   }
 }
 
-bool MozoLMServerAsyncImpl::IncrementRpcPending() {
+bool ServerAsyncImpl::IncrementRpcPending() {
   absl::MutexLock lock(&server_shutdown_lock_);
   if (server_shutdown_) return false;
   ++rpcs_pending_;
   return true;
 }
 
-bool MozoLMServerAsyncImpl::DecrementRpcPending() {
+bool ServerAsyncImpl::DecrementRpcPending() {
   absl::MutexLock lock(&server_shutdown_lock_);
   rpcs_pending_--;
   if (rpcs_pending_ == 0) {
@@ -109,7 +109,7 @@ bool MozoLMServerAsyncImpl::DecrementRpcPending() {
   return true;
 }
 
-void MozoLMServerAsyncImpl::RequestNextGetNextState() {
+void ServerAsyncImpl::RequestNextGetNextState() {
   if (!IncrementRpcPending()) {
     GOOGLE_LOG(INFO) << "Server shutdown, so not requesting GetNextState";
     return;
@@ -119,13 +119,13 @@ void MozoLMServerAsyncImpl::RequestNextGetNextState() {
   ::grpc::ServerAsyncResponseWriter<NextState>* responder =
         new ::grpc::ServerAsyncResponseWriter<NextState>(ctx);
   auto process_get_nextstate_callback = new std::function<void(bool)>(
-      absl::bind_front(&MozoLMServerAsyncImpl::ProcessGetNextState, this, ctx,
+      absl::bind_front(&ServerAsyncImpl::ProcessGetNextState, this, ctx,
                        request, responder));
   service_.RequestGetNextState(ctx, request, responder, cq_.get(), cq_.get(),
                                process_get_nextstate_callback);
 }
 
-void MozoLMServerAsyncImpl::ProcessGetNextState(
+void ServerAsyncImpl::ProcessGetNextState(
     ServerContext* ctx, GetContextRequest* request,
     ::grpc::ServerAsyncResponseWriter<NextState>* responder, bool ok) {
   if (!ok) {
@@ -138,12 +138,12 @@ void MozoLMServerAsyncImpl::ProcessGetNextState(
   NextState response;
   ::grpc::Status status = HandleRequest(ctx, request, &response);
   auto finish_get_nextstate_callback = new std::function<void(bool)>(
-      absl::bind_front(&MozoLMServerAsyncImpl::CleanupAfterGetNextState, this,
+      absl::bind_front(&ServerAsyncImpl::CleanupAfterGetNextState, this,
                        ctx, request, responder));
   responder->Finish(response, status, finish_get_nextstate_callback);
 }
 
-void MozoLMServerAsyncImpl::CleanupAfterGetNextState(
+void ServerAsyncImpl::CleanupAfterGetNextState(
     ServerContext* ctx, GetContextRequest* request,
     ::grpc::ServerAsyncResponseWriter<NextState>* responder, bool ignored_ok) {
   delete ctx;
@@ -152,7 +152,7 @@ void MozoLMServerAsyncImpl::CleanupAfterGetNextState(
   DecrementRpcPending();
 }
 
-void MozoLMServerAsyncImpl::RequestNextGetLMScore() {
+void ServerAsyncImpl::RequestNextGetLMScore() {
   if (!IncrementRpcPending()) {
     GOOGLE_LOG(INFO) << "Server shutdown, so not requesting GetLMScore";
     return;
@@ -162,13 +162,13 @@ void MozoLMServerAsyncImpl::RequestNextGetLMScore() {
   ::grpc::ServerAsyncResponseWriter<LMScores>* responder =
         new ::grpc::ServerAsyncResponseWriter<LMScores>(ctx);
   auto process_get_lmscore_callback = new std::function<void(bool)>(
-      absl::bind_front(&MozoLMServerAsyncImpl::ProcessGetLMScore, this, ctx,
+      absl::bind_front(&ServerAsyncImpl::ProcessGetLMScore, this, ctx,
                        request, responder));
   service_.RequestGetLMScores(ctx, request, responder, cq_.get(), cq_.get(),
                              process_get_lmscore_callback);
 }
 
-void MozoLMServerAsyncImpl::ProcessGetLMScore(
+void ServerAsyncImpl::ProcessGetLMScore(
     ServerContext* ctx, GetContextRequest* request,
     ::grpc::ServerAsyncResponseWriter<LMScores>* responder, bool ok) {
   if (!ok) {
@@ -181,12 +181,12 @@ void MozoLMServerAsyncImpl::ProcessGetLMScore(
   LMScores response;
   ::grpc::Status status = HandleRequest(ctx, request, &response);
   auto finish_get_lmscore_callback = new std::function<void(bool)>(
-      absl::bind_front(&MozoLMServerAsyncImpl::CleanupAfterGetLMScore, this,
+      absl::bind_front(&ServerAsyncImpl::CleanupAfterGetLMScore, this,
                        ctx, request, responder));
   responder->Finish(response, status, finish_get_lmscore_callback);
 }
 
-void MozoLMServerAsyncImpl::CleanupAfterGetLMScore(
+void ServerAsyncImpl::CleanupAfterGetLMScore(
     ServerContext* ctx, GetContextRequest* request,
     ::grpc::ServerAsyncResponseWriter<LMScores>* responder, bool ignored_ok) {
   delete ctx;
@@ -195,7 +195,7 @@ void MozoLMServerAsyncImpl::CleanupAfterGetLMScore(
   DecrementRpcPending();
 }
 
-void MozoLMServerAsyncImpl::RequestNextUpdateLMScores() {
+void ServerAsyncImpl::RequestNextUpdateLMScores() {
   if (!IncrementRpcPending()) {
     GOOGLE_LOG(INFO) << "Server shutdown, so not requesting GetLMScore";
     return;
@@ -205,13 +205,13 @@ void MozoLMServerAsyncImpl::RequestNextUpdateLMScores() {
   ::grpc::ServerAsyncResponseWriter<LMScores>* responder =
         new ::grpc::ServerAsyncResponseWriter<LMScores>(ctx);
   auto process_update_lmscores_callback = new std::function<void(bool)>(
-      absl::bind_front(&MozoLMServerAsyncImpl::ProcessUpdateLMScores, this,
+      absl::bind_front(&ServerAsyncImpl::ProcessUpdateLMScores, this,
                        ctx, request, responder));
   service_.RequestUpdateLMScores(ctx, request, responder, cq_.get(), cq_.get(),
                                  process_update_lmscores_callback);
 }
 
-void MozoLMServerAsyncImpl::ProcessUpdateLMScores(
+void ServerAsyncImpl::ProcessUpdateLMScores(
     ServerContext* ctx, UpdateLMScoresRequest* request,
     ::grpc::ServerAsyncResponseWriter<LMScores>* responder, bool ok) {
   if (!ok) {
@@ -224,12 +224,12 @@ void MozoLMServerAsyncImpl::ProcessUpdateLMScores(
   LMScores response;
   ::grpc::Status status = HandleRequest(ctx, request, &response);
   auto finish_update_lmscores_callback = new std::function<void(bool)>(
-      absl::bind_front(&MozoLMServerAsyncImpl::CleanupAfterUpdateLMScores,
+      absl::bind_front(&ServerAsyncImpl::CleanupAfterUpdateLMScores,
                        this, ctx, request, responder));
   responder->Finish(response, status, finish_update_lmscores_callback);
 }
 
-void MozoLMServerAsyncImpl::CleanupAfterUpdateLMScores(
+void ServerAsyncImpl::CleanupAfterUpdateLMScores(
     ServerContext* ctx, UpdateLMScoresRequest* request,
     ::grpc::ServerAsyncResponseWriter<LMScores>* responder, bool ignored_ok) {
   delete ctx;
@@ -238,7 +238,7 @@ void MozoLMServerAsyncImpl::CleanupAfterUpdateLMScores(
   DecrementRpcPending();
 }
 
-::grpc::Server* MozoLMServerAsyncImpl::GetServer() {
+::grpc::Server* ServerAsyncImpl::GetServer() {
   absl::MutexLock lock(&server_shutdown_lock_);
   server_shutdown_ = true;
   if (server_ == nullptr) {
@@ -247,8 +247,7 @@ void MozoLMServerAsyncImpl::CleanupAfterUpdateLMScores(
   return server_.get();
 }
 
-bool MozoLMServerAsyncImpl::StartWithCompletionQueue(
-    ::grpc::ServerBuilder* builder) {
+bool ServerAsyncImpl::StartWithCompletionQueue(::grpc::ServerBuilder* builder) {
   absl::MutexLock lock(&server_shutdown_lock_);
   if (!server_shutdown_) {
     cq_ = builder->AddCompletionQueue();
@@ -257,8 +256,8 @@ bool MozoLMServerAsyncImpl::StartWithCompletionQueue(
   return !server_shutdown_;
 }
 
-bool MozoLMServerAsyncImpl::StartServer(const std::string& server_port,
-                                         ::grpc::ServerBuilder* builder) {
+bool ServerAsyncImpl::StartServer(const std::string& server_port,
+                                  ::grpc::ServerBuilder* builder) {
   builder->RegisterService(&service_);
   if (StartWithCompletionQueue(builder)) {
     std::cout << "Server listening on " << server_port << std::endl;
@@ -275,7 +274,7 @@ bool MozoLMServerAsyncImpl::StartServer(const std::string& server_port,
   return true;
 }
 
-Status MozoLMServerAsyncImpl::ManageUpdateLMScores(
+Status ServerAsyncImpl::ManageUpdateLMScores(
     const UpdateLMScoresRequest* request, LMScores* response) {
   const int utf8_sym_size = request->utf8_sym_size();
   std::vector<int> utf8_syms(utf8_sym_size);
