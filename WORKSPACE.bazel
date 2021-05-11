@@ -123,6 +123,9 @@ http_archive(
 # Protocol buffer matches (should be part of gmock and gtest, but not yet):
 #   https://github.com/inazarenko/protobuf-matchers
 # -------------------------------------------------------------------------
+# TODO: Get rid of `protobuf-matchers` once the maintainer of gtest
+# and gmock introduce it in their repos. See the discussion here:
+#   https://github.com/google/googletest/issues/1761
 
 http_archive(
     name = "com_googlesource_code_re2",
