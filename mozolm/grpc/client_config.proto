@@ -16,40 +16,17 @@ syntax = "proto3";
 
 package mozolm.grpc;
 
-import "mozolm/models/model_config.proto";
+import "mozolm/grpc/server_config.proto";
 
 option java_package = "com.google.mozolm.grpc";
-option java_outer_classname = "GrpcUtilProto";
+option java_outer_classname = "ClientConfigProto";
 option java_multiple_files = true;
 
-// Next available ID: 5
-message ClientServerConfig {
-  // String representing the port where the server will listen.
-  string server_port = 1;
-
-  // Type of authorization credentials used in client/server handshake.
-  CredentialType credential_type = 2;
-  enum CredentialType {
-    SSL = 0;
-    INSECURE = 1;
-  }
-
-  ServerConfig server_config = 3;
-
-  ClientConfig client_config = 4;
-}
-
-// Next available ID: 3
-message ServerConfig {
-  // Model hub configuration.
-  ModelHubConfig model_hub_config = 1;
-
-  // Whether the server will wait for client requests.
-  bool wait_for_clients = 2;
-}
-
-// Next available ID: 6
+// Next available ID: 7
 message ClientConfig {
+  // Server configuration.
+  ServerConfig server = 6;
+
   // Type of request client will be making to the server.
   ClientRequestType request_type = 2;
   enum ClientRequestType {

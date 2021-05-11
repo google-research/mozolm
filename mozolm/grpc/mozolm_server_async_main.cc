@@ -23,11 +23,11 @@
 //   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
 //   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 //   bazel-bin/mozolm/grpc/mozolm_server_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE server_config { model_hub_config { \
+//     --server_config="port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:SIMPLE_CHAR_BIGRAM storage { \
 //     vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
-//     wait_for_clients:true }"
+//     wait_for_clients:true"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -35,11 +35,11 @@
 //
 //   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/mozolm_server_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE server_config { model_hub_config { \
+//     --server_config="port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
 //     ppm_options { max_order: 4 static_model: false } } } } \
-//     wait_for_clients:true }"
+//     wait_for_clients:true"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -47,10 +47,10 @@
 //
 //   MODELFILE=${DATADIR}/models/testdata/gutenberg_en_char_ngram_o4_wb.fst
 //   bazel-bin/mozolm/grpc/mozolm_server_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE server_config { model_hub_config { \
+//     --server_config="port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:CHAR_NGRAM_FST storage { model_file:\"$MODELFILE\" \
-//     } } } wait_for_clients:true }" --logtostderr
+//     } } } wait_for_clients:true" --logtostderr
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -60,13 +60,13 @@
 //   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 //   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/mozolm_server_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE server_config { model_hub_config { \
+//     --server_config="port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } model_hub_config { \
 //     mixture_type:INTERPOLATION model_config { type:PPM_AS_FST \
 //     storage { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
 //     static_model: false } } }  model_config { type:SIMPLE_CHAR_BIGRAM \
 //     storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
-//     wait_for_clients:true }"
+//     wait_for_clients:true"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 
@@ -77,21 +77,21 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "mozolm/grpc/grpc_util.h"
-#include "mozolm/grpc/grpc_util.pb.h"
+#include "mozolm/grpc/server_config.pb.h"
 
-ABSL_FLAG(std::string, client_server_config, "",
-          "Configuration (`mozolm_grpc.ClientServerConfig`) protocol buffer in "
+ABSL_FLAG(std::string, server_config, "",
+          "Configuration (`mozolm_grpc.ServerConfig`) protocol buffer in "
           "text format.");
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
-  mozolm::grpc::ClientServerConfig grpc_config;
-  if (!absl::GetFlag(FLAGS_client_server_config).empty()) {
+  mozolm::grpc::ServerConfig config;
+  if (!absl::GetFlag(FLAGS_server_config).empty()) {
     GOOGLE_CHECK(google::protobuf::TextFormat::ParseFromString(
-        absl::GetFlag(FLAGS_client_server_config), &grpc_config));
+        absl::GetFlag(FLAGS_server_config), &config));
   }
-  mozolm::grpc::ClientServerConfigDefaults(&grpc_config);
-  const auto status = mozolm::grpc::RunServer(grpc_config);
+  mozolm::grpc::InitConfigDefaults(&config);
+  const auto status = mozolm::grpc::RunServer(config);
   if (!status.ok()) {
     GOOGLE_LOG(ERROR) << "Failed to run server: " << status.ToString();
     return 1;

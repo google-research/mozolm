@@ -1,0 +1,50 @@
+// Copyright 2021 MozoLM Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Server-side configuration.
+
+syntax = "proto3";
+
+package mozolm.grpc;
+
+import "mozolm/models/model_config.proto";
+
+option java_package = "com.google.mozolm.grpc";
+option java_outer_classname = "ServerConfigProto";
+option java_multiple_files = true;
+
+// Next available ID: 2
+message AuthConfig {
+  // Type of authorization credentials used in client/server handshake.
+  CredentialType credential_type = 1;
+  enum CredentialType {
+    SSL = 0;
+    INSECURE = 1;
+  }
+}
+
+// Next available ID: 5
+message ServerConfig {
+  // Model hub configuration.
+  ModelHubConfig model_hub_config = 1;
+
+  // String representing the port where the server will listen.
+  string port = 2;
+
+  // Configuration for authentication mechanisms.
+  AuthConfig auth = 3;
+
+  // Whether the server will wait for client requests.
+  bool wait_for_clients = 4;
+}

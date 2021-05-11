@@ -22,7 +22,6 @@
 #include "include/grpcpp/security/server_credentials.h"
 #include "absl/flags/flag.h"
 #include "absl/strings/str_format.h"
-#include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client.h"
 #include "mozolm/grpc/mozolm_server_async_impl.h"
 #include "mozolm/models/model_factory.h"
@@ -34,64 +33,62 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
-absl::Status RunCompletionServer(const ClientServerConfig& grpc_config,
+absl::Status RunCompletionServer(const ServerConfig& config,
                                  ::grpc::ServerBuilder* builder) {
-  auto model_status = models::MakeModelHub(
-      grpc_config.server_config().model_hub_config());
+  auto model_status = models::MakeModelHub(config.model_hub_config());
   if (!model_status.ok()) return model_status.status();
   MozoLMServerAsyncImpl mozolm_server(std::move(model_status.value()));
-  mozolm_server.StartServer(grpc_config.server_port(), builder);
+  mozolm_server.StartServer(config.port(), builder);
   return absl::OkStatus();;
 }
 
 }  // namespace
 
-void ClientServerConfigDefaults(ClientServerConfig* config) {
-  if (config->server_port().empty()) {
-    config->set_server_port(kDefaultServerPort);
-  }
-  if (!config->has_client_config() ||
-      config->client_config().timeout() <= 0.0) {
-    config->mutable_client_config()->set_timeout(
-        absl::GetFlag(FLAGS_mozolm_client_timeout));
+void InitConfigDefaults(ServerConfig* config) {
+  if (config->port().empty()) {
+    config->set_port(kDefaultServerPort);
   }
 }
 
-absl::Status RunServer(const ClientServerConfig& grpc_config) {
+void InitConfigDefaults(ClientConfig* config) {
+  InitConfigDefaults(config->mutable_server());
+  if (config->timeout() <= 0.0) {
+    config->set_timeout(absl::GetFlag(FLAGS_mozolm_client_timeout));
+  }
+}
+
+absl::Status RunServer(const ServerConfig& config) {
   std::shared_ptr<::grpc::ServerCredentials> creds;
-  switch (grpc_config.credential_type()) {
-    case ClientServerConfig::SSL:
+  switch (config.auth().credential_type()) {
+    case AuthConfig::SSL:
       // TODO: setup SSL credentials.
       creds = ::grpc::InsecureServerCredentials();
       break;
-    case ClientServerConfig::INSECURE:
+    case AuthConfig::INSECURE:
       creds = ::grpc::InsecureServerCredentials();
       break;
     default:
       return absl::InvalidArgumentError("Unknown credential type");
   }
   ::grpc::ServerBuilder builder;
-  builder.AddListeningPort(grpc_config.server_port(), creds);
-  return RunCompletionServer(grpc_config, &builder);
+  builder.AddListeningPort(config.port(), creds);
+  return RunCompletionServer(config, &builder);
 }
 
-absl::Status RunClient(const ClientServerConfig& grpc_config) {
-  MozoLMClient client(grpc_config);
+absl::Status RunClient(const ClientConfig& config) {
+  MozoLMClient client(config);
   absl::Status status;
   std::string result;
-  switch (grpc_config.client_config().request_type()) {
+  switch (config.request_type()) {
     case ClientConfig::RANDGEN:
-      status =
-          client.RandGen(grpc_config.client_config().context_string(), &result);
+      status = client.RandGen(config.context_string(), &result);
       break;
     case ClientConfig::K_BEST_ITEMS:
-      status = client.OneKbestSample(
-          grpc_config.client_config().k_best(),
-          grpc_config.client_config().context_string(), &result);
+      status = client.OneKbestSample(config.k_best(), config.context_string(),
+                                     &result);
       break;
     case ClientConfig::BITS_PER_CHAR_CALCULATION:
-      status = client.CalcBitsPerCharacter(
-          grpc_config.client_config().test_corpus(), &result);
+      status = client.CalcBitsPerCharacter(config.test_corpus(), &result);
       break;
     default:
       return absl::InvalidArgumentError("Unknown client request type");

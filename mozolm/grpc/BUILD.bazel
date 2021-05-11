@@ -25,6 +25,20 @@ licenses(["notice"])
 
 # Async server code (completion-queue based).
 
+proto_library(
+    name = "server_config_proto",
+    srcs = ["server_config.proto"],
+    deps = [
+        "//mozolm/models:lm_scores_proto",
+        "//mozolm/models:model_config_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "server_config_cc_proto",
+    deps = [":server_config_proto"],
+)
+
 cc_library(
     name = "mozolm_server_async_impl",
     srcs = ["mozolm_server_async_impl.cc"],
@@ -49,7 +63,7 @@ cc_binary(
     srcs = ["mozolm_server_async_main.cc"],
     deps = [
         ":grpc_util",
-        ":grpc_util_cc_proto",
+        ":server_config_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "@com_google_absl//absl/flags:flag",
@@ -79,6 +93,17 @@ cc_test(
 )
 
 # Async client code (completion-queue based).
+
+proto_library(
+    name = "client_config_proto",
+    srcs = ["client_config.proto"],
+    deps = [":server_config_proto"],
+)
+
+cc_proto_library(
+    name = "client_config_cc_proto",
+    deps = [":client_config_proto"],
+)
 
 cc_library(
     name = "mozolm_client_async_impl",
@@ -118,8 +143,8 @@ cc_binary(
     name = "mozolm_client_async",
     srcs = ["mozolm_client_async_main.cc"],
     deps = [
+        ":client_config_cc_proto",
         ":grpc_util",
-        ":grpc_util_cc_proto",
         ":mozolm_client",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
@@ -134,9 +159,10 @@ cc_library(
     srcs = ["grpc_util.cc"],
     hdrs = ["grpc_util.h"],
     deps = [
-        ":grpc_util_cc_proto",
+        ":client_config_cc_proto",
         ":mozolm_client",
         ":mozolm_server_async_impl",
+        ":server_config_cc_proto",
         "//mozolm/models:model_factory",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/flags:flag",
@@ -150,8 +176,9 @@ cc_library(
     srcs = ["mozolm_client.cc"],
     hdrs = ["mozolm_client.h"],
     deps = [
-        ":grpc_util_cc_proto",
+        ":client_config_cc_proto",
         ":mozolm_client_async_impl",
+        ":server_config_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:status_macros",
@@ -207,21 +234,4 @@ js_grpc_web_library(
     name = "service_js_grpc_proto",
     src = "service.proto",
     deps = [":service_jspb_proto"],
-)
-
-proto_library(
-    name = "grpc_util_proto",
-    srcs = ["grpc_util.proto"],
-    deps = ["//mozolm/models:model_config_proto"],
-)
-
-cc_proto_library(
-    name = "grpc_util_cc_proto",
-    deps = [":grpc_util_proto"],
-)
-
-# TODO: Consider adding support for `lite` protobufs.
-java_proto_library(
-    name = "grpc_util_java_proto",
-    deps = [":grpc_util_proto"],
 )

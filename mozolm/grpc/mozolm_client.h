@@ -23,7 +23,7 @@
 #include "include/grpcpp/create_channel.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "mozolm/grpc/grpc_util.pb.h"
+#include "mozolm/grpc/client_config.pb.h"
 #include "mozolm/grpc/mozolm_client_async_impl.h"
 
 namespace mozolm {
@@ -33,7 +33,7 @@ constexpr int kMaxRandGenLen = 128;
 
 class MozoLMClient {
  public:
-  explicit MozoLMClient(const ClientServerConfig& grpc_config);
+  explicit MozoLMClient(const ClientConfig& config);
 
   // Generates a k-best list from the model given the context.
   absl::Status OneKbestSample(int k_best, const std::string& context_string,
@@ -50,6 +50,8 @@ class MozoLMClient {
                                     std::string* result);
 
  private:
+  MozoLMClient() = delete;
+
   // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
   absl::Status GetLMScores(

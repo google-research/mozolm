@@ -18,48 +18,45 @@
 // --------------
 // - To randomly generate strings:
 //   bazel-bin/mozolm/grpc/mozolm_client_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE \
-//     client_config { request_type:RANDGEN }"
+//     --client_config="server { port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } } request_type:RANDGEN"
 //
 // - To get 7-best symbols from context "Ask a q":
 //   bazel-bin/mozolm/grpc/mozolm_client_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE \
-//     client_config { request_type:K_BEST_ITEMS \
-//     k_best:7 context_string:\"Ask a q\" }"
+//     --client_config="server { port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } } request_type:K_BEST_ITEMS \
+//     k_best:7 context_string:\"Ask a q\""
 //
 // - To calculate bits-per-character for a given test corpus:
 //   DATADIR=mozolm/data
 //   TESTFILE="${DATADIR}"/en_wiki_100line_dev_sample.txt
 //   bazel-bin/mozolm/grpc/mozolm_client_async \
-//     --client_server_config="server_port:\"localhost:50051\" \
-//     credential_type:INSECURE \
-//     client_config { request_type:BITS_PER_CHAR_CALCULATION \
-//     test_corpus:\"${TESTFILE}\" }"
+//     --client_config="server { port:\"localhost:50051\" \
+//     auth { credential_type:INSECURE } } \
+//     request_type:BITS_PER_CHAR_CALCULATION test_corpus:\"${TESTFILE}\""
 
 #include <string>
 
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "mozolm/grpc/client_config.pb.h"
 #include "mozolm/grpc/grpc_util.h"
-#include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client.h"
 
-ABSL_FLAG(std::string, client_server_config, "",
-              "mozolm_grpc.ClientServerConfig in text format.");
+ABSL_FLAG(std::string, client_config, "",
+          "Protocol buffer `mozolm_grpc.ClientConfig` in text format.");
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
 
-  mozolm::grpc::ClientServerConfig grpc_config;
-  if (!absl::GetFlag(FLAGS_client_server_config).empty()) {
+  mozolm::grpc::ClientConfig config;
+  if (!absl::GetFlag(FLAGS_client_config).empty()) {
     GOOGLE_CHECK(google::protobuf::TextFormat::ParseFromString(
-        absl::GetFlag(FLAGS_client_server_config), &grpc_config));
+        absl::GetFlag(FLAGS_client_config), &config));
   }
-  mozolm::grpc::ClientServerConfigDefaults(&grpc_config);
-  const auto status = mozolm::grpc::RunClient(grpc_config);
+  mozolm::grpc::InitConfigDefaults(&config);
+  const auto status = mozolm::grpc::RunClient(config);
   if (!status.ok()) {
     GOOGLE_LOG(ERROR) << "Failed to run client: " << status.ToString();
     return 1;

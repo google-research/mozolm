@@ -30,8 +30,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/synchronization/notification.h"
-#include "mozolm/grpc/grpc_util.pb.h"
 #include "mozolm/grpc/mozolm_client_async_impl.h"
+#include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
@@ -248,24 +248,24 @@ absl::Status MozoLMClient::CalcBitsPerCharacter(const std::string& test_file,
   return absl::OkStatus();
 }
 
-MozoLMClient::MozoLMClient(const ClientServerConfig& grpc_config) {
+MozoLMClient::MozoLMClient(const ClientConfig& config) {
   std::shared_ptr<::grpc::ChannelCredentials> creds;
-  switch (grpc_config.credential_type()) {
-    case ClientServerConfig::SSL:
+  switch (config.server().auth().credential_type()) {
+    case AuthConfig::SSL:
       // TODO: setup SSL credentials.
       creds = ::grpc::InsecureChannelCredentials();
       break;
-    case ClientServerConfig::INSECURE:
+    case AuthConfig::INSECURE:
       creds = ::grpc::InsecureChannelCredentials();
       break;
     default:
       GOOGLE_LOG(ERROR) << "unknown credential type";
   }
-  channel_ = ::grpc::CreateChannel(grpc_config.server_port(), creds);
+  channel_ = ::grpc::CreateChannel(config.server().port(), creds);
   completion_client_ =
       absl::make_unique<MozoLMClientAsyncImpl>(MozoLMService::NewStub(
           channel_));
-  timeout_ = grpc_config.client_config().timeout();
+  timeout_ = config.timeout();
 }
 
 }  // namespace grpc
