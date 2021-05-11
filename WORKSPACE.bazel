@@ -23,12 +23,12 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
-grpc_version = "1.36.0-pre1"
+grpc_version = "1.37.1"
 
 http_archive(
     name = "com_github_grpc_grpc",
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "57af3077f31fdc99bb1e54c4a079c720b8572c1301b6e1671f1c7432a1644dbb",
+    sha256 = "acf247ec3a52edaee5dee28644a4e485c5e5badf46bdb24a80ca1d76cb8f1174",
     strip_prefix = "grpc-%s" % grpc_version,
 )
 
@@ -126,12 +126,6 @@ http_archive(
 # TODO: Get rid of `protobuf-matchers` once the maintainer of gtest
 # and gmock introduce it in their repos. See the discussion here:
 #   https://github.com/google/googletest/issues/1761
-
-http_archive(
-    name = "com_googlesource_code_re2",
-    strip_prefix = "re2-master",
-    urls = ["https://github.com/google/re2/archive/master.zip"],
-)
 
 http_archive(
     name = "com_github_protobuf_matchers",

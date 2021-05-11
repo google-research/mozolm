@@ -13,11 +13,10 @@
 # limitations under the License.
 
 # Master Bazel build file for utfcpp library.
-#
-# To check this library run:
-#   bazel test -c opt @com_github_utfcpp//...
 
 package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
 
 cc_library(
     name = "utfcpp",
