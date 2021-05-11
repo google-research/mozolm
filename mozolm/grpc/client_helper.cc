@@ -24,6 +24,7 @@
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"
+#include "absl/flags/flag.h"
 #include "absl/memory/memory.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
@@ -32,8 +33,12 @@
 #include "absl/synchronization/notification.h"
 #include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/server_config.pb.h"
+#include "mozolm/grpc/server_helper.h"
 #include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
+
+ABSL_FLAG(double, mozolm_client_timeout, 10.0,
+          "Timeout to wait for response in seconds.");
 
 namespace mozolm {
 namespace grpc {
@@ -265,6 +270,37 @@ ClientHelper::ClientHelper(const ClientConfig& config) {
   completion_client_ =
       absl::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
   timeout_ = config.timeout();
+}
+
+void InitConfigDefaults(ClientConfig* config) {
+  InitConfigDefaults(config->mutable_server());
+  if (config->timeout() <= 0.0) {
+    config->set_timeout(absl::GetFlag(FLAGS_mozolm_client_timeout));
+  }
+}
+
+absl::Status RunClient(const ClientConfig& config) {
+  ClientHelper client(config);
+  absl::Status status;
+  std::string result;
+  switch (config.request_type()) {
+    case ClientConfig::RANDGEN:
+      status = client.RandGen(config.context_string(), &result);
+      break;
+    case ClientConfig::K_BEST_ITEMS:
+      status = client.OneKbestSample(config.k_best(), config.context_string(),
+                                     &result);
+      break;
+    case ClientConfig::BITS_PER_CHAR_CALCULATION:
+      status = client.CalcBitsPerCharacter(config.test_corpus(), &result);
+      break;
+    default:
+      return absl::InvalidArgumentError("Unknown client request type");
+  }
+  if (status.ok()) {
+    absl::PrintF("%s\n", result);
+  }
+  return status;
 }
 
 }  // namespace grpc

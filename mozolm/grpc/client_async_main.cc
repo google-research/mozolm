@@ -41,7 +41,7 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "mozolm/grpc/client_config.pb.h"
-#include "mozolm/grpc/grpc_util.h"
+#include "mozolm/grpc/client_helper.h"
 
 ABSL_FLAG(std::string, client_config, "",
           "Protocol buffer `mozolm_grpc.ClientConfig` in text format.");

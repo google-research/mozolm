@@ -21,10 +21,13 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/create_channel.h"
+#include "absl/flags/declare.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/client_config.pb.h"
+
+ABSL_DECLARE_FLAG(double, mozolm_client_timeout);
 
 namespace mozolm {
 namespace grpc {
@@ -73,6 +76,12 @@ class ClientHelper {
   std::shared_ptr<::grpc::Channel> channel_;
   std::unique_ptr<ClientAsyncImpl> completion_client_;
 };
+
+// Sets default parameters for the client if they have not already been set.
+void InitConfigDefaults(ClientConfig* config);
+
+// Runs client service according to given configuration.
+absl::Status RunClient(const ClientConfig& config);
 
 }  // namespace grpc
 }  // namespace mozolm

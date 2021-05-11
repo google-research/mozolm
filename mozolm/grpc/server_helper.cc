@@ -12,22 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mozolm/grpc/grpc_util.h"
+#include "mozolm/grpc/server_helper.h"
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
-#include "absl/flags/flag.h"
-#include "absl/strings/str_format.h"
-#include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_async_impl.h"
 #include "mozolm/models/model_factory.h"
-
-ABSL_FLAG(double, mozolm_client_timeout, 10.0,
-          "Timeout to wait for response in seconds.");
 
 namespace mozolm {
 namespace grpc {
@@ -50,13 +42,6 @@ void InitConfigDefaults(ServerConfig* config) {
   }
 }
 
-void InitConfigDefaults(ClientConfig* config) {
-  InitConfigDefaults(config->mutable_server());
-  if (config->timeout() <= 0.0) {
-    config->set_timeout(absl::GetFlag(FLAGS_mozolm_client_timeout));
-  }
-}
-
 absl::Status RunServer(const ServerConfig& config) {
   std::shared_ptr<::grpc::ServerCredentials> creds;
   switch (config.auth().credential_type()) {
@@ -73,30 +58,6 @@ absl::Status RunServer(const ServerConfig& config) {
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(config.port(), creds);
   return RunCompletionServer(config, &builder);
-}
-
-absl::Status RunClient(const ClientConfig& config) {
-  ClientHelper client(config);
-  absl::Status status;
-  std::string result;
-  switch (config.request_type()) {
-    case ClientConfig::RANDGEN:
-      status = client.RandGen(config.context_string(), &result);
-      break;
-    case ClientConfig::K_BEST_ITEMS:
-      status = client.OneKbestSample(config.k_best(), config.context_string(),
-                                     &result);
-      break;
-    case ClientConfig::BITS_PER_CHAR_CALCULATION:
-      status = client.CalcBitsPerCharacter(config.test_corpus(), &result);
-      break;
-    default:
-      return absl::InvalidArgumentError("Unknown client request type");
-  }
-  if (status.ok()) {
-    absl::PrintF("%s\n", result);
-  }
-  return status;
 }
 
 }  // namespace grpc

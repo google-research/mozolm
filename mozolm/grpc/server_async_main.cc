@@ -76,8 +76,8 @@
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "mozolm/grpc/grpc_util.h"
 #include "mozolm/grpc/server_config.pb.h"
+#include "mozolm/grpc/server_helper.h"
 
 ABSL_FLAG(std::string, server_config, "",
           "Configuration (`mozolm_grpc.ServerConfig`) protocol buffer in "

@@ -62,8 +62,8 @@ cc_binary(
     name = "server_async",
     srcs = ["server_async_main.cc"],
     deps = [
-        ":grpc_util",
         ":server_config_cc_proto",
+        ":server_helper",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "@com_google_absl//absl/flags:flag",
@@ -144,9 +144,7 @@ cc_binary(
     srcs = ["client_async_main.cc"],
     deps = [
         ":client_config_cc_proto",
-        ":grpc_util",
-        "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
+        ":client_helper",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_protobuf//:protobuf",
@@ -154,19 +152,15 @@ cc_binary(
 )
 
 cc_library(
-    name = "grpc_util",
-    srcs = ["grpc_util.cc"],
-    hdrs = ["grpc_util.h"],
+    name = "server_helper",
+    srcs = ["server_helper.cc"],
+    hdrs = ["server_helper.h"],
     deps = [
-        ":client_config_cc_proto",
-        ":client_helper",
         ":server_async_impl",
         ":server_config_cc_proto",
         "//mozolm/models:model_factory",
         "@com_github_grpc_grpc//:grpc++",
-        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -178,11 +172,13 @@ cc_library(
         ":client_async_impl",
         ":client_config_cc_proto",
         ":server_config_cc_proto",
+        ":server_helper",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:status_macros",
         "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/status",
