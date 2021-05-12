@@ -39,14 +39,17 @@ To run this example execute the following steps:
     
 ### Windows Cmd equivalents for above
 
-    ```shell
+```shell
     set PORT=50055
     set TEXTFILE=mozolm\\data\\en_wiki_1Kline_sample.txt
-    bazel-bin\mozolm\grpc\server_async --server_config="port:""localhost:%PORT%"" auth { credential_type:INSECURE } model_hub_config { model_config { type:PPM_AS_FST storage { model_file:""%TEXTFILE%"" ppm_options { max_order: 4 static_model: false } } } }"
-    ```
+    bazel-bin\mozolm\grpc\server_async --server_config="port:""localhost:%PORT%"" \
+      auth { credential_type:INSECURE } model_hub_config { model_config { \
+      type:PPM_AS_FST storage { model_file:""%TEXTFILE%"" ppm_options { \
+      max_order: 4 static_model: false } } } }"
+```
     
-    ```shell
+```shell
     set PORT=50055    
     bazel-bin\mozolm\java\com\google\mozolm\examples\SimpleClientExample localhost:%PORT%
-    ```
+```
     
