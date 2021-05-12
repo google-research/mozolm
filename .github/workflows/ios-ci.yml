@@ -1,0 +1,42 @@
+name: "ios"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build-ios:
+    name: Build (iOS)
+    runs-on: macos-latest
+    env:
+      BAZEL: bazelisk-darwin-amd64
+      CONFIG: ios_arm64
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Update environment variables
+      run: |
+        echo "USER=${USER}" >> ${GITHUB_ENV}
+
+    - name: Mount bazel cache
+      uses: actions/cache@v2
+      with:
+        # See https://docs.bazel.build/versions/master/output_directories.html
+        path: /private/var/tmp/_bazel_${{ env.USER }}
+        key: ${{ runner.os }}-ios-bazel-${{ hashFiles('WORKSPACE.bazel') }}
+        restore-keys: ${{ runner.os }}-ios-bazel
+
+    - name: Install bazelisk
+      run: |
+        curl -sLO "https://github.com/bazelbuild/bazelisk/releases/latest/download/$BAZEL"
+        chmod +x $BAZEL
+
+    - name: Build
+      # Following should use Xcode compiler. We are just cross-compiling here.
+      # There are no pure iOS targets in this project yet, so not running the tests.
+      run: |
+        ./$BAZEL build -c opt --host_copt=-DGRPC_BAZEL_BUILD --config=${CONFIG} //mozolm/grpc:client_async //mozolm/grpc:server_async
