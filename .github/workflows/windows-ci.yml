@@ -14,11 +14,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Update environment variables
+      # See https://docs.bazel.build/versions/master/output_directories.html
+      run: |
+        echo "BAZEL_CACHE_DIR=$env:USERPROFILE\_bazel_$env:USERNAME" >> $env:GITHUB_ENV
+
     - name: Mount bazel cache
-      uses: actions/cache@v2
+      # Note: Note that below the version is pinned to `v2.1.4`. This is due to
+      # several path bugs. See:
+      # https://stackoverflow.com/questions/66870002/github-actions-cache-maven-m2-repository-on-windows-environment-c-users-run
+      uses: actions/cache@v2.1.4
       with:
-        # See https://docs.bazel.build/versions/master/output_directories.html
-        path: ${{ github.workspace }}/.cache/bazel
+        path: ${{ env.BAZEL_CACHE_DIR}}
         key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE.bazel') }}
         restore-keys: ${{ runner.os }}-bazel
 
