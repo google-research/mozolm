@@ -30,13 +30,16 @@ absl::Status RunCompletionServer(const ServerConfig& config,
   auto model_status = models::MakeModelHub(config.model_hub_config());
   if (!model_status.ok()) return model_status.status();
   ServerAsyncImpl server(std::move(model_status.value()));
-  server.StartServer(config.port(), builder);
+  if (!server.StartServer(config.port(), config.wait_for_clients(), builder)) {
+    return absl::InternalError("Server initialization failed");
+  }
   return absl::OkStatus();;
 }
 
 }  // namespace
 
 void InitConfigDefaults(ServerConfig* config) {
+  config->set_wait_for_clients(true);
   if (config->port().empty()) {
     config->set_port(kDefaultServerPort);
   }

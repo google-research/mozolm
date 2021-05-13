@@ -45,6 +45,7 @@ message ServerConfig {
   // Configuration for authentication mechanisms.
   AuthConfig auth = 3;
 
-  // Whether the server will wait for client requests.
+  // Whether the server will wait for client requests. Always enabled by
+  // default, only disabled for the testing.
   bool wait_for_clients = 4;
 }

@@ -18,19 +18,21 @@ jobs:
       # See:
       #   - On Bazel cache: https://docs.bazel.build/versions/master/output_directories.html
       #   - On problems with `tar.exe`: https://github.com/actions/toolkit/issues/632
+      #   - For symlinking: https://www.joshkel.com/2018/01/18/symlinks-in-windows/
       run: |
         echo "BAZEL_CACHE_DIR=$env:USERPROFILE\_bazel_$env:USERNAME" >> $env:GITHUB_ENV
+        echo "MSYS=winsymlinks:nativestrict" >> $env:GITHUB_ENV
         echo "C:\msys64\usr\bin" >> $env:GITHUB_PATH
 
-    - name: Mount bazel cache
-      # Note: Note that below the version is pinned to `v2.1.4`. This is due to
-      # several path bugs. See:
-      # https://stackoverflow.com/questions/66870002/github-actions-cache-maven-m2-repository-on-windows-environment-c-users-run
-      uses: actions/cache@v2.1.4
-      with:
-        path: ${{ env.BAZEL_CACHE_DIR}}
-        key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE.bazel') }}
-        restore-keys: ${{ runner.os }}-bazel
+    # TODO: Disabling the cache for now. Generated cache has broken
+    # symlinks, which breaks the build.
+    #
+    #- name: Mount bazel cache
+    #  uses: actions/cache@v2
+    #  with:
+    #    path: ${{ env.BAZEL_CACHE_DIR}}
+    #    key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE.bazel') }}
+    #    restore-keys: ${{ runner.os }}-bazel
 
     - name: Install bazelisk
       run: |

@@ -59,7 +59,8 @@ Status ServerAsyncImpl::HandleRequest(ServerContext* context,
 Status ServerAsyncImpl::HandleRequest(ServerContext* context,
                                       const GetContextRequest* request,
                                       NextState* response) {
-  int64 state = model_hub_->ContextState(request->context(), request->state());
+  const int64 state = model_hub_->ContextState(request->context(),
+                                               request->state());
   response->set_next_state(state);
   return Status::OK;
 }
@@ -257,10 +258,11 @@ bool ServerAsyncImpl::StartWithCompletionQueue(::grpc::ServerBuilder* builder) {
 }
 
 bool ServerAsyncImpl::StartServer(const std::string& server_port,
+                                  bool start_completion_queue,
                                   ::grpc::ServerBuilder* builder) {
   builder->RegisterService(&service_);
-  if (StartWithCompletionQueue(builder)) {
-    std::cout << "Server listening on " << server_port << std::endl;
+  if (start_completion_queue && StartWithCompletionQueue(builder)) {
+    GOOGLE_LOG(INFO) << "Server listening on " << server_port;
 
     // Requests one RPC of each type to start the queue going.
     RequestNextGetNextState();
@@ -270,7 +272,6 @@ bool ServerAsyncImpl::StartServer(const std::string& server_port,
     // Proceed to the server's main loop.
     DriveCQ();
   }
-
   return true;
 }
 

@@ -26,8 +26,7 @@
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:SIMPLE_CHAR_BIGRAM storage { \
-//     vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
-//     wait_for_clients:true"
+//     vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -38,8 +37,7 @@
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
-//     ppm_options { max_order: 4 static_model: false } } } } \
-//     wait_for_clients:true"
+//     ppm_options { max_order: 4 static_model: false } } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -50,7 +48,7 @@
 //     --server_config="port:\"localhost:50051\" \
 //     auth { credential_type:INSECURE } model_hub_config { \
 //     model_config { type:CHAR_NGRAM_FST storage { model_file:\"$MODELFILE\" \
-//     } } } wait_for_clients:true" --logtostderr
+//     } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -65,8 +63,7 @@
 //     mixture_type:INTERPOLATION model_config { type:PPM_AS_FST \
 //     storage { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
 //     static_model: false } } }  model_config { type:SIMPLE_CHAR_BIGRAM \
-//     storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } } \
-//     wait_for_clients:true"
+//     storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 
