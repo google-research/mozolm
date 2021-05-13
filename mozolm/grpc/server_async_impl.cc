@@ -14,7 +14,6 @@
 
 #include "mozolm/grpc/server_async_impl.h"
 
-#include <string>
 #include <utility>
 
 #include "mozolm/stubs/logging.h"
