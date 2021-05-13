@@ -52,7 +52,7 @@ void WriteTempTextFile(std::string_view filename, std::string_view contents,
 TEST(ServerHelperTest, CheckConfig) {
   ServerConfig config;
   InitConfigDefaults(&config);
-  EXPECT_EQ(kDefaultServerPort, config.port());
+  EXPECT_EQ(kDefaultServerAddress, config.address_uri());
   EXPECT_TRUE(config.wait_for_clients());
 }
 
@@ -65,7 +65,7 @@ TEST(ServerHelperTest, CheckRunServer) {
   // Check that the server can be initialized.
   ServerConfig config;
   EXPECT_TRUE(google::protobuf::TextFormat::ParseFromString(R"(
-        port: "127.0.0.1:0"
+        address_uri: "127.0.0.1:0"
         auth { credential_type:INSECURE }
         wait_for_clients: false
         model_hub_config {

@@ -266,7 +266,7 @@ ClientHelper::ClientHelper(const ClientConfig& config) {
     default:
       GOOGLE_LOG(ERROR) << "unknown credential type";
   }
-  channel_ = ::grpc::CreateChannel(config.server().port(), creds);
+  channel_ = ::grpc::CreateChannel(config.server().address_uri(), creds);
   completion_client_ =
       absl::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
   timeout_ = config.timeout();

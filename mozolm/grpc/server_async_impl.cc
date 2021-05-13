@@ -257,12 +257,12 @@ bool ServerAsyncImpl::StartWithCompletionQueue(::grpc::ServerBuilder* builder) {
   return !server_shutdown_;
 }
 
-bool ServerAsyncImpl::StartServer(const std::string& server_port,
+bool ServerAsyncImpl::StartServer(const std::string& address_uri,
                                   bool start_completion_queue,
                                   ::grpc::ServerBuilder* builder) {
   builder->RegisterService(&service_);
   if (start_completion_queue && StartWithCompletionQueue(builder)) {
-    GOOGLE_LOG(INFO) << "Server listening on " << server_port;
+    GOOGLE_LOG(INFO) << "Server listening on " << address_uri;
 
     // Requests one RPC of each type to start the queue going.
     RequestNextGetNextState();

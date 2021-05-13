@@ -39,8 +39,12 @@ message ServerConfig {
   // Model hub configuration.
   ModelHubConfig model_hub_config = 1;
 
-  // String representing the port where the server will listen.
-  string port = 2;
+  // The address to try to bind to the server in URI form. If
+  // the scheme name is omitted, "dns:///" is assumed. To bind to any address,
+  // please use IPv6 any, i.e., [::]:<port>, which also accepts IPv4
+  // connections.  Valid values include `dns:///localhost:1234`,
+  // 192.168.1.1:31416, dns:///[::1]:27182, etc.
+  string address_uri = 2;
 
   // Configuration for authentication mechanisms.
   AuthConfig auth = 3;

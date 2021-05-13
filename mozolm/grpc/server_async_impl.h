@@ -81,7 +81,7 @@ class ServerAsyncImpl : public MozoLMService::AsyncService {
   // Registers the service, launches the completion queue and the server.
   // If `start_completion_queue` is false, the server returns immediately (used
   // by the tests).
-  bool StartServer(const std::string& server_port, bool start_completion_queue,
+  bool StartServer(const std::string& address_uri, bool start_completion_queue,
                    ::grpc::ServerBuilder* builder);
 
  private:

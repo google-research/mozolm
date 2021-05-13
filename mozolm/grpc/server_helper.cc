@@ -30,7 +30,8 @@ absl::Status RunCompletionServer(const ServerConfig& config,
   auto model_status = models::MakeModelHub(config.model_hub_config());
   if (!model_status.ok()) return model_status.status();
   ServerAsyncImpl server(std::move(model_status.value()));
-  if (!server.StartServer(config.port(), config.wait_for_clients(), builder)) {
+  if (!server.StartServer(config.address_uri(), config.wait_for_clients(),
+                          builder)) {
     return absl::InternalError("Server initialization failed");
   }
   return absl::OkStatus();;
@@ -40,8 +41,8 @@ absl::Status RunCompletionServer(const ServerConfig& config,
 
 void InitConfigDefaults(ServerConfig* config) {
   config->set_wait_for_clients(true);
-  if (config->port().empty()) {
-    config->set_port(kDefaultServerPort);
+  if (config->address_uri().empty()) {
+    config->set_address_uri(kDefaultServerAddress);
   }
 }
 
@@ -59,7 +60,7 @@ absl::Status RunServer(const ServerConfig& config) {
       return absl::InvalidArgumentError("Unknown credential type");
   }
   ::grpc::ServerBuilder builder;
-  builder.AddListeningPort(config.port(), creds);
+  builder.AddListeningPort(config.address_uri(), creds);
   return RunCompletionServer(config, &builder);
 }
 

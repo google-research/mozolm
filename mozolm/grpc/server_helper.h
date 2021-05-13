@@ -21,7 +21,7 @@
 namespace mozolm {
 namespace grpc {
 
-const char kDefaultServerPort[] = "localhost:50051";
+const char kDefaultServerAddress[] = "localhost:50051";
 
 // Sets default parameters for the server if they have not already been set.
 void InitConfigDefaults(ServerConfig* config);
