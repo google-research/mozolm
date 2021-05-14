@@ -52,6 +52,6 @@ message ClientConfig {
   // Test corpus for calculating bits-per-character.
   string test_corpus = 5;
 
-  // Timeout when waiting for response from server.
-  double timeout = 1;
+  // Timeout when waiting for response from server specified in seconds.
+  double timeout_sec = 1;
 }

@@ -72,7 +72,9 @@ class ClientHelper {
       int64* next_state, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
-  double timeout_;  // Timeout when waiting for server.
+  // Timeout when waiting for server (specified in seconds).
+  double timeout_sec_;
+
   std::shared_ptr<::grpc::Channel> channel_;
   std::unique_ptr<ClientAsyncImpl> completion_client_;
 };

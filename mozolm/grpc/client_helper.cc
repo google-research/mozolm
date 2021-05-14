@@ -109,7 +109,7 @@ absl::Status ClientHelper::GetLMScores(
     return absl::InternalError("Completion client not initialized");
   }
   RETURN_IF_ERROR(completion_client_->GetLMScore(context_string, initial_state,
-                                                 timeout_, normalization,
+                                                 timeout_sec_, normalization,
                                                  prob_idx_pair_vector));
   if (*normalization <= 0) {
     return absl::InternalError(absl::StrCat(
@@ -125,7 +125,7 @@ absl::StatusOr<int64> ClientHelper::GetNextState(
   int64 next_state;
   GOOGLE_CHECK_NE(completion_client_, nullptr);
   const absl::Status status = completion_client_->GetNextState(
-      context_string, initial_state, timeout_, &next_state);
+      context_string, initial_state, timeout_sec_, &next_state);
   if (!status.ok()) {
     return absl::InternalError(absl::StrCat(
         "Getting next state failed for initial state ", initial_state,
@@ -142,8 +142,8 @@ absl::Status ClientHelper::UpdateCountGetDestStateScore(
     return absl::InternalError("Completion client not initialized");
   }
   return completion_client_->UpdateCountGetDestStateScore(
-      context_string, initial_state, timeout_, count, next_state, normalization,
-      prob_idx_pair_vector);
+      context_string, initial_state, timeout_sec_, count, next_state,
+      normalization, prob_idx_pair_vector);
 }
 
 absl::Status ClientHelper::RandGen(const std::string& context_string,
@@ -269,13 +269,13 @@ ClientHelper::ClientHelper(const ClientConfig& config) {
   channel_ = ::grpc::CreateChannel(config.server().address_uri(), creds);
   completion_client_ =
       absl::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
-  timeout_ = config.timeout();
+  timeout_sec_ = config.timeout_sec();
 }
 
 void InitConfigDefaults(ClientConfig* config) {
   InitConfigDefaults(config->mutable_server());
-  if (config->timeout() <= 0.0) {
-    config->set_timeout(absl::GetFlag(FLAGS_mozolm_client_timeout));
+  if (config->timeout_sec() <= 0.0) {
+    config->set_timeout_sec(absl::GetFlag(FLAGS_mozolm_client_timeout));
   }
 }
 
