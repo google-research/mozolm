@@ -14,39 +14,38 @@
 
 #include "mozolm/grpc/server_helper.h"
 
-#include <memory>
-
-#include "include/grpcpp/grpcpp.h"
+#include "mozolm/stubs/logging.h"
 #include "include/grpcpp/security/server_credentials.h"
-#include "mozolm/grpc/server_async_impl.h"
+#include "absl/memory/memory.h"
 #include "mozolm/models/model_factory.h"
+#include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
 namespace grpc {
 namespace {
 
-absl::Status RunCompletionServer(const ServerConfig& config,
-                                 ::grpc::ServerBuilder* builder) {
-  auto model_status = models::MakeModelHub(config.model_hub_config());
-  if (!model_status.ok()) return model_status.status();
-  ServerAsyncImpl server(std::move(model_status.value()));
-  if (!server.StartServer(config.address_uri(), config.wait_for_clients(),
-                          builder)) {
-    return absl::InternalError("Server initialization failed");
+// Worker thread for processing server requests in a completion queue.
+void ProcessRequests(ServerAsyncImpl *server) {
+  GOOGLE_LOG(INFO) << "Waiting for requests ...";
+  const auto status = server->ProcessRequests();
+  if (status.ok()) {
+    GOOGLE_LOG(INFO) << "Server processing queue shut down OK.";
+  } else {
+    GOOGLE_LOG(ERROR) << "Server process queue shut down with error: "
+               << status.ToString();
   }
-  return absl::OkStatus();;
 }
 
 }  // namespace
 
-void InitConfigDefaults(ServerConfig* config) {
-  config->set_wait_for_clients(true);
-  if (config->address_uri().empty()) {
-    config->set_address_uri(kDefaultServerAddress);
-  }
-}
+absl::Status ServerHelper::Init(const ServerConfig& config) {
+  if (server_) return absl::InternalError("Server already active");
 
-absl::Status RunServer(const ServerConfig& config) {
+  // Initialize the model hub.
+  auto model_status = models::MakeModelHub(config.model_hub_config());
+  if (!model_status.ok()) return model_status.status();
+
+  // Configure authentication.
   std::shared_ptr<::grpc::ServerCredentials> creds;
   switch (config.auth().credential_type()) {
     case AuthConfig::SSL:
@@ -59,9 +58,45 @@ absl::Status RunServer(const ServerConfig& config) {
     default:
       return absl::InvalidArgumentError("Unknown credential type");
   }
-  ::grpc::ServerBuilder builder;
-  builder.AddListeningPort(config.address_uri(), creds);
-  return RunCompletionServer(config, &builder);
+
+  // Initialize the server and start the server.
+  server_ = absl::make_unique<ServerAsyncImpl>(std::move(model_status.value()));
+  return server_->BuildAndStart(config.address_uri(), creds);
+}
+
+absl::Status ServerHelper::Run(bool wait_till_terminated) {
+  if (!server_) return absl::InternalError("Server not initialized");
+  server_thread_ = absl::make_unique<std::thread>(&ProcessRequests,
+                                                  server_.get());
+  if (wait_till_terminated) server_thread_->join();
+  return absl::OkStatus();
+}
+
+void ServerHelper::Shutdown() {
+  if (server_) {
+    server_->Shutdown();
+    if (server_thread_) {
+      if (server_thread_->joinable()) server_thread_->join();
+      server_thread_.reset();
+    }
+    server_.reset();
+  }
+}
+
+void InitConfigDefaults(ServerConfig* config) {
+  config->set_wait_for_clients(true);
+  if (config->address_uri().empty()) {
+    config->set_address_uri(kDefaultServerAddress);
+  }
+}
+
+absl::Status RunServer(const ServerConfig& config) {
+  ServerHelper server;
+  RETURN_IF_ERROR(server.Init(config));
+  if (config.wait_for_clients()) {
+    RETURN_IF_ERROR(server.Run(/* wait_till_terminated= */true));
+  }
+  return absl::OkStatus();
 }
 
 }  // namespace grpc

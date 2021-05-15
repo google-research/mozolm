@@ -15,6 +15,7 @@
 #include "mozolm/grpc/server_async_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/server_builder.h"
@@ -91,14 +92,14 @@ void ServerAsyncImpl::DriveCQ() {
 }
 
 bool ServerAsyncImpl::IncrementRpcPending() {
-  absl::MutexLock lock(&server_shutdown_lock_);
+  absl::MutexLock lock(&shutdown_lock_);
   if (server_shutdown_) return false;
   ++rpcs_pending_;
   return true;
 }
 
 bool ServerAsyncImpl::DecrementRpcPending() {
-  absl::MutexLock lock(&server_shutdown_lock_);
+  absl::MutexLock lock(&shutdown_lock_);
   rpcs_pending_--;
   if (rpcs_pending_ == 0) {
     // If count is zero, then server is shutdown (because new RPCs are requested
@@ -238,40 +239,75 @@ void ServerAsyncImpl::CleanupAfterUpdateLMScores(
   DecrementRpcPending();
 }
 
-::grpc::Server* ServerAsyncImpl::GetServer() {
-  absl::MutexLock lock(&server_shutdown_lock_);
-  server_shutdown_ = true;
-  if (server_ == nullptr) {
-    return nullptr;
+absl::Status ServerAsyncImpl::BuildAndStart(
+    const std::string& address_uri,
+    std::shared_ptr<::grpc::ServerCredentials> creds) {
+  absl::MutexLock lock(&shutdown_lock_);
+  if (server_shutdown_) {
+    return absl::InternalError("Cannot initialize in the middle of shutdown");
   }
-  return server_.get();
+
+  // Initialize the server.
+  ::grpc::ServerBuilder builder;
+  builder.AddListeningPort(address_uri, creds);
+  builder.RegisterService(&service_);
+
+  // Build the completion queue and start.
+  cq_ = builder.AddCompletionQueue();
+  server_ = builder.BuildAndStart();
+  rpcs_completed_.Notify();  // No RPCs yet.
+  GOOGLE_LOG(INFO) << "Listening on \"" << address_uri << "\"";
+  return absl::OkStatus();
 }
 
-bool ServerAsyncImpl::StartWithCompletionQueue(::grpc::ServerBuilder* builder) {
-  absl::MutexLock lock(&server_shutdown_lock_);
-  if (!server_shutdown_) {
-    cq_ = builder->AddCompletionQueue();
-    server_ = builder->BuildAndStart();
-  }
-  return !server_shutdown_;
+absl::Status ServerAsyncImpl::ProcessRequests() {
+  // Requests one RPC of each type to start the queue going.
+  RequestNextGetNextState();
+  RequestNextGetLMScore();
+  RequestNextUpdateLMScores();
+
+  // Proceed to the server's main loop.
+  DriveCQ();
+  return absl::OkStatus();
 }
 
-bool ServerAsyncImpl::StartServer(const std::string& address_uri,
-                                  bool start_completion_queue,
-                                  ::grpc::ServerBuilder* builder) {
-  builder->RegisterService(&service_);
-  if (start_completion_queue && StartWithCompletionQueue(builder)) {
-    GOOGLE_LOG(INFO) << "Server listening on " << address_uri;
-
-    // Requests one RPC of each type to start the queue going.
-    RequestNextGetNextState();
-    RequestNextGetLMScore();
-    RequestNextUpdateLMScores();
-
-    // Proceed to the server's main loop.
-    DriveCQ();
+void ServerAsyncImpl::Shutdown() {
+  GOOGLE_LOG(INFO) << "Shutting down ...";
+  ::grpc::Server* server;
+  {
+    absl::MutexLock lock(&shutdown_lock_);
+    server_shutdown_ = true;
+    // Get the server_ variable that is protected by a lock and capture it
+    // in a local since we can't hold the lock while performing a Shutdown
+    // since the RPC processing triggered by the shutdown will also want
+    // this same lock.
+    if (server_) {
+      server = server_.get();
+    } else {
+      GOOGLE_LOG(INFO) << "Shut down requested before initialization";
+      return;
+    }
   }
-  return true;
+
+  // Server shutdown causes the server to stop accepting new calls,
+  // returns !ok for any requested calls that are not yet started, and
+  // means that the application can no longer request new calls.
+  server->Shutdown();
+  // Now wait for all RPCs to complete their processing before we try to
+  // shutdown the CQ. We do this because once the CQ is shutdown, we're
+  // not supposed to enqueue new operations that require a CQ response,
+  // such as the Finish operations that complete the RPC lifecycle.
+  rpcs_completed_.WaitForNotification();
+  // Shutdown the completion queue after the server is shutdown and all
+  // outstanding RPCs are complete.
+  cq_->Shutdown();
+
+  // Drain the completion queue.
+  void* ignored_tag;
+  bool ignored_ok;
+  while (cq_->Next(&ignored_tag, &ignored_ok)) {
+    delete static_cast<std::function<void(bool)>*>(ignored_tag);
+  }
 }
 
 Status ServerAsyncImpl::ManageUpdateLMScores(
