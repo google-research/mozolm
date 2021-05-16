@@ -104,10 +104,10 @@ TEST_F(ServerHelperTest, CheckRunServerWithoutEventLoop) {
 // to shut it down. All of the above is repeated multiple times.
 TEST_F(ServerHelperTest, CheckRunServerWithEventLoop) {
   constexpr int kNumSteps = 5;
+  ServerHelper server;
   for (int i = 0; i < kNumSteps; ++i) {
     GOOGLE_LOG(INFO) << "Iteration " << i;
     // Start the server and return leaving the request processing queue running.
-    ServerHelper server;
     EXPECT_OK(server.Init(config_));
     EXPECT_FALSE(server.Init(config_).ok());  // Server already initialized.
     EXPECT_OK(server.Run(/* wait_till_terminated= */false));

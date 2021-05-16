@@ -74,21 +74,18 @@ Status ServerAsyncImpl::HandleRequest(
 void ServerAsyncImpl::DriveCQ() {
   void* tag;  // Matches the async operation started against this cq_.
   bool ok;
-  while (true) {
-    // Waits for the completion of the next operation in cq_. Then, if not
-    // shutting down, it casts the tag (a pointer to the std::function
-    // implementing the next step in the execution of the RPC) to a
-    // std::function and runs it inline.
-    if (!cq_->Next(&tag, &ok)) {
-      // The completion queue is shutting down.
-      GOOGLE_LOG(INFO) << "Completion queue shutdown.";
-      break;
-    }
+  // Waits for the completion of the next operation in the queue. Then, if not
+  // shutting down, it casts the tag (a pointer to the std::function
+  // implementing the next step in the execution of the RPC) to a
+  // std::function and runs it inline.
+  while (cq_->Next(&tag, &ok)) {
     // Casts the tag to a std::function and runs it inline.
     auto func_ptr = static_cast<std::function<void(bool)>*>(tag);
     (*func_ptr)(ok);
     delete func_ptr;
   }
+  // The completion queue is shutting down.
+  GOOGLE_LOG(INFO) << "Completion queue shutdown.";
 }
 
 bool ServerAsyncImpl::IncrementRpcPending() {
@@ -302,12 +299,9 @@ void ServerAsyncImpl::Shutdown() {
   // outstanding RPCs are complete.
   cq_->Shutdown();
 
-  // Drain the completion queue.
-  void* ignored_tag;
-  bool ignored_ok;
-  while (cq_->Next(&ignored_tag, &ignored_ok)) {
-    delete static_cast<std::function<void(bool)>*>(ignored_tag);
-  }
+  // Drain the completion queue. The remaining requests will be fetched from
+  // the inactive completion queue and their arguments freed.
+  DriveCQ();
 }
 
 Status ServerAsyncImpl::ManageUpdateLMScores(
