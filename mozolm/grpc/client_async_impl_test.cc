@@ -53,6 +53,12 @@ class LocalMockClientAsyncResponseReader
   MOCK_METHOD(void, StartCall, ());
   MOCK_METHOD(void, ReadInitialMetadata, (void *));
   MOCK_METHOD(void, Finish, (R *, ::grpc::Status*, void *));
+
+  // The tests below delete the reader that they create, rather than handing
+  // ownership to the stub caller, so our Destroy method (which is used by the
+  // stub caller) must do nothing. See
+  // https://github.com/grpc/proposal/pull/238.
+  virtual void Destroy() {}
 };
 
 class ClientAsyncImplTest : public ::testing::Test {
