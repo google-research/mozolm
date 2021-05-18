@@ -73,7 +73,7 @@
 #include "absl/status/statusor.h"
 #include "mozolm/models/language_model.h"
 #include "mozolm/models/model_storage.pb.h"
-#include "mozolm/models/ppm_as_fst_model.pb.h"
+#include "mozolm/models/ppm_as_fst_options.pb.h"
 
 namespace mozolm {
 namespace models {

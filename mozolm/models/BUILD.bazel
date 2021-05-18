@@ -91,7 +91,7 @@ jspb_proto_library(
 proto_library(
     name = "model_storage_proto",
     srcs = ["model_storage.proto"],
-    deps = [":ppm_as_fst_model_proto"],
+    deps = [":ppm_as_fst_options_proto"],
 )
 
 cc_proto_library(
@@ -225,7 +225,7 @@ cc_library(
     deps = [
         ":language_model",
         ":model_storage_cc_proto",
-        ":ppm_as_fst_model_cc_proto",
+        ":ppm_as_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:status_macros",
@@ -258,21 +258,21 @@ cc_test(
 )
 
 proto_library(
-    name = "ppm_as_fst_model_proto",
-    srcs = ["ppm_as_fst_model.proto"],
+    name = "ppm_as_fst_options_proto",
+    srcs = ["ppm_as_fst_options.proto"],
 )
 
 cc_proto_library(
-    name = "ppm_as_fst_model_cc_proto",
-    deps = [":ppm_as_fst_model_proto"],
+    name = "ppm_as_fst_options_cc_proto",
+    deps = [":ppm_as_fst_options_proto"],
 )
 
 java_proto_library(
-    name = "ppm_as_fst_model_java_proto",
-    deps = [":ppm_as_fst_model_proto"],
+    name = "ppm_as_fst_options_java_proto",
+    deps = [":ppm_as_fst_options_proto"],
 )
 
 jspb_proto_library(
-    name = "ppm_as_fst_model_jspb_proto",
-    deps = [":ppm_as_fst_model_proto"],
+    name = "ppm_as_fst_options_jspb_proto",
+    deps = [":ppm_as_fst_options_proto"],
 )

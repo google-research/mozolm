@@ -22,7 +22,7 @@ syntax = "proto3";
 
 package mozolm;
 
-import "mozolm/models/ppm_as_fst_model.proto";
+import "mozolm/models/ppm_as_fst_options.proto";
 
 // Next available ID: 4
 message ModelStorage {
