@@ -43,6 +43,8 @@ class ServerHelper {
   // Shuts down the server. Mostly useful for the tests.
   void Shutdown();
 
+  const ServerAsyncImpl &server() const { return *server_; }
+
  private:
   // The actual gRPC server.
   std::unique_ptr<ServerAsyncImpl> server_;

@@ -16,6 +16,7 @@
 
 #include <fstream>
 
+#include "mozolm/stubs/logging.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
@@ -104,6 +105,7 @@ absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
     }
   } else {
     // Assumes uniform distribution over lowercase a-z and whitespace.
+    GOOGLE_LOG(WARNING) << "No vocabulary and counts files specified.";
     utf8_indices_.push_back(0);   // Index 0 is <S> and </S> by convention.
     utf8_indices_.push_back(32);  // Whitespace.
     for (int32 sym = 97; sym <= 122; sym++) {

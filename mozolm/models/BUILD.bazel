@@ -204,7 +204,7 @@ cc_library(
 cc_test(
     name = "ngram_char_fst_model_test",
     srcs = ["ngram_char_fst_model_test.cc"],
-    data = ["testdata/gutenberg_en_char_ngram_o4_wb.fst"],
+    data = ["//mozolm/models/testdata:ngram_fst_data"],
     deps = [
         ":model_storage_cc_proto",
         ":ngram_char_fst_model",

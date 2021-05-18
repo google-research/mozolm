@@ -22,6 +22,7 @@
 #include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/match.h"
 
 ABSL_FLAG(int, mozolm_server_asynch_pool_size, 2,
           "number of threads in the UpdateLMScores handlers thread pool");
@@ -246,7 +247,8 @@ absl::Status ServerAsyncImpl::BuildAndStart(
 
   // Initialize the server.
   ::grpc::ServerBuilder builder;
-  builder.AddListeningPort(address_uri, creds);
+  selected_port_ = -1;
+  builder.AddListeningPort(address_uri, creds, &selected_port_);
   builder.RegisterService(&service_);
 
   // Build the completion queue and start.
@@ -254,6 +256,9 @@ absl::Status ServerAsyncImpl::BuildAndStart(
   server_ = builder.BuildAndStart();
   rpcs_completed_.Notify();  // No RPCs yet.
   GOOGLE_LOG(INFO) << "Listening on \"" << address_uri << "\"";
+  if (absl::EndsWith(address_uri, ":0")) {
+    GOOGLE_LOG(INFO) << "Selected port: " << selected_port_;
+  }
   return absl::OkStatus();
 }
 

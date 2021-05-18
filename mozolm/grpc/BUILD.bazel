@@ -55,6 +55,7 @@ cc_library(
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
     ],
 )
@@ -179,6 +180,7 @@ cc_test(
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:file_util",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/time",
         "@com_google_googletest//:gtest_main",
@@ -214,12 +216,25 @@ cc_library(
 cc_test(
     name = "client_helper_test",
     srcs = ["client_helper_test.cc"],
+    data = [
+        "//mozolm/models/testdata:ngram_fst_data",
+        "//mozolm/models/testdata:ppm_as_fst_data",
+    ],
     deps = [
         ":client_helper",
+        ":server_config_cc_proto",
         ":server_helper",
+        "//mozolm/models:model_config_cc_proto",
+        "//mozolm/models:ppm_as_fst_options_cc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
         "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:file_util",
         "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 

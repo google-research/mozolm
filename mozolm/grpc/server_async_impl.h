@@ -82,6 +82,8 @@ class ServerAsyncImpl : public MozoLMService::AsyncService {
     return model_hub_->StateSym(state);
   }
 
+  int selected_port() const { return selected_port_; }
+
  private:
   void DriveCQ();              // Manages a step in the operation of cq_.
   bool IncrementRpcPending();  // Locks, increments & releases counter.
@@ -148,6 +150,11 @@ class ServerAsyncImpl : public MozoLMService::AsyncService {
 
   // Notified when pending rpc count is zero.
   absl::Notification rpcs_completed_;
+
+  // Actual port used by the server after the endpoint has been fully
+  // bound. This is useful in tests where the port may be selected dynamically
+  // and is not known in advance.
+  int selected_port_;
 
   std::unique_ptr<ThreadPool> asynch_pool_;  // Pool for handling updates.
 };

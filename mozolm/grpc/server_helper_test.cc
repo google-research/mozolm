@@ -15,7 +15,6 @@
 #include "mozolm/grpc/server_helper.h"
 
 #include <filesystem>
-#include <fstream>
 #include <string>
 #include <string_view>
 
@@ -29,6 +28,7 @@
 #include "absl/time/time.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "mozolm/utils/file_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -38,7 +38,10 @@ class ServerHelperTest : public ::testing::Test {
  protected:
   void SetUp() override {
     // Prepare a dummy text file.
-    WriteTempTextFile("corpus.txt", "Hello world!", &model_text_path_);
+    const auto temp_text_status = file::WriteTempTextFile(
+        "corpus.txt", "Hello world!");
+    EXPECT_OK(temp_text_status.status());
+    model_text_path_ = temp_text_status.value();
     EXPECT_FALSE(model_text_path_.empty());
 
     // Prepare configuration.
@@ -60,24 +63,6 @@ class ServerHelperTest : public ::testing::Test {
 
   void TearDown() override {
     EXPECT_TRUE(std::filesystem::remove(model_text_path_));
-  }
-
-  // Returns full temporary path to `filename`.
-  std::string TempFilePath(std::string_view filename) const {
-    const std::filesystem::path tmp_dir =
-        std::filesystem::temp_directory_path();
-    std::filesystem::path file_path = tmp_dir / filename;
-    return file_path.string();
-  }
-
-  // Writes temporary text file.
-  void WriteTempTextFile(std::string_view filename, std::string_view contents,
-                         std::string *path) const {
-    *path = TempFilePath(filename);
-    std::ofstream out(*path);
-    EXPECT_TRUE(out) << "Failed to open " << *path;
-    out << contents;
-    EXPECT_TRUE(out.good());
   }
 
   // Server configuration.
@@ -109,6 +94,7 @@ TEST_F(ServerHelperTest, CheckRunServerWithEventLoop) {
     GOOGLE_LOG(INFO) << "Iteration " << i;
     // Start the server and return leaving the request processing queue running.
     EXPECT_OK(server.Init(config_));
+    EXPECT_LT(0, server.server().selected_port());
     EXPECT_FALSE(server.Init(config_).ok());  // Server already initialized.
     EXPECT_OK(server.Run(/* wait_till_terminated= */false));
 
