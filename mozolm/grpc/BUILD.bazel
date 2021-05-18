@@ -147,6 +147,8 @@ cc_binary(
     deps = [
         ":client_config_cc_proto",
         ":client_helper",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_protobuf//:protobuf",
