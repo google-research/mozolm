@@ -24,6 +24,43 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
+// Builds SSL server credentials.
+std::shared_ptr<::grpc::ServerCredentials>
+BuildServerCredentials(const ServerAuthConfig::SslConfig &config) {
+  ::grpc::SslServerCredentialsOptions ssl_ops(
+      config.client_verify()
+          // Server requests client certificate and enforces that the client
+          // presents a certificate.
+          ? GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY
+          // The certificate presented by the client is not checked by the
+          // server at all.
+          : GRPC_SSL_DONT_REQUEST_CLIENT_CERTIFICATE);
+
+  ssl_ops.force_client_auth = config.client_verify();
+  if (!config.custom_ca().empty()) ssl_ops.pem_root_certs = config.custom_ca();
+
+  const ::grpc::SslServerCredentialsOptions::PemKeyCertPair key_cert = {
+      config.server_key(), config.server_cert()};
+  ssl_ops.pem_key_cert_pairs.push_back(key_cert);
+  return ::grpc::SslServerCredentials(ssl_ops);
+}
+
+// Server credentials factory: Configures SSL, if requested, otherwise uses
+// insecure channel.
+std::shared_ptr<::grpc::ServerCredentials>
+BuildServerCredentials(const ServerConfig &config) {
+  const ServerAuthConfig &auth = config.auth();
+  if (auth.credential_type() == CREDENTIAL_SSL && auth.has_ssl_config()) {
+    return BuildServerCredentials(auth.ssl_config());
+  } else {
+    if (auth.credential_type() != CREDENTIAL_INSECURE) {
+      GOOGLE_LOG(WARNING) << "Secure credentials requested but no configuration found";
+    }
+    GOOGLE_LOG(WARNING) << "Using insecure server credentials";
+    return ::grpc::InsecureServerCredentials();
+  }
+}
+
 // Worker thread for processing server requests in a completion queue.
 void ProcessRequests(ServerAsyncImpl *server) {
   GOOGLE_LOG(INFO) << "Waiting for requests ...";
@@ -45,21 +82,11 @@ absl::Status ServerHelper::Init(const ServerConfig& config) {
   auto model_status = models::MakeModelHub(config.model_hub_config());
   if (!model_status.ok()) return model_status.status();
 
-  // Configure authentication.
-  std::shared_ptr<::grpc::ServerCredentials> creds;
-  switch (config.auth().credential_type()) {
-    case AuthConfig::SSL:
-      // TODO: setup SSL credentials.
-      creds = ::grpc::InsecureServerCredentials();
-      break;
-    case AuthConfig::INSECURE:
-      creds = ::grpc::InsecureServerCredentials();
-      break;
-    default:
-      return absl::InvalidArgumentError("Unknown credential type");
-  }
+  // Configure the authentication.
+  std::shared_ptr<::grpc::ServerCredentials> creds = BuildServerCredentials(
+      config);
 
-  // Initialize the server and start the server.
+  // Initialize and start the server.
   server_ = absl::make_unique<ServerAsyncImpl>(std::move(model_status.value()));
   return server_->BuildAndStart(config.address_uri(), creds);
 }

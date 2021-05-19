@@ -43,5 +43,26 @@ absl::StatusOr<std::string> WriteTempTextFile(std::string_view filename,
   return path;
 }
 
+absl::StatusOr<std::string> ReadBinaryFile(std::string_view file_path) {
+  std::ifstream input;
+  // Need to construct std::string explictly below. See:
+  //   https://cplusplus.github.io/LWG/issue3430
+  input.open(std::string(file_path), std::ifstream::in | std::ifstream::binary);
+  if (!input) {
+    return absl::NotFoundError(absl::StrCat("Failed to open: ", file_path));
+  }
+  std::string contents;
+  input.seekg(0, std::ios::end);
+  const std::streampos file_size = input.tellg();
+  if (file_size <= 0) {
+    return absl::InternalError("File empty or invalid");
+  }
+  contents.reserve(file_size);
+  input.seekg(0, std::ios::beg);
+  contents.assign(std::istreambuf_iterator<char>(input),
+                  std::istreambuf_iterator<char>());
+  return contents;
+}
+
 }  // namespace file
 }  // namespace mozolm

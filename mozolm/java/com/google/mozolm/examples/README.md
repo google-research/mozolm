@@ -21,7 +21,6 @@ To run this example execute the following steps:
     TEXTFILE=mozolm/data/en_wiki_1Kline_sample.txt
     bazel-bin/mozolm/grpc/server_async \
       --server_config="address_uri:\"localhost:${PORT}\" \
-         auth { credential_type:INSECURE } \
          model_hub_config { model_config { type:PPM_AS_FST storage \
          { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 static_model: false } \
          } } }"
@@ -50,7 +49,7 @@ To run this example execute the following steps:
     set TEXTFILE=mozolm\\data\\en_wiki_1Kline_sample.txt
     bazel-bin\mozolm\grpc\server_async \
       --server_config="address_uri:""localhost:%PORT%"" \
-        auth { credential_type:INSECURE } model_hub_config { model_config { \
+        model_hub_config { model_config { \
         type:PPM_AS_FST storage { model_file:""%TEXTFILE%"" ppm_options { \
         max_order: 4 static_model: false } } } }"
 ```

@@ -68,8 +68,12 @@ cc_binary(
         ":server_helper",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "//mozolm/utils:file_util",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
     ],
 )
@@ -175,6 +179,11 @@ cc_library(
 cc_test(
     name = "server_helper_test",
     srcs = ["server_helper_test.cc"],
+    data = [
+        "testdata/cred/x509/server1_cert.pem",
+        "testdata/cred/x509/server1_key.pem",
+        "testdata/cred/x509/server_ca_cert.pem",
+    ],
     deps = [
         ":server_helper",
         "//mozolm/models:model_config_cc_proto",

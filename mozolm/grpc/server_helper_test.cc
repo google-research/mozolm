@@ -34,6 +34,13 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
+// Test data for SSL/TLS credentials.
+const char kSslCredTestDir[] =
+    "mozolm/grpc/testdata/cred/x509";
+const char kSslServerPrivateKeyFile[] = "server1_key.pem";
+const char kSslServerPublicCertFile[] = "server1_cert.pem";
+const char kSslCustomCertAuthFile[] = "server_ca_cert.pem";
+
 class ServerHelperTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -45,9 +52,9 @@ class ServerHelperTest : public ::testing::Test {
     EXPECT_FALSE(model_text_path_.empty());
 
     // Prepare configuration.
-    EXPECT_TRUE(google::protobuf::TextFormat::ParseFromString(R"(
+    ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(R"(
         address_uri: "localhost:0"
-        auth { credential_type:INSECURE }
+        auth { credential_type:CREDENTIAL_INSECURE }
         wait_for_clients: false
         model_hub_config {
           model_config {
@@ -63,6 +70,16 @@ class ServerHelperTest : public ::testing::Test {
 
   void TearDown() override {
     EXPECT_TRUE(std::filesystem::remove(model_text_path_));
+  }
+
+  // Reads contents of the credentials file.
+  void ReadCredFileContents(std::string_view filename, std::string *contents) {
+    const std::filesystem::path file_path = (
+        std::filesystem::current_path() /
+        kSslCredTestDir / filename).make_preferred();
+    const auto read_status = file::ReadBinaryFile(file_path.string());
+    ASSERT_OK(read_status) << "Failed to read " << filename;
+    *contents = read_status.value();
   }
 
   // Server configuration.
@@ -93,7 +110,7 @@ TEST_F(ServerHelperTest, CheckRunServerWithEventLoop) {
   for (int i = 0; i < kNumSteps; ++i) {
     GOOGLE_LOG(INFO) << "Iteration " << i;
     // Start the server and return leaving the request processing queue running.
-    EXPECT_OK(server.Init(config_));
+    ASSERT_OK(server.Init(config_));
     EXPECT_LT(0, server.server().selected_port());
     EXPECT_FALSE(server.Init(config_).ok());  // Server already initialized.
     EXPECT_OK(server.Run(/* wait_till_terminated= */false));
@@ -103,6 +120,46 @@ TEST_F(ServerHelperTest, CheckRunServerWithEventLoop) {
     absl::SleepFor(absl::Milliseconds(100));
     server.Shutdown();
   }
+}
+
+// Check starting up of the server with valid SSL/TLS credentials.
+TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
+  // Prepare the initial configuration: Valid key and invalid certificate.
+  ServerAuthConfig *auth = config_.mutable_auth();
+  auth->set_credential_type(CREDENTIAL_SSL);
+  auth->mutable_ssl_config()->set_client_verify(true);
+  std::string contents;
+  ReadCredFileContents(kSslServerPrivateKeyFile, &contents);
+  auth->mutable_ssl_config()->set_server_key(contents);
+  auth->mutable_ssl_config()->set_server_cert("invalid");
+
+  // Make sure we can't run with invalid credentials.
+  ServerHelper server;
+  EXPECT_FALSE(server.Init(config_).ok());
+  server.Shutdown();
+
+  // Now fix the server's publicate certificate to make the configuration valid.
+  ReadCredFileContents(kSslServerPublicCertFile, &contents);
+  auth->mutable_ssl_config()->set_server_cert(contents);
+  ASSERT_OK(server.Init(config_));
+  EXPECT_OK(server.Run(/* wait_till_terminated= */false));
+  absl::SleepFor(absl::Milliseconds(100));
+  server.Shutdown();
+
+  // Check that we can start with no client verification.
+  auth->mutable_ssl_config()->set_client_verify(true);
+  ASSERT_OK(server.Init(config_));
+  server.Shutdown();
+
+  // Provide custom certificate authority: once a valid certificate that should
+  // succeed, and once an invalid one should fail to initialize the server.
+  ReadCredFileContents(kSslCustomCertAuthFile, &contents);
+  auth->mutable_ssl_config()->set_custom_ca(contents);
+  ASSERT_OK(server.Init(config_));
+  server.Shutdown();
+  auth->mutable_ssl_config()->set_custom_ca("invalid");
+  ASSERT_FALSE(server.Init(config_).ok());
+  server.Shutdown();
 }
 
 }  // namespace

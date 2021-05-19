@@ -70,7 +70,7 @@ class ClientHelperTest : public ::testing::TestWithParam<ModelParams>  {
   void MakeServerConfig(const ModelParams &model_params) {
     const std::string config_contents = R"(
         address_uri: "localhost:0"
-        auth { credential_type:INSECURE }
+        auth { credential_type:CREDENTIAL_INSECURE }
         wait_for_clients: false)";
     EXPECT_TRUE(google::protobuf::TextFormat::ParseFromString(config_contents,
                                                     &server_config_));

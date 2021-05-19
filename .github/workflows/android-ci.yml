@@ -15,8 +15,8 @@ jobs:
       BAZEL: bazelisk-linux-amd64
       CC: gcc-10
       CXX: g++-10
-      NDK_API_LEVEL: 21
-      NDK_VERSION: 21.4.7075529
+      NDK_API_LEVEL: 22
+      NDK_VERSION: 22.1.7171670
 
     steps:
     - uses: actions/checkout@v2
@@ -70,4 +70,4 @@ jobs:
       # Since we're simply cross-compiling here, not running any tests because
       # there are no Android targets, tests are not included. Just quickly check
       # that the client/server architecture builds.
-      run: ./${BAZEL} build -c opt --config=android_arm64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //mozolm/grpc:client_async //mozolm/grpc:server_async
+      run: ./${BAZEL} build -c opt --config=android_arm64 --action_env=ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION} --action_env=ANDROID_NDK_API_LEVEL=${NDK_API_LEVEL} //mozolm/grpc:client_helper //mozolm/grpc:server_helper

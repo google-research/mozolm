@@ -25,7 +25,7 @@
 #include "absl/strings/match.h"
 
 ABSL_FLAG(int, mozolm_server_asynch_pool_size, 2,
-          "number of threads in the UpdateLMScores handlers thread pool");
+          "Number of threads in the handlers thread pool.");
 
 namespace mozolm {
 namespace grpc {
@@ -254,6 +254,10 @@ absl::Status ServerAsyncImpl::BuildAndStart(
   // Build the completion queue and start.
   cq_ = builder.AddCompletionQueue();
   server_ = builder.BuildAndStart();
+  if (server_ == nullptr) {
+    return absl::InternalError(
+        "Failed to build the server. Check the log for errors");
+  }
   rpcs_completed_.Notify();  // No RPCs yet.
   GOOGLE_LOG(INFO) << "Listening on \"" << address_uri << "\"";
   if (absl::EndsWith(address_uri, ":0")) {

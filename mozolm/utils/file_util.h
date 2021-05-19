@@ -33,6 +33,9 @@ std::string TempFilePath(std::string_view filename);
 absl::StatusOr<std::string> WriteTempTextFile(std::string_view filename,
                                               std::string_view contents);
 
+// Reads binary file into a buffer or returns error.
+absl::StatusOr<std::string> ReadBinaryFile(std::string_view file_path);
+
 }  // namespace file
 }  // namespace mozolm
 

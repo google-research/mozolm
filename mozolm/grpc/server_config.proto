@@ -24,14 +24,34 @@ option java_package = "com.google.mozolm.grpc";
 option java_outer_classname = "ServerConfigProto";
 option java_multiple_files = true;
 
-// Next available ID: 2
-message AuthConfig {
+enum CredentialType {
+  CREDENTIAL_INSECURE = 0;
+  CREDENTIAL_SSL = 1;
+}
+
+// Next available ID: 3
+message ServerAuthConfig {
   // Type of authorization credentials used in client/server handshake.
   CredentialType credential_type = 1;
-  enum CredentialType {
-    SSL = 0;
-    INSECURE = 1;
+
+  // Next available ID: 5
+  message SslConfig {
+    // Private server key for SSL.
+    string server_key = 1;
+
+    // Public server certificate.
+    string server_cert = 2;
+
+    // Custom certificate authority.
+    string custom_ca = 3;
+
+    // Whether a valid client certificate is required.
+    bool client_verify = 4;
   }
+
+  // Configuration for a secure gRPC channel. If not given, insecure connection
+  // is used.
+  SslConfig ssl_config = 2;
 }
 
 // Next available ID: 5
@@ -50,7 +70,7 @@ message ServerConfig {
   string address_uri = 2;
 
   // Configuration for authentication mechanisms.
-  AuthConfig auth = 3;
+  ServerAuthConfig auth = 3;
 
   // Whether the server will wait for client requests. Always enabled by
   // default, only disabled for the testing.

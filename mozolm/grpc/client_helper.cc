@@ -256,11 +256,11 @@ absl::Status ClientHelper::CalcBitsPerCharacter(const std::string& test_file,
 ClientHelper::ClientHelper(const ClientConfig& config) {
   std::shared_ptr<::grpc::ChannelCredentials> creds;
   switch (config.server().auth().credential_type()) {
-    case AuthConfig::SSL:
+    case CREDENTIAL_SSL:
       // TODO: setup SSL credentials.
       creds = ::grpc::InsecureChannelCredentials();
       break;
-    case AuthConfig::INSECURE:
+    case CREDENTIAL_INSECURE:
       creds = ::grpc::InsecureChannelCredentials();
       break;
     default:

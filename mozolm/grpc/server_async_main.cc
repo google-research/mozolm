@@ -24,8 +24,7 @@
 //   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
-//     auth { credential_type:INSECURE } model_hub_config { \
-//     model_config { type:SIMPLE_CHAR_BIGRAM storage { \
+//     model_hub_config { model_config { type:SIMPLE_CHAR_BIGRAM storage { \
 //     vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
@@ -35,9 +34,9 @@
 //   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
-//     auth { credential_type:INSECURE } model_hub_config { \
-//     model_config { type:PPM_AS_FST storage { model_file:\"$TEXTFILE\" \
-//     ppm_options { max_order: 4 static_model: false } } } }"
+//     model_hub_config { model_config { type:PPM_AS_FST storage { \
+//     model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
+//     static_model: false } } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -46,9 +45,8 @@
 //   MODELFILE=${DATADIR}/models/testdata/gutenberg_en_char_ngram_o4_wb.fst
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
-//     auth { credential_type:INSECURE } model_hub_config { \
-//     model_config { type:CHAR_NGRAM_FST storage { model_file:\"$MODELFILE\" \
-//     } } }"
+//     model_hub_config { model_config { type:CHAR_NGRAM_FST storage { \
+//     model_file:\"$MODELFILE\" } } }"
 //
 //   Will wait for queries in terminal, Ctrl-C to quit.
 //
@@ -59,8 +57,8 @@
 //   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
-//     auth { credential_type:INSECURE } model_hub_config { \
-//     mixture_type:INTERPOLATION model_config { type:PPM_AS_FST \
+//     model_hub_config { mixture_type:INTERPOLATION model_config { \
+//     type:PPM_AS_FST \
 //     storage { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
 //     static_model: false } } }  model_config { type:SIMPLE_CHAR_BIGRAM \
 //     storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } }"
@@ -73,22 +71,84 @@
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/grpc/server_helper.h"
+#include "mozolm/utils/file_util.h"
+#include "mozolm/stubs/status_macros.h"
 
 ABSL_FLAG(std::string, server_config, "",
-          "Configuration (`mozolm_grpc.ServerConfig`) protocol buffer in "
+          "Configuration (`mozolm.grpc.ServerConfig`) protocol buffer in "
           "text format.");
+
+ABSL_FLAG(std::string, ssl_server_key_file, "",
+          "Private server key for SSL/TLS credentials.");
+
+ABSL_FLAG(std::string, ssl_server_cert_file, "",
+          "Public server certificate for SSL/TLS credentials.");
+
+ABSL_FLAG(std::string, ssl_custom_ca_file, "",
+          "Custom certificate authority file.");
+
+ABSL_FLAG(bool, ssl_client_verify, true,
+          "Whether a valid client certificate is required.");
+
+namespace mozolm {
+namespace grpc {
+namespace {
+
+// Initializes SSL/TLS configuration from command-line flags.
+absl::Status InitSslConfig(ServerAuthConfig::SslConfig *ssl_config) {
+  std::string contents;
+  ssl_config->set_client_verify(absl::GetFlag(FLAGS_ssl_client_verify));
+  ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+      absl::GetFlag(FLAGS_ssl_server_key_file)));
+  ssl_config->set_server_key(contents);
+  ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+      absl::GetFlag(FLAGS_ssl_server_cert_file)));
+  ssl_config->set_server_cert(contents);
+  if (!absl::GetFlag(FLAGS_ssl_custom_ca_file).empty()) {
+    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+        absl::GetFlag(FLAGS_ssl_custom_ca_file)));
+    ssl_config->set_custom_ca(contents);
+  }
+  return absl::OkStatus();
+}
+
+// Initializes configuration from command-line flags.
+absl::Status InitConfigFromFlags(ServerConfig *config) {
+  // Init the main body of configuration.
+  const std::string config_contents = absl::GetFlag(FLAGS_server_config);
+  if (!config_contents.empty()) {
+    if (!google::protobuf::TextFormat::ParseFromString(config_contents, config)) {
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Failed to parse configuration from contents"));
+    }
+  }
+  InitConfigDefaults(config);
+
+  // Initialize credentials.
+  if (config->auth().credential_type() == CREDENTIAL_SSL &&
+      !absl::GetFlag(FLAGS_ssl_server_key_file).empty()) {
+    return InitSslConfig(config->mutable_auth()->mutable_ssl_config());
+  }
+  return absl::OkStatus();
+}
+
+}  // namespace
+}  // namespace grpc
+}  // namespace mozolm
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
   mozolm::grpc::ServerConfig config;
-  if (!absl::GetFlag(FLAGS_server_config).empty()) {
-    GOOGLE_CHECK(google::protobuf::TextFormat::ParseFromString(
-        absl::GetFlag(FLAGS_server_config), &config));
+  auto status = mozolm::grpc::InitConfigFromFlags(&config);
+  if (!status.ok()) {
+    GOOGLE_LOG(ERROR) << "Failed to initialize configuration: " << status.ToString();
+    return 1;
   }
-  mozolm::grpc::InitConfigDefaults(&config);
-  const auto status = mozolm::grpc::RunServer(config);
+  status = mozolm::grpc::RunServer(config);
   if (!status.ok()) {
     GOOGLE_LOG(ERROR) << "Failed to run server: " << status.ToString();
     return 1;

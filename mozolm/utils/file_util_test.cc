@@ -40,6 +40,17 @@ TEST(File_UtilTest, CheckWriteTempTextFile) {
   EXPECT_TRUE(std::filesystem::remove(path));
 }
 
+TEST(File_UtilTest, CheckReadBinaryFile) {
+  const auto write_status = WriteTempTextFile(kFilename, "hello");
+  EXPECT_OK(write_status.status());
+  auto read_status = ReadBinaryFile(write_status.value());
+  EXPECT_OK(read_status.status());
+  const std::string contents = read_status.value();
+  EXPECT_EQ("hello", contents);
+  read_status = ReadBinaryFile("invalid file");
+  EXPECT_FALSE(read_status.ok());
+}
+
 }  // namespace
 }  // namespace file
 }  // namespace mozolm
