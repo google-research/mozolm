@@ -15,8 +15,8 @@ jobs:
       BAZEL: bazelisk-linux-amd64
       CC: gcc-10
       CXX: g++-10
-      NDK_API_LEVEL: 22
-      NDK_VERSION: 22.1.7171670
+      NDK_API_LEVEL: 21
+      NDK_VERSION: 21.4.7075529
 
     steps:
     - uses: actions/checkout@v2
