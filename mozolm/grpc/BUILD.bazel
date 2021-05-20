@@ -150,10 +150,15 @@ cc_binary(
     deps = [
         ":client_config_cc_proto",
         ":client_helper",
+        ":server_config_cc_proto",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "//mozolm/utils:file_util",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
     ],
 )
@@ -178,12 +183,9 @@ cc_library(
 cc_test(
     name = "server_helper_test",
     srcs = ["server_helper_test.cc"],
-    data = [
-        "testdata/cred/x509/server1_cert.pem",
-        "testdata/cred/x509/server1_key.pem",
-        "testdata/cred/x509/server_ca_cert.pem",
-    ],
+    data = ["//mozolm/grpc/testdata/cred/x509:x509_data"],
     deps = [
+        ":auth_test_utils",
         ":server_helper",
         "//mozolm/models:model_config_cc_proto",
         "//mozolm/models:model_storage_cc_proto",
@@ -212,7 +214,6 @@ cc_library(
         "//mozolm/stubs:status_macros",
         "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
-        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/status",
@@ -288,4 +289,39 @@ js_grpc_web_library(
     name = "service_js_grpc_proto",
     src = "service.proto",
     deps = [":service_jspb_proto"],
+)
+
+cc_library(
+    name = "auth_test_utils",
+    testonly = 1,
+    srcs = ["auth_test_utils.cc"],
+    hdrs = ["auth_test_utils.h"],
+    deps = [
+        "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:file_util",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "auth_end2end_test",
+    srcs = ["auth_end2end_test.cc"],
+    data = [
+        "//mozolm/grpc/testdata/cred/x509:x509_data",
+        "//mozolm/models/testdata:ngram_fst_data",
+    ],
+    deps = [
+        ":auth_test_utils",
+        ":client_helper",
+        ":server_helper",
+        "//mozolm/stubs:status-matchers",
+        "//mozolm/stubs:status_macros",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
 )

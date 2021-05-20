@@ -38,22 +38,77 @@
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "mozolm/grpc/client_config.pb.h"
 #include "mozolm/grpc/client_helper.h"
+#include "mozolm/grpc/server_config.pb.h"
+#include "mozolm/utils/file_util.h"
+#include "mozolm/stubs/status_macros.h"
 
 ABSL_FLAG(std::string, client_config, "",
           "Protocol buffer `mozolm_grpc.ClientConfig` in text format.");
+
+ABSL_FLAG(double, timeout_sec, 0.0,
+          "Connection timeout for waiting for response (in seconds).");
+
+ABSL_FLAG(std::string, ssl_server_cert_file, "",
+          "Public (root) certificate authority file for SSL/TLS credentials.");
+
+ABSL_FLAG(std::string, ssl_target_name_override, "",
+          "Target name override for SSL host name checking. This should *not* "
+          "be used in production. Example: \"*.test.example.com\"");
+
+namespace mozolm {
+namespace grpc {
+namespace {
+
+// Initializes configuration from command-line flags.
+absl::Status InitConfigFromFlags(ClientConfig *config) {
+  // Init the main body of configuration.
+  const std::string config_contents = absl::GetFlag(FLAGS_client_config);
+  if (!config_contents.empty()) {
+    if (!google::protobuf::TextFormat::ParseFromString(config_contents, config)) {
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Failed to parse configuration from contents"));
+    }
+  }
+  config->set_timeout_sec(absl::GetFlag(FLAGS_timeout_sec));
+  InitConfigDefaults(config);
+
+  // Configure secure credentials.
+  if (!absl::GetFlag(FLAGS_ssl_server_cert_file).empty()) {
+    ClientAuthConfig *cli_auth = config->mutable_auth();
+    cli_auth->mutable_ssl_config()->set_target_name_override(
+        absl::GetFlag(FLAGS_ssl_target_name_override));
+
+    // Set server certificate.
+    std::string contents;
+    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+        absl::GetFlag(FLAGS_ssl_server_cert_file)));
+    ServerAuthConfig *server_auth = config->mutable_server()->mutable_auth();
+    server_auth->set_credential_type(CREDENTIAL_SSL);
+    ServerAuthConfig::SslConfig *server_ssl_config =
+        server_auth->mutable_ssl_config();
+    server_ssl_config->set_server_cert(contents);
+  }
+  return absl::OkStatus();
+}
+
+}  // namespace
+}  // namespace grpc
+}  // namespace mozolm
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
 
   mozolm::grpc::ClientConfig config;
-  if (!absl::GetFlag(FLAGS_client_config).empty()) {
-    GOOGLE_CHECK(google::protobuf::TextFormat::ParseFromString(
-        absl::GetFlag(FLAGS_client_config), &config));
+  auto status = mozolm::grpc::InitConfigFromFlags(&config);
+  if (!status.ok()) {
+    GOOGLE_LOG(ERROR) << "Failed to initialize configuration: " << status.ToString();
+    return 1;
   }
-  mozolm::grpc::InitConfigDefaults(&config);
-  const auto status = mozolm::grpc::RunClient(config);
+  status = mozolm::grpc::RunClient(config);
   if (!status.ok()) {
     GOOGLE_LOG(ERROR) << "Failed to run client: " << status.ToString();
     return 1;

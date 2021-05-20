@@ -21,22 +21,24 @@
 
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/create_channel.h"
-#include "absl/flags/declare.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/client_config.pb.h"
 
-ABSL_DECLARE_FLAG(double, mozolm_client_timeout);
-
 namespace mozolm {
 namespace grpc {
 
 constexpr int kMaxRandGenLen = 128;
+constexpr double kDefaultClientTimeoutSec = 5.0;
 
 class ClientHelper {
  public:
-  explicit ClientHelper(const ClientConfig& config);
+  ClientHelper() = default;
+  ~ClientHelper() = default;
+
+  // Initializes the connection given configuration.
+  absl::Status Init(const ClientConfig& config);
 
   // Generates a k-best list from the model given the context.
   absl::Status OneKbestSample(int k_best, const std::string& context_string,
@@ -53,8 +55,6 @@ class ClientHelper {
                                     std::string* result);
 
  private:
-  ClientHelper() = delete;
-
   // Requests LMScores from model, populates vector of prob/index pairs and
   // updates normalization count, returning true if successful.
   absl::Status GetLMScores(

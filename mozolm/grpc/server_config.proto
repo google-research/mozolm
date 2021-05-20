@@ -65,8 +65,9 @@ message ServerConfig {
   // connections.  Valid values include `dns:///localhost:1234`,
   // `192.168.1.1:31416`, `dns:///[::1]:27182`, etc.
   //
-  // To use Unix, rather than TCP, sockets use the "unix:///" scheme. Example:
-  // `unix:///tmp/example.sock`.
+  // To use UNIX domain, rather than TCP, sockets (aka UDS) use the
+  // "unix:///" scheme. Example: `unix:///tmp/example.sock`. Ideally the socket
+  // should be removed upon shutting down.
   string address_uri = 2;
 
   // Configuration for authentication mechanisms.

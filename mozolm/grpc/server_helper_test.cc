@@ -26,6 +26,7 @@
 #include "gtest/gtest.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "mozolm/grpc/auth_test_utils.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/utils/file_util.h"
@@ -33,13 +34,6 @@
 namespace mozolm {
 namespace grpc {
 namespace {
-
-// Test data for SSL/TLS credentials.
-const char kSslCredTestDir[] =
-    "mozolm/grpc/testdata/cred/x509";
-const char kSslServerPrivateKeyFile[] = "server1_key.pem";
-const char kSslServerPublicCertFile[] = "server1_cert.pem";
-const char kSslCustomCertAuthFile[] = "server_ca_cert.pem";
 
 class ServerHelperTest : public ::testing::Test {
  protected:
@@ -70,16 +64,6 @@ class ServerHelperTest : public ::testing::Test {
 
   void TearDown() override {
     EXPECT_TRUE(std::filesystem::remove(model_text_path_));
-  }
-
-  // Reads contents of the credentials file.
-  void ReadCredFileContents(std::string_view filename, std::string *contents) {
-    const std::filesystem::path file_path = (
-        std::filesystem::current_path() /
-        kSslCredTestDir / filename).make_preferred();
-    const auto read_status = file::ReadBinaryFile(file_path.string());
-    ASSERT_OK(read_status) << "Failed to read " << filename;
-    *contents = read_status.value();
   }
 
   // Server configuration.
@@ -129,7 +113,7 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
   auth->set_credential_type(CREDENTIAL_SSL);
   auth->mutable_ssl_config()->set_client_verify(true);
   std::string contents;
-  ReadCredFileContents(kSslServerPrivateKeyFile, &contents);
+  test::ReadSslCredFileContents(test::kSslServerPrivateKeyFile, &contents);
   auth->mutable_ssl_config()->set_server_key(contents);
   auth->mutable_ssl_config()->set_server_cert("invalid");
 
@@ -139,7 +123,7 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
   server.Shutdown();
 
   // Now fix the server's publicate certificate to make the configuration valid.
-  ReadCredFileContents(kSslServerPublicCertFile, &contents);
+  test::ReadSslCredFileContents(test::kSslServerPublicCertFile, &contents);
   auth->mutable_ssl_config()->set_server_cert(contents);
   ASSERT_OK(server.Init(config_));
   EXPECT_OK(server.Run(/* wait_till_terminated= */false));
@@ -153,7 +137,7 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
 
   // Provide custom certificate authority: once a valid certificate that should
   // succeed, and once an invalid one should fail to initialize the server.
-  ReadCredFileContents(kSslCustomCertAuthFile, &contents);
+  test::ReadSslCredFileContents(test::kSslServerCustomCertAuthFile, &contents);
   auth->mutable_ssl_config()->set_custom_ca(contents);
   ASSERT_OK(server.Init(config_));
   server.Shutdown();

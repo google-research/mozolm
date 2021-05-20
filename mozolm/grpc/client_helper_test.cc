@@ -140,22 +140,24 @@ TEST(ClientHelperConfigTest, CheckConfig) {
 }
 
 TEST_P(ClientHelperTest, CheckOneKbestSample) {
-  std::unique_ptr<ClientHelper> client = absl::make_unique<ClientHelper>(
-      client_config_);
+  ClientHelper client;
+  EXPECT_OK(client.Init(client_config_));
+
   constexpr int kBest = 10;
   std::string result;
-  EXPECT_OK(client->OneKbestSample(kBest, /* context_string= */"", &result));
+  EXPECT_OK(client.OneKbestSample(kBest, /* context_string= */"", &result));
   EXPECT_FALSE(result.empty());
 }
 
 TEST_P(ClientHelperTest, CheckRandGen) {
-  std::unique_ptr<ClientHelper> client = absl::make_unique<ClientHelper>(
-      client_config_);
+  ClientHelper client;
+  EXPECT_OK(client.Init(client_config_));
+
   const int kNumIterations = 5;
   std::string context = "";
   std::string result;
   for (int i = 0; i < kNumIterations; ++i) {
-    EXPECT_OK(client->RandGen(context, &result));
+    EXPECT_OK(client.RandGen(context, &result));
     EXPECT_FALSE(result.empty());
     context += result;
   }
@@ -170,10 +172,11 @@ TEST_P(ClientHelperTest, CheckCalcBitsPerCharacter) {
   EXPECT_FALSE(test_file.empty());
 
   // Calculate entropy.
-  std::unique_ptr<ClientHelper> client = absl::make_unique<ClientHelper>(
-      client_config_);
+  ClientHelper client;
+  EXPECT_OK(client.Init(client_config_));
+
   std::string result;
-  EXPECT_OK(client->CalcBitsPerCharacter(test_file, &result));
+  EXPECT_OK(client.CalcBitsPerCharacter(test_file, &result));
   EXPECT_FALSE(result.empty());
 
   // Cleanup.

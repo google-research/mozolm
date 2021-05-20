@@ -24,7 +24,6 @@
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"
-#include "absl/flags/flag.h"
 #include "absl/memory/memory.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
@@ -36,9 +35,6 @@
 #include "mozolm/grpc/server_helper.h"
 #include "mozolm/utils/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
-
-ABSL_FLAG(double, mozolm_client_timeout, 10.0,
-          "Timeout to wait for response in seconds.");
 
 namespace mozolm {
 namespace grpc {
@@ -98,6 +94,34 @@ double CalculateBits(
     prob += prob_idx_pair_vector[idx].first * (1.0 - kMixEpsilon);
   }
   return -std::log2(prob);
+}
+
+// Client credentials factory: Configures SSL, if requested, otherwise uses an
+// insecure channel.
+std::shared_ptr<::grpc::ChannelCredentials>
+BuildChannelCredentials(const ClientConfig &config,
+                        ::grpc::ChannelArguments *channel_args) {
+  if (config.server().auth().credential_type() == CREDENTIAL_SSL) {
+    if (config.server().auth().has_ssl_config()) {
+      const std::string &server_cert = config.server().auth().ssl_config()
+                                       .server_cert();
+      ::grpc::SslCredentialsOptions ssl_options;
+      ssl_options.pem_root_certs = server_cert;
+
+      if (config.auth().has_ssl_config()) {
+        const auto &ssl_config = config.auth().ssl_config();
+        if (!ssl_config.target_name_override().empty()) {
+          channel_args->SetSslTargetNameOverride(
+              ssl_config.target_name_override());
+        }
+      }
+      return ::grpc::SslCredentials(ssl_options);
+    } else {
+      GOOGLE_LOG(WARNING) << "Secure credentials requested but no configuration found";
+    }
+  }
+  GOOGLE_LOG(WARNING) << "Using insecure server credentials";
+  return ::grpc::InsecureChannelCredentials();
 }
 
 }  // namespace
@@ -253,34 +277,32 @@ absl::Status ClientHelper::CalcBitsPerCharacter(const std::string& test_file,
   return absl::OkStatus();
 }
 
-ClientHelper::ClientHelper(const ClientConfig& config) {
-  std::shared_ptr<::grpc::ChannelCredentials> creds;
-  switch (config.server().auth().credential_type()) {
-    case CREDENTIAL_SSL:
-      // TODO: setup SSL credentials.
-      creds = ::grpc::InsecureChannelCredentials();
-      break;
-    case CREDENTIAL_INSECURE:
-      creds = ::grpc::InsecureChannelCredentials();
-      break;
-    default:
-      GOOGLE_LOG(ERROR) << "unknown credential type";
+absl::Status ClientHelper::Init(const ClientConfig& config) {
+  ::grpc::ChannelArguments channel_args;
+  std::shared_ptr<::grpc::ChannelCredentials> creds = BuildChannelCredentials(
+      config, &channel_args);
+  if (creds == nullptr) {
+    return absl::InternalError("Failed to build channel credentials");
   }
-  channel_ = ::grpc::CreateChannel(config.server().address_uri(), creds);
+  channel_ = ::grpc::CreateCustomChannel(config.server().address_uri(), creds,
+                                         channel_args);
   completion_client_ =
       absl::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
   timeout_sec_ = config.timeout_sec();
+  return absl::OkStatus();
 }
 
 void InitConfigDefaults(ClientConfig* config) {
   InitConfigDefaults(config->mutable_server());
   if (config->timeout_sec() <= 0.0) {
-    config->set_timeout_sec(absl::GetFlag(FLAGS_mozolm_client_timeout));
+    config->set_timeout_sec(kDefaultClientTimeoutSec);
   }
 }
 
 absl::Status RunClient(const ClientConfig& config) {
-  ClientHelper client(config);
+  ClientHelper client;
+  RETURN_IF_ERROR(client.Init(config));
+
   absl::Status status;
   std::string result;
   switch (config.request_type()) {
