@@ -51,7 +51,6 @@ cc_library(
         "//mozolm/stubs:logging",
         "//mozolm/stubs:thread_pool",
         "@com_github_grpc_grpc//:grpc++",
-        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",

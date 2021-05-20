@@ -54,7 +54,7 @@ message ServerAuthConfig {
   SslConfig ssl_config = 2;
 }
 
-// Next available ID: 5
+// Next available ID: 6
 message ServerConfig {
   // Model hub configuration.
   ModelHubConfig model_hub_config = 1;
@@ -75,4 +75,7 @@ message ServerConfig {
   // Whether the server will wait for client requests. Always enabled by
   // default, only disabled for the testing.
   bool wait_for_clients = 4;
+
+  // Number of threads for handling requests asynchronously.
+  int32 async_pool_size = 5;
 }

@@ -82,6 +82,9 @@ ABSL_FLAG(std::string, server_config, "",
           "Configuration (`mozolm.grpc.ServerConfig`) protocol buffer in "
           "text format.");
 
+ABSL_FLAG(int, async_pool_size, 0,
+          "Number of threads for handling requests asynchronously.");
+
 ABSL_FLAG(std::string, ssl_server_key_file, "",
           "Private server key for SSL/TLS credentials.");
 
@@ -125,6 +128,9 @@ absl::Status InitConfigFromFlags(ServerConfig *config) {
       return absl::InvalidArgumentError(absl::StrCat(
           "Failed to parse configuration from contents"));
     }
+  }
+  if (absl::GetFlag(FLAGS_async_pool_size) > 0) {
+    config->set_async_pool_size(absl::GetFlag(FLAGS_async_pool_size));
   }
   InitConfigDefaults(config);
 

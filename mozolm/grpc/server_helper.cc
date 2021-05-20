@@ -88,7 +88,8 @@ absl::Status ServerHelper::Init(const ServerConfig& config) {
 
   // Initialize and start the server.
   server_ = absl::make_unique<ServerAsyncImpl>(std::move(model_status.value()));
-  return server_->BuildAndStart(config.address_uri(), creds);
+  return server_->BuildAndStart(config.address_uri(), creds,
+                                config.async_pool_size());
 }
 
 absl::Status ServerHelper::Run(bool wait_till_terminated) {

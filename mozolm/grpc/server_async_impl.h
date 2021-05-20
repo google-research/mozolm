@@ -23,7 +23,6 @@
 #include "include/grpcpp/server.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "absl/flags/declare.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
@@ -32,16 +31,13 @@
 #include "mozolm/models/language_model_hub.h"
 #include "mozolm/stubs/thread_pool.h"
 
-ABSL_DECLARE_FLAG(int, mozolm_server_asynch_pool_size);
-
 namespace mozolm {
 namespace grpc {
 
-// A simple lm_score server, that can provide lm_scores given a context string
-// or model state. Asynchronous, based on completion-queue.
+// A simple LM score server, that can provide (and, for the dynamic models,
+// update) scores given a context string or model state. Asynchronous, based on
+// completion queue.
 class ServerAsyncImpl : public MozoLMService::AsyncService {
-  friend class ServerAsyncTest;
-
  public:
   // Creates and initializes the server, a thread pool is created to handle
   // requests if pool_size is > 0. An initialized instance of a language model
@@ -53,7 +49,8 @@ class ServerAsyncImpl : public MozoLMService::AsyncService {
   // Initializes the server binding to the supplied port, registers the
   // service, launches the completion queue and starts the server.
   absl::Status BuildAndStart(const std::string& address_uri,
-                             std::shared_ptr<::grpc::ServerCredentials> creds);
+                             std::shared_ptr<::grpc::ServerCredentials> creds,
+                             int async_pool_size);
 
   // Runs request processing loop until the server shutdown is requested.
   absl::Status ProcessRequests();
@@ -156,7 +153,8 @@ class ServerAsyncImpl : public MozoLMService::AsyncService {
   // and is not known in advance.
   int selected_port_;
 
-  std::unique_ptr<ThreadPool> asynch_pool_;  // Pool for handling updates.
+  // Pool for asynchronous request handling.
+  std::unique_ptr<ThreadPool> async_pool_;
 };
 
 }  // namespace grpc

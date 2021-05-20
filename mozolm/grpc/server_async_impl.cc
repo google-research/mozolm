@@ -19,13 +19,9 @@
 
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/server_builder.h"
-#include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/match.h"
-
-ABSL_FLAG(int, mozolm_server_asynch_pool_size, 2,
-          "Number of threads in the handlers thread pool.");
 
 namespace mozolm {
 namespace grpc {
@@ -35,13 +31,6 @@ using ::grpc::ServerContext;
 
 ServerAsyncImpl::ServerAsyncImpl(
     std::unique_ptr<models::LanguageModelHub> model_hub) {
-  const int pool_size = absl::GetFlag(FLAGS_mozolm_server_asynch_pool_size);
-  if (pool_size > 0) {
-    asynch_pool_ = absl::make_unique<ThreadPool>(pool_size);
-    asynch_pool_->StartWorkers();
-  } else {
-    asynch_pool_ = nullptr;
-  }
   model_hub_ = std::move(model_hub);
 }
 
@@ -239,10 +228,20 @@ void ServerAsyncImpl::CleanupAfterUpdateLMScores(
 
 absl::Status ServerAsyncImpl::BuildAndStart(
     const std::string& address_uri,
-    std::shared_ptr<::grpc::ServerCredentials> creds) {
+    std::shared_ptr<::grpc::ServerCredentials> creds,
+    int async_pool_size) {
   absl::MutexLock lock(&shutdown_lock_);
   if (server_shutdown_) {
     return absl::InternalError("Cannot initialize in the middle of shutdown");
+  }
+
+  // Initialize asynchronous request handlers.
+  // TODO: Complete.
+  if (async_pool_size > 0) {
+    async_pool_ = absl::make_unique<ThreadPool>(async_pool_size);
+    async_pool_->StartWorkers();
+  } else {
+    async_pool_ = nullptr;
   }
 
   // Initialize the server.
