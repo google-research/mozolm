@@ -92,7 +92,7 @@ bool ServerAsyncImpl::DecrementRpcPending() {
     // If count is zero, then server is shutdown (because new RPCs are requested
     // as part of this process if possible).
     GOOGLE_LOG(INFO) << "Notifying server of RPC completion.";
-    rpcs_completed_.Notify();
+    if (!rpcs_completed_.HasBeenNotified()) rpcs_completed_.Notify();
   }
   return true;
 }
