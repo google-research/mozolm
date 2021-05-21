@@ -182,14 +182,18 @@ TEST_P(AuthEnd2EndTest, CheckSslWithClientVerification) {
   EXPECT_OK(BuildAndRun(config_));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    AuthEnd2EndTestSuite, AuthEnd2EndTest,
-    // Use UNIX Domain Sockets (UDS) or the default TCP sockets.
+
 #if !defined(_MSC_VER)
+// POSIX-compliant platforms.
+INSTANTIATE_TEST_SUITE_P(
+    AuthEnd2EndTestSuitePosix, AuthEnd2EndTest,
+    // Use UNIX Domain Sockets (UDS) or the default TCP sockets.
     ::testing::Values(/* use_uds= */false, /* use_uds= */true));
-#elif defined(_WIN32) || defined(_WIN64)
-    // UNIX domain sockets are not supported in older versions of Windows.
-    // See: https://devblogs.microsoft.com/commandline/af_unix-comes-to-windows/
+#else
+// UNIX domain sockets are not supported in older versions of Windows.
+// See: https://devblogs.microsoft.com/commandline/af_unix-comes-to-windows/
+INSTANTIATE_TEST_SUITE_P(
+    AuthEnd2EndTestSuiteWindows, AuthEnd2EndTest,
     ::testing::Values(/* use_uds= */false));
 #endif  // _MSC_VER (Windows).
 
