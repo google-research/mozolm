@@ -101,7 +101,7 @@ TEST_F(ServerHelperTest, CheckRunServerWithEventLoop) {
 
     // Emulate some unrelated work in the main thread and attempt to shutdown
     // the server.
-    absl::SleepFor(absl::Milliseconds(100));
+    absl::SleepFor(absl::Milliseconds(10));
     server.Shutdown();
   }
 }
@@ -127,7 +127,6 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
   auth->mutable_ssl()->set_server_cert(contents);
   ASSERT_OK(server.Init(config_));
   EXPECT_OK(server.Run(/* wait_till_terminated= */false));
-  absl::SleepFor(absl::Milliseconds(100));
   server.Shutdown();
 
   // Check that we can start with no client verification.

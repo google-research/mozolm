@@ -177,6 +177,7 @@ cc_library(
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -318,6 +319,7 @@ cc_test(
         ":server_helper",
         "//mozolm/stubs:status-matchers",
         "//mozolm/stubs:status_macros",
+        "//mozolm/utils:file_util",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status",

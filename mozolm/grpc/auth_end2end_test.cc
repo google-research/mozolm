@@ -27,6 +27,7 @@
 #include "mozolm/grpc/auth_test_utils.h"
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_helper.h"
+#include "mozolm/utils/file_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
@@ -36,12 +37,21 @@ namespace {
 const char kModelsTestDir[] =
     "mozolm/models/testdata";
 const char kCharFstModelFilename[] = "gutenberg_en_char_ngram_o2_kn.fst";
+const char kUdsEndpointName[] = "auth_end2end_test.sock";
+constexpr double kClientTimeoutSec = 1.0;
 
-class AuthEnd2EndTest : public ::testing::Test {
+// The test fixtures are currently parametrized by the socket type (UDS/TCP).
+class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
  protected:
   void SetUp() override {
     test::ReadAllSslCredentials(&ssl_name2contents_);
-    MakeConfig(&config_);
+  }
+
+  void TearDown() override {
+    // Clean up UDS, if configured.
+    if (!uds_path_.empty() && std::filesystem::exists(uds_path_)) {
+      EXPECT_TRUE(std::filesystem::remove(uds_path_));
+    }
   }
 
   // Given the configuration, builds and starts the server. Then builds the
@@ -55,10 +65,12 @@ class AuthEnd2EndTest : public ::testing::Test {
     // Initialize and start the client.
     ClientConfig current_config = config;
     InitConfigDefaults(&current_config);
-    const int server_port = server.server().selected_port();
-    EXPECT_LT(0, server_port) << "Invalid port: " << server_port;
-    current_config.mutable_server()->set_address_uri(
-        absl::StrCat("localhost:", server_port));
+    if (uds_path_.empty()) {  // Not using UDS.
+      const int server_port = server.server().selected_port();
+      EXPECT_LT(0, server_port) << "Invalid port: " << server_port;
+      current_config.mutable_server()->set_address_uri(
+          absl::StrCat("localhost:", server_port));
+    }
     ClientHelper client;
     RETURN_IF_ERROR(client.Init(current_config));
 
@@ -69,11 +81,18 @@ class AuthEnd2EndTest : public ::testing::Test {
     return absl::OkStatus();
   }
 
-  // Fills in server portion of the config.
-  void MakeConfig(ClientConfig *config) const {
+  // Initializes core server and client configuration. Enabling `use_uds` will
+  // configure the UNIX Domain socket (UDS) endpoint, otherwise regular TCP
+  // sockets are used.
+  void InitConfig(ClientConfig *config, bool use_uds) {
     // Initialize server part.
     ServerConfig *server_config = config->mutable_server();
-    server_config->set_address_uri("localhost:0");
+    if (use_uds) {
+      uds_path_ = file::TempFilePath(kUdsEndpointName);
+      server_config->set_address_uri(absl::StrCat("unix://", uds_path_));
+    } else {
+      server_config->set_address_uri("localhost:0");
+    }
     server_config->set_wait_for_clients(false);
     auto *model = server_config->mutable_model_hub_config()->add_model_config();
     model->set_type(ModelConfig::CHAR_NGRAM_FST);
@@ -81,7 +100,7 @@ class AuthEnd2EndTest : public ::testing::Test {
         ModelPath(kModelsTestDir, kCharFstModelFilename));
 
     // Initialize the client part.
-    config->set_timeout_sec(1.0);
+    config->set_timeout_sec(kClientTimeoutSec);
   }
 
   // Fills in server SSL config.
@@ -109,15 +128,21 @@ class AuthEnd2EndTest : public ::testing::Test {
 
   // Global configuration (this includes both client and the server).
   ClientConfig config_;
+
+  // UNIX Domain Socket (UDS) path.
+  std::string uds_path_;
 };
 
 // Check insecure credentials.
-TEST_F(AuthEnd2EndTest, CheckInsecure) {
+TEST_P(AuthEnd2EndTest, CheckInsecure) {
+  InitConfig(&config_, /* use_uds= */GetParam());
   EXPECT_OK(BuildAndRun(config_));
 }
 
 // The certificate presented by the client is not checked by the server at all.
-TEST_F(AuthEnd2EndTest, CheckSslNoClientVerification) {
+TEST_P(AuthEnd2EndTest, CheckSslNoClientVerification) {
+  InitConfig(&config_, /* use_uds= */GetParam());
+
   // Prepare the server credentials and run insecure client.
   MakeServerSslConfig(config_.mutable_server(), /* verify_clients= */false);
   EXPECT_FALSE(BuildAndRun(config_).ok());
@@ -131,7 +156,9 @@ TEST_F(AuthEnd2EndTest, CheckSslNoClientVerification) {
 
 // Mutual SSL/TLS verification: server requests client certificate and enforces
 // that the client presents a certificate. This uses Certificate Authority (CA).
-TEST_F(AuthEnd2EndTest, CheckSslWithClientVerification) {
+TEST_P(AuthEnd2EndTest, CheckSslWithClientVerification) {
+  InitConfig(&config_, /* use_uds= */GetParam());
+
   // Prepare the server credentials and run insecure client.
   MakeServerSslConfig(config_.mutable_server(), /* verify_clients= */true);
   EXPECT_FALSE(BuildAndRun(config_).ok());
@@ -154,6 +181,11 @@ TEST_F(AuthEnd2EndTest, CheckSslWithClientVerification) {
       ssl_name2contents_[test::kSslClientPrivateKeyFile]);
   EXPECT_OK(BuildAndRun(config_));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    AuthEnd2EndTestSuite, AuthEnd2EndTest,
+    // Use UNIX Domain Sockets (UDS) or the default TCP sockets.
+    ::testing::Values(false, true));
 
 }  // namespace
 }  // namespace grpc

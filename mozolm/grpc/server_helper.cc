@@ -17,6 +17,7 @@
 #include "mozolm/stubs/logging.h"
 #include "include/grpcpp/security/server_credentials.h"
 #include "absl/memory/memory.h"
+#include "absl/synchronization/notification.h"
 #include "mozolm/models/model_factory.h"
 #include "mozolm/stubs/status_macros.h"
 
@@ -63,8 +64,9 @@ BuildServerCredentials(const ServerConfig &config) {
 }
 
 // Worker thread for processing server requests in a completion queue.
-void ProcessRequests(ServerAsyncImpl *server) {
+void ProcessRequests(ServerAsyncImpl *server, absl::Notification *cq_ready) {
   GOOGLE_LOG(INFO) << "Waiting for requests ...";
+  cq_ready->Notify();
   const auto status = server->ProcessRequests();
   if (status.ok()) {
     GOOGLE_LOG(INFO) << "Server processing queue shut down OK.";
@@ -95,9 +97,13 @@ absl::Status ServerHelper::Init(const ServerConfig& config) {
 
 absl::Status ServerHelper::Run(bool wait_till_terminated) {
   if (!server_) return absl::InternalError("Server not initialized");
+  absl::Notification cq_ready;  // Completion queue ready to process requests.
   server_thread_ = absl::make_unique<std::thread>(&ProcessRequests,
-                                                  server_.get());
-  if (wait_till_terminated) server_thread_->join();
+                                                  server_.get(), &cq_ready);
+  cq_ready.WaitForNotification();
+  if (wait_till_terminated) {
+    server_thread_->join();
+  }
   return absl::OkStatus();
 }
 
