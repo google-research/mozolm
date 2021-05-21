@@ -185,7 +185,13 @@ TEST_P(AuthEnd2EndTest, CheckSslWithClientVerification) {
 INSTANTIATE_TEST_SUITE_P(
     AuthEnd2EndTestSuite, AuthEnd2EndTest,
     // Use UNIX Domain Sockets (UDS) or the default TCP sockets.
-    ::testing::Values(false, true));
+#if !defined(_MSC_VER)
+    ::testing::Values(/* use_uds= */false, /* use_uds= */true));
+#elif defined(_WIN32) || defined(_WIN64)
+    // UNIX domain sockets are not supported in older versions of Windows.
+    // See: https://devblogs.microsoft.com/commandline/af_unix-comes-to-windows/
+    ::testing::Values(/* use_uds= */false));
+#endif  // _MSC_VER (Windows).
 
 }  // namespace
 }  // namespace grpc
