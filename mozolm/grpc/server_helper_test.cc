@@ -111,11 +111,11 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
   // Prepare the initial configuration: Valid key and invalid certificate.
   ServerAuthConfig *auth = config_.mutable_auth();
   auth->set_credential_type(CREDENTIAL_SSL);
-  auth->mutable_ssl_config()->set_client_verify(true);
+  auth->mutable_ssl()->set_client_verify(true);
   std::string contents;
   test::ReadSslCredFileContents(test::kSslServerPrivateKeyFile, &contents);
-  auth->mutable_ssl_config()->set_server_key(contents);
-  auth->mutable_ssl_config()->set_server_cert("invalid");
+  auth->mutable_ssl()->set_server_key(contents);
+  auth->mutable_ssl()->set_server_cert("invalid");
 
   // Make sure we can't run with invalid credentials.
   ServerHelper server;
@@ -124,24 +124,24 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
 
   // Now fix the server's publicate certificate to make the configuration valid.
   test::ReadSslCredFileContents(test::kSslServerPublicCertFile, &contents);
-  auth->mutable_ssl_config()->set_server_cert(contents);
+  auth->mutable_ssl()->set_server_cert(contents);
   ASSERT_OK(server.Init(config_));
   EXPECT_OK(server.Run(/* wait_till_terminated= */false));
   absl::SleepFor(absl::Milliseconds(100));
   server.Shutdown();
 
   // Check that we can start with no client verification.
-  auth->mutable_ssl_config()->set_client_verify(true);
+  auth->mutable_ssl()->set_client_verify(false);
   ASSERT_OK(server.Init(config_));
   server.Shutdown();
 
   // Provide custom certificate authority: once a valid certificate that should
   // succeed, and once an invalid one should fail to initialize the server.
-  test::ReadSslCredFileContents(test::kSslServerCustomCertAuthFile, &contents);
-  auth->mutable_ssl_config()->set_custom_ca(contents);
+  test::ReadSslCredFileContents(test::kSslClientCentralAuthCertFile, &contents);
+  auth->mutable_ssl()->set_custom_ca_cert(contents);
   ASSERT_OK(server.Init(config_));
   server.Shutdown();
-  auth->mutable_ssl_config()->set_custom_ca("invalid");
+  auth->mutable_ssl()->set_custom_ca_cert("invalid");
   ASSERT_FALSE(server.Init(config_).ok());
   server.Shutdown();
 }

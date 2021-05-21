@@ -88,10 +88,10 @@ class AuthEnd2EndTest : public ::testing::Test {
   void MakeServerSslConfig(ServerConfig *config, bool verify_clients) {
     ServerAuthConfig *auth = config->mutable_auth();
     auth->set_credential_type(CREDENTIAL_SSL);
-    auth->mutable_ssl_config()->set_client_verify(verify_clients);
-    auth->mutable_ssl_config()->set_server_key(
+    auth->mutable_ssl()->set_client_verify(verify_clients);
+    auth->mutable_ssl()->set_server_key(
         ssl_name2contents_[test::kSslServerPrivateKeyFile]);
-    auth->mutable_ssl_config()->set_server_cert(
+    auth->mutable_ssl()->set_server_cert(
         ssl_name2contents_[test::kSslServerPublicCertFile]);
   }
 
@@ -125,18 +125,34 @@ TEST_F(AuthEnd2EndTest, CheckSslNoClientVerification) {
   // Prepare the client credentials by setting the target name. Will use the
   // server public certificate authority from the server config.
   ClientAuthConfig *auth = config_.mutable_auth();
-  auth->mutable_ssl_config()->set_target_name_override(test::kSslAltServerName);
+  auth->mutable_ssl()->set_target_name_override(test::kSslAltServerName);
   EXPECT_OK(BuildAndRun(config_));
 }
 
-// Server requests client certificate and enforces that the client presents a
-// certificate.
+// Mutual SSL/TLS verification: server requests client certificate and enforces
+// that the client presents a certificate. This uses Certificate Authority (CA).
 TEST_F(AuthEnd2EndTest, CheckSslWithClientVerification) {
   // Prepare the server credentials and run insecure client.
   MakeServerSslConfig(config_.mutable_server(), /* verify_clients= */true);
   EXPECT_FALSE(BuildAndRun(config_).ok());
 
-  // TODO: Complete.
+  // Check that correctly setting target name override is not enough as client
+  // does not present any credentials.
+  ClientAuthConfig::SslConfig *client_ssl =
+      config_.mutable_auth()->mutable_ssl();
+  client_ssl->set_target_name_override(test::kSslAltServerName);
+  EXPECT_FALSE(BuildAndRun(config_).ok());
+
+  // Set up all the required certificates and keys. The server certificate and
+  // key are already set up. Check successful handshake and run.
+  ServerAuthConfig *server_auth = config_.mutable_server()->mutable_auth();
+  server_auth->mutable_ssl()->set_custom_ca_cert(
+      ssl_name2contents_[test::kSslClientCentralAuthCertFile]);
+  client_ssl->set_client_cert(
+      ssl_name2contents_[test::kSslClientPublicCertFile]);
+  client_ssl->set_client_key(
+      ssl_name2contents_[test::kSslClientPrivateKeyFile]);
+  EXPECT_OK(BuildAndRun(config_));
 }
 
 }  // namespace

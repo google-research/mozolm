@@ -102,18 +102,21 @@ std::shared_ptr<::grpc::ChannelCredentials>
 BuildChannelCredentials(const ClientConfig &config,
                         ::grpc::ChannelArguments *channel_args) {
   if (config.server().auth().credential_type() == CREDENTIAL_SSL) {
-    if (config.server().auth().has_ssl_config()) {
-      const std::string &server_cert = config.server().auth().ssl_config()
-                                       .server_cert();
+    if (config.server().auth().has_ssl()) {
+      const std::string &server_cert =
+          config.server().auth().ssl().server_cert();
       ::grpc::SslCredentialsOptions ssl_options;
       ssl_options.pem_root_certs = server_cert;
 
-      if (config.auth().has_ssl_config()) {
-        const auto &ssl_config = config.auth().ssl_config();
-        if (!ssl_config.target_name_override().empty()) {
+      if (config.auth().has_ssl()) {
+        const auto &client_ssl = config.auth().ssl();
+        if (!client_ssl.target_name_override().empty()) {
           channel_args->SetSslTargetNameOverride(
-              ssl_config.target_name_override());
+              client_ssl.target_name_override());
         }
+        // Required for mutual authentication, if configured.
+        ssl_options.pem_cert_chain = client_ssl.client_cert();
+        ssl_options.pem_private_key = client_ssl.client_key();
       }
       return ::grpc::SslCredentials(ssl_options);
     } else {

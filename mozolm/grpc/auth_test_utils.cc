@@ -41,8 +41,8 @@ void ReadAllSslCredentials(
   std::string contents;
   const std::vector<std::string> filenames = {
     kSslServerPrivateKeyFile, kSslServerPublicCertFile,
-    kSslServerCustomCertAuthFile, kSslClientPrivateKeyFile,
-    kSslClientPublicCertFile };
+    kSslServerCentralAuthCertFile, kSslClientPrivateKeyFile,
+    kSslClientPublicCertFile, kSslClientCentralAuthCertFile };
   for (const auto &filename : filenames) {
     ReadSslCredFileContents(filename, &contents);
     name2contents->insert({filename, contents});

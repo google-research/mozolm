@@ -29,9 +29,10 @@ const char kSslCredTestDir[] =
     "mozolm/grpc/testdata/cred/x509";
 const char kSslServerPrivateKeyFile[] = "server1_key.pem";
 const char kSslServerPublicCertFile[] = "server1_cert.pem";
-const char kSslServerCustomCertAuthFile[] = "server_ca_cert.pem";
+const char kSslServerCentralAuthCertFile[] = "server_ca_cert.pem";
 const char kSslClientPrivateKeyFile[] = "client1_key.pem";
 const char kSslClientPublicCertFile[] = "client1_cert.pem";
+const char kSslClientCentralAuthCertFile[] = "client_ca_cert.pem";
 const char kSslAltServerName[] = "*.test.example.com";
 
 // Reads contents of the SSL/TLS credentials file identified by `filename` which

@@ -37,8 +37,9 @@ BuildServerCredentials(const ServerAuthConfig::SslConfig &config) {
           : GRPC_SSL_DONT_REQUEST_CLIENT_CERTIFICATE);
 
   ssl_ops.force_client_auth = config.client_verify();
-  if (!config.custom_ca().empty()) ssl_ops.pem_root_certs = config.custom_ca();
-
+  if (!config.custom_ca_cert().empty()) {
+    ssl_ops.pem_root_certs = config.custom_ca_cert();
+  }
   const ::grpc::SslServerCredentialsOptions::PemKeyCertPair key_cert = {
       config.server_key(), config.server_cert()};
   ssl_ops.pem_key_cert_pairs.push_back(key_cert);
@@ -50,8 +51,8 @@ BuildServerCredentials(const ServerAuthConfig::SslConfig &config) {
 std::shared_ptr<::grpc::ServerCredentials>
 BuildServerCredentials(const ServerConfig &config) {
   const ServerAuthConfig &auth = config.auth();
-  if (auth.credential_type() == CREDENTIAL_SSL && auth.has_ssl_config()) {
-    return BuildServerCredentials(auth.ssl_config());
+  if (auth.credential_type() == CREDENTIAL_SSL && auth.has_ssl()) {
+    return BuildServerCredentials(auth.ssl());
   } else {
     if (auth.credential_type() != CREDENTIAL_INSECURE) {
       GOOGLE_LOG(WARNING) << "Secure credentials requested but no configuration found";

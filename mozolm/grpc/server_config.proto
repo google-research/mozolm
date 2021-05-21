@@ -34,24 +34,44 @@ message ServerAuthConfig {
   // Type of authorization credentials used in client/server handshake.
   CredentialType credential_type = 1;
 
+  // Configuration for SSL/TSL server credentials.
+  //
+  // This and the corresponding client-side configuration in
+  // `client_config.proto` introduces the following PEM-encoded credentials:
+  //
+  //   - server_ca_cert: The certificate authority who has signed the
+  //     `server_cert`.
+  //   - server_cert: The server certificate chain, verified by the client via
+  //     `server_ca_cert`.
+  //   - server_key: The private key of the server.
+  //   - client_ca_cert: The certificate authority who has signed the
+  //     `client_cert`.
+  //   - client_cert: The client certificate chain, verified by the server via
+  //     `client_ca_cert`.
+  //   - client_key: The private key of the client.
+  //
+  // The certificate authorities `server_ca_cert` and `client_ca_cert` may or
+  // may not be the same. For mutual authentication all of the above are
+  // required.
+  //
   // Next available ID: 5
   message SslConfig {
-    // Private server key for SSL.
+    // Private server key for SSL (PEM encoded).
     string server_key = 1;
 
-    // Public server certificate.
+    // Public server certificate (PEM encoded).
     string server_cert = 2;
 
-    // Custom certificate authority.
-    string custom_ca = 3;
+    // Custom certificate authority (PEM encoded).
+    string custom_ca_cert = 3;
 
     // Whether a valid client certificate is required.
     bool client_verify = 4;
   }
 
-  // Configuration for a secure gRPC channel. If not given, insecure connection
-  // is used.
-  SslConfig ssl_config = 2;
+  // SSL/TLS configuration for a secure gRPC channel. If not given, insecure
+  // connection is used.
+  SslConfig ssl = 2;
 }
 
 // Next available ID: 6

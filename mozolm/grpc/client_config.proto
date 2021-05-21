@@ -28,7 +28,7 @@ option java_multiple_files = true;
 //
 // Next available ID: 2
 message ClientAuthConfig {
-  // Next available ID: 2
+  // Next available ID: 4
   message SslConfig {
     // Target name override for SSL host name checking. This should
     // *not* be used in production. Normally, the name of the target
@@ -45,11 +45,17 @@ message ClientAuthConfig {
     // Example: See `subjectAltName` key in `openssl.conf` under the
     // `testdata/x509` directory.
     string target_name_override = 1;
+
+    // Public client certificate (PEM encoded).
+    string client_cert = 2;
+
+    // Private client key for SSL (PEM encoded).
+    string client_key = 3;
   }
 
-  // Configuration for a secure gRPC channel. If not given, insecure connection
-  // is used.
-  SslConfig ssl_config = 1;
+  // SSL/TLS configuration for a secure gRPC channel. If not given, insecure
+  // connection is used.
+  SslConfig ssl = 1;
 }
 
 // Next available ID: 9

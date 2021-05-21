@@ -91,8 +91,11 @@ ABSL_FLAG(std::string, ssl_server_key_file, "",
 ABSL_FLAG(std::string, ssl_server_cert_file, "",
           "Public server certificate for SSL/TLS credentials.");
 
-ABSL_FLAG(std::string, ssl_custom_ca_file, "",
-          "Custom certificate authority file.");
+ABSL_FLAG(std::string, ssl_custom_ca_cert_file, "",
+          "Custom certificate authority file. This is required for mutual "
+          "authentication (when `ssl_client_verify` is enabled) and must "
+          "contain the certificate authority (CA) that signed the client "
+          "certificate.");
 
 ABSL_FLAG(bool, ssl_client_verify, true,
           "Whether a valid client certificate is required.");
@@ -111,10 +114,10 @@ absl::Status InitSslConfig(ServerAuthConfig::SslConfig *ssl_config) {
   ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
       absl::GetFlag(FLAGS_ssl_server_cert_file)));
   ssl_config->set_server_cert(contents);
-  if (!absl::GetFlag(FLAGS_ssl_custom_ca_file).empty()) {
+  if (!absl::GetFlag(FLAGS_ssl_custom_ca_cert_file).empty()) {
     ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-        absl::GetFlag(FLAGS_ssl_custom_ca_file)));
-    ssl_config->set_custom_ca(contents);
+        absl::GetFlag(FLAGS_ssl_custom_ca_cert_file)));
+    ssl_config->set_custom_ca_cert(contents);
   }
   return absl::OkStatus();
 }
@@ -137,7 +140,7 @@ absl::Status InitConfigFromFlags(ServerConfig *config) {
   // Initialize credentials.
   if (config->auth().credential_type() == CREDENTIAL_SSL &&
       !absl::GetFlag(FLAGS_ssl_server_key_file).empty()) {
-    return InitSslConfig(config->mutable_auth()->mutable_ssl_config());
+    return InitSslConfig(config->mutable_auth()->mutable_ssl());
   }
   return absl::OkStatus();
 }

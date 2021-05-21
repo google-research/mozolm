@@ -53,11 +53,19 @@ ABSL_FLAG(double, timeout_sec, 0.0,
           "Connection timeout for waiting for response (in seconds).");
 
 ABSL_FLAG(std::string, ssl_server_cert_file, "",
-          "Public (root) certificate authority file for SSL/TLS credentials.");
+          "Public (root) certificate authority file for SSL/TLS credentials "
+          "in PEM encoding.");
 
 ABSL_FLAG(std::string, ssl_target_name_override, "",
           "Target name override for SSL host name checking. This should *not* "
           "be used in production. Example: \"*.test.example.com\"");
+
+ABSL_FLAG(std::string, ssl_client_cert_file, "",
+          "Client public certificate file for SSL/TLS credentials in "
+          "PEM encoding.");
+
+ABSL_FLAG(std::string, ssl_client_key_file, "",
+          "Client private key file for SSL/TLS credentials in PEM encoding.");
 
 namespace mozolm {
 namespace grpc {
@@ -79,7 +87,7 @@ absl::Status InitConfigFromFlags(ClientConfig *config) {
   // Configure secure credentials.
   if (!absl::GetFlag(FLAGS_ssl_server_cert_file).empty()) {
     ClientAuthConfig *cli_auth = config->mutable_auth();
-    cli_auth->mutable_ssl_config()->set_target_name_override(
+    cli_auth->mutable_ssl()->set_target_name_override(
         absl::GetFlag(FLAGS_ssl_target_name_override));
 
     // Set server certificate.
@@ -89,8 +97,20 @@ absl::Status InitConfigFromFlags(ClientConfig *config) {
     ServerAuthConfig *server_auth = config->mutable_server()->mutable_auth();
     server_auth->set_credential_type(CREDENTIAL_SSL);
     ServerAuthConfig::SslConfig *server_ssl_config =
-        server_auth->mutable_ssl_config();
+        server_auth->mutable_ssl();
     server_ssl_config->set_server_cert(contents);
+
+    // Set client certificate and key.
+    if (!absl::GetFlag(FLAGS_ssl_client_cert_file).empty()) {
+      ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+          absl::GetFlag(FLAGS_ssl_client_cert_file)));
+      cli_auth->mutable_ssl()->set_client_cert(contents);
+    }
+    if (!absl::GetFlag(FLAGS_ssl_client_key_file).empty()) {
+      ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+          absl::GetFlag(FLAGS_ssl_client_key_file)));
+      cli_auth->mutable_ssl()->set_client_key(contents);
+    }
   }
   return absl::OkStatus();
 }
