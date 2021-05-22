@@ -79,8 +79,12 @@
 #include "mozolm/stubs/status_macros.h"
 
 ABSL_FLAG(std::string, server_config, "",
-          "Configuration (`mozolm.grpc.ServerConfig`) protocol buffer in "
-          "text format.");
+          "Contents of (`mozolm.grpc.ServerConfig`) protocol buffer in text "
+          "format.");
+
+ABSL_FLAG(std::string, server_config_file, "",
+          "File containing the server configuration protocol buffer in text "
+          "format. This flag overrides --server_config.");
 
 ABSL_FLAG(int, async_pool_size, 0,
           "Number of threads for handling requests asynchronously.");
@@ -123,14 +127,26 @@ absl::Status InitSslConfig(ServerAuthConfig::SslConfig *ssl_config) {
 }
 
 // Initializes configuration from command-line flags.
+absl::Status InitConfigContents(std::string *config_contents) {
+  const std::string config_file = absl::GetFlag(FLAGS_server_config_file);
+  if (!config_file.empty()) {
+    ASSIGN_OR_RETURN(*config_contents, file::ReadBinaryFile(config_file));
+  } else if (!absl::GetFlag(FLAGS_server_config).empty()) {
+    *config_contents = absl::GetFlag(FLAGS_server_config);
+  } else {
+    GOOGLE_LOG(INFO) << "Using default configuration";
+  }
+  return absl::OkStatus();
+}
+
+// Initializes configuration from command-line flags.
 absl::Status InitConfigFromFlags(ServerConfig *config) {
   // Init the main body of configuration.
-  const std::string config_contents = absl::GetFlag(FLAGS_server_config);
-  if (!config_contents.empty()) {
-    if (!google::protobuf::TextFormat::ParseFromString(config_contents, config)) {
-      return absl::InvalidArgumentError(absl::StrCat(
-          "Failed to parse configuration from contents"));
-    }
+  std::string config_contents;
+  RETURN_IF_ERROR(InitConfigContents(&config_contents));
+  if (!google::protobuf::TextFormat::ParseFromString(config_contents, config)) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Failed to parse configuration from contents"));
   }
   if (absl::GetFlag(FLAGS_async_pool_size) > 0) {
     config->set_async_pool_size(absl::GetFlag(FLAGS_async_pool_size));

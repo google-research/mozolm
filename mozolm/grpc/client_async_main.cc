@@ -35,6 +35,7 @@
 
 #include <string>
 
+#include "mozolm/stubs/logging.h"
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -47,7 +48,12 @@
 #include "mozolm/stubs/status_macros.h"
 
 ABSL_FLAG(std::string, client_config, "",
-          "Protocol buffer `mozolm_grpc.ClientConfig` in text format.");
+          "Contents of protocol buffer `mozolm.grpc.ClientConfig` in text "
+          "format.");
+
+ABSL_FLAG(std::string, client_config_file, "",
+          "File containing the client configuration protocol buffer in text "
+          "format. This flag overrides --client_config.");
 
 ABSL_FLAG(double, timeout_sec, 0.0,
           "Connection timeout for waiting for response (in seconds).");
@@ -72,45 +78,63 @@ namespace grpc {
 namespace {
 
 // Initializes configuration from command-line flags.
+absl::Status InitConfigContents(std::string *config_contents) {
+  const std::string config_file = absl::GetFlag(FLAGS_client_config_file);
+  if (!config_file.empty()) {
+    ASSIGN_OR_RETURN(*config_contents, file::ReadBinaryFile(config_file));
+  } else if (!absl::GetFlag(FLAGS_client_config).empty()) {
+    *config_contents = absl::GetFlag(FLAGS_client_config);
+  } else {
+    GOOGLE_LOG(INFO) << "Configuration not supplied. Using defaults";
+  }
+  return absl::OkStatus();
+}
+
+// Initializes SSL/TLS configuration from command-line flags.
+absl::Status InitSslConfig(ClientConfig *config) {
+  ClientAuthConfig *cli_auth = config->mutable_auth();
+  cli_auth->mutable_ssl()->set_target_name_override(
+      absl::GetFlag(FLAGS_ssl_target_name_override));
+
+  // Set server certificate.
+  std::string contents;
+  ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+      absl::GetFlag(FLAGS_ssl_server_cert_file)));
+  ServerAuthConfig *server_auth = config->mutable_server()->mutable_auth();
+  server_auth->set_credential_type(CREDENTIAL_SSL);
+  ServerAuthConfig::SslConfig *server_ssl_config =
+      server_auth->mutable_ssl();
+  server_ssl_config->set_server_cert(contents);
+
+  // Set client certificate and key.
+  if (!absl::GetFlag(FLAGS_ssl_client_cert_file).empty()) {
+    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+        absl::GetFlag(FLAGS_ssl_client_cert_file)));
+    cli_auth->mutable_ssl()->set_client_cert(contents);
+  }
+  if (!absl::GetFlag(FLAGS_ssl_client_key_file).empty()) {
+    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+        absl::GetFlag(FLAGS_ssl_client_key_file)));
+    cli_auth->mutable_ssl()->set_client_key(contents);
+  }
+  return absl::OkStatus();
+}
+
+// Initializes configuration from command-line flags.
 absl::Status InitConfigFromFlags(ClientConfig *config) {
   // Init the main body of configuration.
-  const std::string config_contents = absl::GetFlag(FLAGS_client_config);
-  if (!config_contents.empty()) {
-    if (!google::protobuf::TextFormat::ParseFromString(config_contents, config)) {
-      return absl::InvalidArgumentError(absl::StrCat(
-          "Failed to parse configuration from contents"));
-    }
+  std::string config_contents;
+  RETURN_IF_ERROR(InitConfigContents(&config_contents));
+  if (!google::protobuf::TextFormat::ParseFromString(config_contents, config)) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Failed to parse client configuration from contents"));
   }
   config->set_timeout_sec(absl::GetFlag(FLAGS_timeout_sec));
   InitConfigDefaults(config);
 
   // Configure secure credentials.
   if (!absl::GetFlag(FLAGS_ssl_server_cert_file).empty()) {
-    ClientAuthConfig *cli_auth = config->mutable_auth();
-    cli_auth->mutable_ssl()->set_target_name_override(
-        absl::GetFlag(FLAGS_ssl_target_name_override));
-
-    // Set server certificate.
-    std::string contents;
-    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-        absl::GetFlag(FLAGS_ssl_server_cert_file)));
-    ServerAuthConfig *server_auth = config->mutable_server()->mutable_auth();
-    server_auth->set_credential_type(CREDENTIAL_SSL);
-    ServerAuthConfig::SslConfig *server_ssl_config =
-        server_auth->mutable_ssl();
-    server_ssl_config->set_server_cert(contents);
-
-    // Set client certificate and key.
-    if (!absl::GetFlag(FLAGS_ssl_client_cert_file).empty()) {
-      ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-          absl::GetFlag(FLAGS_ssl_client_cert_file)));
-      cli_auth->mutable_ssl()->set_client_cert(contents);
-    }
-    if (!absl::GetFlag(FLAGS_ssl_client_key_file).empty()) {
-      ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-          absl::GetFlag(FLAGS_ssl_client_key_file)));
-      cli_auth->mutable_ssl()->set_client_key(contents);
-    }
+    RETURN_IF_ERROR(InitSslConfig(config));
   }
   return absl::OkStatus();
 }
