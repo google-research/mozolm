@@ -20,6 +20,7 @@
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "mozolm/models/ngram_char_fst_model.h"
+#include "mozolm/models/ngram_word_fst_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"
 #include "mozolm/models/simple_bigram_char_model.h"
 #include "mozolm/stubs/status_macros.h"
@@ -36,6 +37,8 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
     model.reset(new NGramCharFstModel);
   } else if (model_type == ModelConfig::PPM_AS_FST) {
     model.reset(new PpmAsFstModel);
+  } else if (model_type == ModelConfig::WORD_NGRAM_FST) {
+    model.reset(new NGramWordFstModel);
   } else {  // Shouldn't be here.
     return absl::UnimplementedError("Unsupported model type!");
   }

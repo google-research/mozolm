@@ -1,9 +1,9 @@
 ## Test data in this directory
 
-### Character N-gram FSTs
+### N-gram FSTs
 
 Constructed using [OpenGrm N-Gram](http://www.openfst.org/twiki/bin/view/GRM/NGramLibrary)
-toolkit from a small subset of books from [Project Gutenberg](https://www.gutenberg.org/).
+toolkit from a small subset of books from [Project Gutenberg](https://www.gutenberg.org/), or from English Wikipedia samples in mozolm/data.
 
 #### English
 
@@ -22,3 +22,7 @@ The dataset consists of 61,119,988 characters.
 1.  `gutenberg_praise_of_folly.txt`: Portion of The Project Gutenberg
     [EBook](https://www.gutenberg.org/cache/epub/9371/pg9371.txt) of The Praise
     of Folly, by Desiderius Erasmus.
+
+1. `en_wiki_1Kline_sample.katz_word3g.fst`: unpruned 3-gram word-based FST with
+        Katz smoothing and no pruning.  Trained on Wikipedia sample. The model is stored in
+        [OpenFst](http://www.openfst.org) binary format.

@@ -31,6 +31,9 @@ message ModelConfig {
 
     // OpenGrm NGram character model.
     PPM_AS_FST = 2;
+
+    // OpenGrm NGram word model.
+    WORD_NGRAM_FST = 3;
   }
 
   // Type of the model.

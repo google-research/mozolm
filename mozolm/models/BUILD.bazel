@@ -91,7 +91,10 @@ jspb_proto_library(
 proto_library(
     name = "model_storage_proto",
     srcs = ["model_storage.proto"],
-    deps = [":ppm_as_fst_options_proto"],
+    deps = [
+        ":ngram_word_fst_options_proto",
+        ":ppm_as_fst_options_proto",
+    ],
 )
 
 cc_proto_library(
@@ -140,6 +143,7 @@ cc_library(
         ":model_config_cc_proto",
         ":model_storage_cc_proto",
         ":ngram_char_fst_model",
+        ":ngram_word_fst_model",
         ":ppm_as_fst_model",
         ":simple_bigram_char_model",
         "//mozolm/stubs:integral_types",
@@ -183,6 +187,45 @@ cc_library(
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_library(
+    name = "ngram_word_fst_model",
+    srcs = ["ngram_word_fst_model.cc"],
+    hdrs = ["ngram_word_fst_model.h"],
+    deps = [
+        ":model_storage_cc_proto",
+        ":ngram_fst_model",
+        ":ngram_word_fst_options_cc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "//mozolm/utils:utf8_util",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@org_openfst//:fst",
+        "@org_openfst//:symbol-table",
+        "@org_opengrm_ngram//:opengrm-ngram-lib",
+    ],
+)
+
+cc_test(
+    name = "ngram_word_fst_model_test",
+    size = "small",
+    srcs = ["ngram_word_fst_model_test.cc"],
+    deps = [
+        ":model_storage_cc_proto",
+        ":ngram_word_fst_model",
+        "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:utf8_util",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@org_openfst//:fst",
+        "@org_openfst//:symbol-table",
     ],
 )
 
@@ -275,4 +318,24 @@ java_proto_library(
 jspb_proto_library(
     name = "ppm_as_fst_options_jspb_proto",
     deps = [":ppm_as_fst_options_proto"],
+)
+
+proto_library(
+    name = "ngram_word_fst_options_proto",
+    srcs = ["ngram_word_fst_options.proto"],
+)
+
+cc_proto_library(
+    name = "ngram_word_fst_options_cc_proto",
+    deps = [":ngram_word_fst_options_proto"],
+)
+
+java_proto_library(
+    name = "ngram_word_fst_options_java_proto",
+    deps = [":ngram_word_fst_options_proto"],
+)
+
+jspb_proto_library(
+    name = "ngram_word_fst_options_jspb_proto",
+    deps = [":ngram_word_fst_options_proto"],
 )

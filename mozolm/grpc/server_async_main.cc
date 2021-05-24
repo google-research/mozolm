@@ -15,30 +15,27 @@
 // Simple utility binary for launching gRPC server.
 //
 // Example usage:
+// Note that the server will wait for queries in terminal, Ctrl-C to quit.
 // --------------
-// DATADIR=mozolm/data
+// DATADIR=third_party/mozolm/mozolm
 //
 // o Using the simple_char_bigram models:
 //
-//   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
-//   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
+//   VOCAB="${DATADIR}"/data/en_wiki_1Mline_char_bigram.rows.txt
+//   COUNTS="${DATADIR}"/data/en_wiki_1Mline_char_bigram.matrix.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { model_config { type:SIMPLE_CHAR_BIGRAM storage { \
 //     vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } }"
 //
-//   Will wait for queries in terminal, Ctrl-C to quit.
-//
 // o Using the PPM models:
 //
-//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
+//   TEXTFILE="${DATADIR}"/data/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { model_config { type:PPM_AS_FST storage { \
 //     model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
 //     static_model: false } } } }"
-//
-//   Will wait for queries in terminal, Ctrl-C to quit.
 //
 // o Using the character n-gram FST model:
 //
@@ -48,13 +45,11 @@
 //     model_hub_config { model_config { type:CHAR_NGRAM_FST storage { \
 //     model_file:\"$MODELFILE\" } } }"
 //
-//   Will wait for queries in terminal, Ctrl-C to quit.
-//
 // o Using an equal mixture of PPM and simple_char_bigram models:
 //
-//   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
-//   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
-//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
+//   VOCAB="${DATADIR}"/data/en_wiki_1Mline_char_bigram.rows.txt
+//   COUNTS="${DATADIR}"/data/en_wiki_1Mline_char_bigram.matrix.txt
+//   TEXTFILE="${DATADIR}"/data/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { mixture_type:INTERPOLATION model_config { \
@@ -63,7 +58,17 @@
 //     static_model: false } } }  model_config { type:SIMPLE_CHAR_BIGRAM \
 //     storage { vocabulary_file:\"$VOCAB\"  model_file:\"$COUNTS\" } } }"
 //
-//   Will wait for queries in terminal, Ctrl-C to quit.
+// o Using an equal mixture of PPM and word-based n-gram models:
+//
+//   WORDMOD="${DATADIR}"/models/testdata/en_wiki_1Kline_sample.katz_word3g.fst
+//   TEXTFILE="${DATADIR}"/data/en_wiki_1Kline_sample.txt
+//   bazel-bin/mozolm/grpc/server_async \
+//     --server_config="address_uri:\"localhost:50051\" \
+//     model_hub_config { mixture_type:INTERPOLATION model_config { \
+//     type:PPM_AS_FST \
+//     storage { model_file:\"$TEXTFILE\" ppm_options { max_order: 4 \
+//     static_model: false } } }  model_config { type:WORD_NGRAM_FST \
+//     storage { model_file:\"$WORDMOD\" } } }"
 
 #include <string>
 

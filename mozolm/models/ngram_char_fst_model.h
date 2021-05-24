@@ -44,13 +44,6 @@ class NGramCharFstModel : public NGramFstModel {
   // given state.
   fst::StdArc::Weight LabelCostInState(fst::StdArc::StateId state,
                                            fst::StdArc::Label label) const;
-
- private:
-  // Checks the current state which may be the initial state. Depending on the
-  // model topology we may choose to start from the initial or the unigram
-  // state.
-  fst::StdArc::StateId CheckCurrentState(
-      fst::StdArc::StateId state) const;
 };
 
 }  // namespace models

@@ -16,10 +16,13 @@
 
 #include "mozolm/stubs/logging.h"
 #include "fst/fst.h"
+#include "fst/matcher.h"
 #include "fst/symbol-table.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 
+using fst::MATCH_INPUT;
+using fst::Matcher;
 using fst::StdArc;
 using fst::StdVectorFst;
 using fst::SymbolTable;
@@ -70,6 +73,16 @@ bool NGramFstModel::UpdateLMCounts(int32 state,
   return true;  // Treat as a no-op.
 }
 
+StdArc::StateId NGramFstModel::CheckCurrentState(
+    StdArc::StateId state) const {
+  StdArc::StateId current_state = state;
+  if (state < 0) {
+    current_state = model_->UnigramState();
+    if (current_state < 0) current_state = fst_->Start();
+  }
+  return current_state;
+}
+
 absl::Status NGramFstModel::CheckModel() const {
   if (model_->Error()) {
     return absl::InternalError("Model initialization failed");
@@ -80,6 +93,23 @@ absl::Status NGramFstModel::CheckModel() const {
     return absl::InternalError("FST states are not fully normalized");
   }
   return absl::OkStatus();
+}
+
+StdArc::StateId NGramFstModel::NextModelState(StdArc::StateId current_state,
+                                              StdArc::Label label) const {
+  StdArc::StateId return_state = model_->UnigramState();  // Default.
+  while (current_state >= 0) {
+    Matcher<StdVectorFst> matcher(*fst_, MATCH_INPUT);
+    matcher.SetState(current_state);
+    if (matcher.Find(label)) {  // Arc found out of current state.
+      const StdArc arc = matcher.Value();
+      return_state = arc.nextstate;
+      current_state = -1;
+    } else {
+      current_state = model_->GetBackoff(current_state, /*bocost=*/nullptr);
+    }
+  }
+  return return_state;
 }
 
 }  // namespace models

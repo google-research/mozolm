@@ -38,22 +38,7 @@ int NGramCharFstModel::NextState(int state, int utf8_sym) {
   if (fst_->InputSymbols()->Find(u_char) == fst::kNoSymbol) {
     label = oov_label_;
   }
-
-  StdArc::Weight bo_weight;
-  StdArc::StateId current_state = CheckCurrentState(state);
-  while (true) {
-    Matcher<StdVectorFst> matcher(*fst_, MATCH_INPUT);
-    matcher.SetState(current_state);
-    if (matcher.Find(label)) {  // Arc found out of current state.
-      const StdArc arc = matcher.Value();
-      return arc.nextstate;
-    } else {
-      current_state = model_->GetBackoff(current_state, &bo_weight);
-      if (current_state < 0) return current_state;
-    }
-  }
-  // TODO: Not entirely sure if this should be -1 instead.
-  return current_state;
+  return NextModelState(CheckCurrentState(state), label);
 }
 
 bool NGramCharFstModel::ExtractLMScores(int state, LMScores *response) {
@@ -78,16 +63,6 @@ bool NGramCharFstModel::ExtractLMScores(int state, LMScores *response) {
   }
   response->set_normalization(1.0);
   return true;
-}
-
-StdArc::StateId NGramCharFstModel::CheckCurrentState(
-    StdArc::StateId state) const {
-  StdArc::StateId current_state = state;
-  if (state < 0) {
-    current_state = model_->UnigramState();
-    if (current_state < 0) current_state = fst_->Start();
-  }
-  return current_state;
 }
 
 StdArc::Weight NGramCharFstModel::LabelCostInState(StdArc::StateId state,
