@@ -18,7 +18,7 @@ To run this example execute the following steps:
 
     ```shell
     PORT=50055
-    TEXTFILE=mozolm/data/en_wiki_1Kline_sample.txt
+    TEXTFILE=mozolm/models/testdata/en_wiki_1Kline_sample.txt
     bazel-bin/mozolm/grpc/server_async \
       --server_config="address_uri:\"localhost:${PORT}\" \
          model_hub_config { model_config { type:PPM_AS_FST storage \
@@ -46,7 +46,7 @@ To run this example execute the following steps:
 
 ```shell
     set PORT=50055
-    set TEXTFILE=mozolm\\data\\en_wiki_1Kline_sample.txt
+    set TEXTFILE=mozolm\\models\\testdata\\en_wiki_1Kline_sample.txt
     bazel-bin\mozolm\grpc\server_async \
       --server_config="address_uri:""localhost:%PORT%"" \
         model_hub_config { model_config { \

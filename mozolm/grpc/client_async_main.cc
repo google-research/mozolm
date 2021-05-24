@@ -27,7 +27,7 @@
 //     request_type:K_BEST_ITEMS k_best:7 context_string:\"Ask a q\""
 //
 // - To calculate bits-per-character for a given test corpus:
-//   DATADIR=mozolm/data
+//   DATADIR=mozolm/models/testdata
 //   TESTFILE="${DATADIR}"/en_wiki_100line_dev_sample.txt
 //   bazel-bin/mozolm/grpc/client_async \
 //     --client_config="server { address_uri:\"localhost:50051\" } \

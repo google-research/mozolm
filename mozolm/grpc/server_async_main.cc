@@ -17,12 +17,12 @@
 // Example usage:
 // Note that the server will wait for queries in terminal, Ctrl-C to quit.
 // --------------
-// DATADIR=third_party/mozolm/mozolm
+// DATADIR=mozolm/models/testdata
 //
 // o Using the simple_char_bigram models:
 //
-//   VOCAB="${DATADIR}"/data/en_wiki_1Mline_char_bigram.rows.txt
-//   COUNTS="${DATADIR}"/data/en_wiki_1Mline_char_bigram.matrix.txt
+//   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
+//   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { model_config { type:SIMPLE_CHAR_BIGRAM storage { \
@@ -30,7 +30,7 @@
 //
 // o Using the PPM models:
 //
-//   TEXTFILE="${DATADIR}"/data/en_wiki_1Kline_sample.txt
+//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { model_config { type:PPM_AS_FST storage { \
@@ -39,7 +39,7 @@
 //
 // o Using the character n-gram FST model:
 //
-//   MODELFILE=${DATADIR}/models/testdata/gutenberg_en_char_ngram_o4_wb.fst
+//   MODELFILE=${DATADIR}/gutenberg_en_char_ngram_o4_wb.fst
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { model_config { type:CHAR_NGRAM_FST storage { \
@@ -47,9 +47,9 @@
 //
 // o Using an equal mixture of PPM and simple_char_bigram models:
 //
-//   VOCAB="${DATADIR}"/data/en_wiki_1Mline_char_bigram.rows.txt
-//   COUNTS="${DATADIR}"/data/en_wiki_1Mline_char_bigram.matrix.txt
-//   TEXTFILE="${DATADIR}"/data/en_wiki_1Kline_sample.txt
+//   VOCAB="${DATADIR}"/en_wiki_1Mline_char_bigram.rows.txt
+//   COUNTS="${DATADIR}"/en_wiki_1Mline_char_bigram.matrix.txt
+//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { mixture_type:INTERPOLATION model_config { \
@@ -60,8 +60,8 @@
 //
 // o Using an equal mixture of PPM and word-based n-gram models:
 //
-//   WORDMOD="${DATADIR}"/models/testdata/en_wiki_1Kline_sample.katz_word3g.fst
-//   TEXTFILE="${DATADIR}"/data/en_wiki_1Kline_sample.txt
+//   WORDMOD="${DATADIR}"/en_wiki_1Kline_sample.katz_word3g.fst
+//   TEXTFILE="${DATADIR}"/en_wiki_1Kline_sample.txt
 //   bazel-bin/mozolm/grpc/server_async \
 //     --server_config="address_uri:\"localhost:50051\" \
 //     model_hub_config { mixture_type:INTERPOLATION model_config { \
