@@ -29,33 +29,33 @@ option java_multiple_files = true;
 // Next available ID: 2
 message ClientAuthConfig {
   // Next available ID: 4
-  message SslConfig {
-    // Target name override for SSL host name checking. This should
+  message TlsConfig {
+    // Target name override for TLS host name checking. This should
     // *not* be used in production. Normally, the name of the target
     // should match the Common Name (aka `CN`) that represents the
-    // server name protected by the SSL certificate. The certificate
+    // server name protected by the TLS certificate. The certificate
     // is valid only if the request hostname matches the certificate
     // common name.
     //
     // The Subject Alternative Name (SAN) is an extension to the X.509
     // specification that allows users to specify additional host
-    // names for a single SSL certificate. This is replacing Common
+    // names for a single TLS certificate. This is replacing Common
     // Name (CN) mechanism.
     //
-    // Example: See `subjectAltName` key in `openssl.conf` under the
+    // Example: See `subjectAltName` key in `opentls.conf` under the
     // `testdata/x509` directory.
     string target_name_override = 1;
 
     // Public client certificate (PEM encoded).
     string client_cert = 2;
 
-    // Private client key for SSL (PEM encoded).
+    // Private client key for TLS (PEM encoded).
     string client_key = 3;
   }
 
-  // SSL/TLS configuration for a secure gRPC channel. If not given, insecure
+  // TLS/TLS configuration for a secure gRPC channel. If not given, insecure
   // connection is used.
-  SslConfig ssl = 1;
+  TlsConfig tls = 1;
 }
 
 // Next available ID: 9

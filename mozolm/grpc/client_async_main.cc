@@ -58,19 +58,19 @@ ABSL_FLAG(std::string, client_config_file, "",
 ABSL_FLAG(double, timeout_sec, 0.0,
           "Connection timeout for waiting for response (in seconds).");
 
-ABSL_FLAG(std::string, ssl_server_cert_file, "",
+ABSL_FLAG(std::string, tls_server_cert_file, "",
           "Public (root) certificate authority file for SSL/TLS credentials "
           "in PEM encoding.");
 
-ABSL_FLAG(std::string, ssl_target_name_override, "",
+ABSL_FLAG(std::string, tls_target_name_override, "",
           "Target name override for SSL host name checking. This should *not* "
           "be used in production. Example: \"*.test.example.com\"");
 
-ABSL_FLAG(std::string, ssl_client_cert_file, "",
+ABSL_FLAG(std::string, tls_client_cert_file, "",
           "Client public certificate file for SSL/TLS credentials in "
           "PEM encoding.");
 
-ABSL_FLAG(std::string, ssl_client_key_file, "",
+ABSL_FLAG(std::string, tls_client_key_file, "",
           "Client private key file for SSL/TLS credentials in PEM encoding.");
 
 namespace mozolm {
@@ -91,31 +91,31 @@ absl::Status InitConfigContents(std::string *config_contents) {
 }
 
 // Initializes SSL/TLS configuration from command-line flags.
-absl::Status InitSslConfig(ClientConfig *config) {
+absl::Status InitTlsConfig(ClientConfig *config) {
   ClientAuthConfig *cli_auth = config->mutable_auth();
-  cli_auth->mutable_ssl()->set_target_name_override(
-      absl::GetFlag(FLAGS_ssl_target_name_override));
+  cli_auth->mutable_tls()->set_target_name_override(
+      absl::GetFlag(FLAGS_tls_target_name_override));
 
   // Set server certificate.
   std::string contents;
   ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-      absl::GetFlag(FLAGS_ssl_server_cert_file)));
+      absl::GetFlag(FLAGS_tls_server_cert_file)));
   ServerAuthConfig *server_auth = config->mutable_server()->mutable_auth();
-  server_auth->set_credential_type(CREDENTIAL_SSL);
-  ServerAuthConfig::SslConfig *server_ssl_config =
-      server_auth->mutable_ssl();
-  server_ssl_config->set_server_cert(contents);
+  server_auth->set_credential_type(CREDENTIAL_TLS);
+  ServerAuthConfig::TlsConfig *server_tls_config =
+      server_auth->mutable_tls();
+  server_tls_config->set_server_cert(contents);
 
   // Set client certificate and key.
-  if (!absl::GetFlag(FLAGS_ssl_client_cert_file).empty()) {
+  if (!absl::GetFlag(FLAGS_tls_client_cert_file).empty()) {
     ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-        absl::GetFlag(FLAGS_ssl_client_cert_file)));
-    cli_auth->mutable_ssl()->set_client_cert(contents);
+        absl::GetFlag(FLAGS_tls_client_cert_file)));
+    cli_auth->mutable_tls()->set_client_cert(contents);
   }
-  if (!absl::GetFlag(FLAGS_ssl_client_key_file).empty()) {
+  if (!absl::GetFlag(FLAGS_tls_client_key_file).empty()) {
     ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-        absl::GetFlag(FLAGS_ssl_client_key_file)));
-    cli_auth->mutable_ssl()->set_client_key(contents);
+        absl::GetFlag(FLAGS_tls_client_key_file)));
+    cli_auth->mutable_tls()->set_client_key(contents);
   }
   return absl::OkStatus();
 }
@@ -133,8 +133,8 @@ absl::Status InitConfigFromFlags(ClientConfig *config) {
   InitConfigDefaults(config);
 
   // Configure secure credentials.
-  if (!absl::GetFlag(FLAGS_ssl_server_cert_file).empty()) {
-    RETURN_IF_ERROR(InitSslConfig(config));
+  if (!absl::GetFlag(FLAGS_tls_server_cert_file).empty()) {
+    RETURN_IF_ERROR(InitTlsConfig(config));
   }
   return absl::OkStatus();
 }

@@ -27,7 +27,7 @@ namespace {
 
 // Builds SSL server credentials.
 std::shared_ptr<::grpc::ServerCredentials>
-BuildServerCredentials(const ServerAuthConfig::SslConfig &config) {
+BuildServerCredentials(const ServerAuthConfig::TlsConfig &config) {
   ::grpc::SslServerCredentialsOptions ssl_ops(
       config.client_verify()
           // Server requests client certificate and enforces that the client
@@ -52,8 +52,8 @@ BuildServerCredentials(const ServerAuthConfig::SslConfig &config) {
 std::shared_ptr<::grpc::ServerCredentials>
 BuildServerCredentials(const ServerConfig &config) {
   const ServerAuthConfig &auth = config.auth();
-  if (auth.credential_type() == CREDENTIAL_SSL && auth.has_ssl()) {
-    return BuildServerCredentials(auth.ssl());
+  if (auth.credential_type() == CREDENTIAL_TLS && auth.has_tls()) {
+    return BuildServerCredentials(auth.tls());
   } else {
     if (auth.credential_type() != CREDENTIAL_INSECURE) {
       GOOGLE_LOG(WARNING) << "Secure credentials requested but no configuration found";

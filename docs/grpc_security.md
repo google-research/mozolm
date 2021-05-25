@@ -51,21 +51,21 @@ For server-side authentication the corresponding fields in the
 [ServerConfig](../mozolm/grpc/server_config.proto)
 protocol buffer need to be set for the server.
 
-1.  `auth.credential_type`: (required) Set to `CREDENTIAL_SSL`.
-1.  `auth.ssl.client_verify`: (required) Set to `false`.
-1.  `auth.ssl.server_cert`: (required) The server public TLS certificate.
-1.  `auth.ssl.server_key`: (required) The private cryptographic key (only
+1.  `auth.credential_type`: (required) Set to `CREDENTIAL_TLS`.
+1.  `auth.tls.client_verify`: (required) Set to `false`.
+1.  `auth.tls.server_cert`: (required) The server public TLS certificate.
+1.  `auth.tls.server_key`: (required) The private cryptographic key (only
     visible to the server).
-1.  `auth.ssl.server_ca_cert`: (optional) The certificate authority who has
-    signed the `auth.ssl.server_cert`.
+1.  `auth.tls.server_ca_cert`: (optional) The certificate authority who has
+    signed the `auth.tls.server_cert`.
 
 Example:
 
 ```protocol-buffer
 ...
 auth {
-  credential_type: CREDENTIAL_SSL
-  ssl {
+  credential_type: CREDENTIAL_TLS
+  tls {
     server_cert:
       "-----BEGIN CERTIFICATE-----"
       "..."
@@ -90,13 +90,13 @@ The client-side configuration
 includes the corresponding server configuration as a sub-message. The following
 fields need to be set in the client configuration:
 
-1.  `server.auth.credential_type`: (required) Set to `CREDENTIAL_SSL`.
-1.  `server.auth.ssl.server_cert`: (required) The public server TLS certificate
+1.  `server.auth.credential_type`: (required) Set to `CREDENTIAL_TLS`.
+1.  `server.auth.tls.server_cert`: (required) The public server TLS certificate
     or the public CA certificate (aka the root certificate).
-1.  `auth.ssl.target_name_override`: (optional)
+1.  `auth.tls.target_name_override`: (optional)
     [The Subject Alternative Name (SAN)](https://en.wikipedia.org/wiki/Subject_Alternative_Name)
     is an extension to the X.509 specification that allows users to specify
-    additional host names for a single SSL certificate. Only use for testing,
+    additional host names for a single TLS certificate. Only use for testing,
     where the certificate may not necessarily be issued for a fixed server name.
 
 Example:
@@ -104,14 +104,14 @@ Example:
 ```protocol-buffer
 ...
 auth {
-  ssl {
+  tls {
     target_name_override: "*.test.example.com"
   }
 }
 server {
   auth {
-    credential_type: CREDENTIAL_SSL
-    ssl {
+    credential_type: CREDENTIAL_TLS
+    tls {
       server_cert:
         "-----BEGIN CERTIFICATE-----"
         "..."
@@ -141,9 +141,9 @@ Example:
 ```shell
 > bazel-bin/mozolm/grpc/server_async \
   --server_config_file /tmp/server_config.textproto \
-  --ssl_server_key_file mozolm/grpc/testdata/cred/x509/server1_key.pem \
-  --ssl_server_cert_file mozolm/grpc/testdata/cred/x509/server1_cert.pem \
-  --nossl_client_verify
+  --tls_server_key_file mozolm/grpc/testdata/cred/x509/server1_key.pem \
+  --tls_server_cert_file mozolm/grpc/testdata/cred/x509/server1_cert.pem \
+  --notls_client_verify
 Listening on "localhost:0"
 Selected port: 38039
 Waiting for requests ...
@@ -157,8 +157,8 @@ Example (with server certificate):
 ```shell
 bazel-bin/mozolm/grpc/client_async \
   --client_config="server { address_uri:\"localhost:38039\" } request_type:RANDGEN" \
-  --ssl_server_cert_file mozolm/grpc/testdata/cred/x509/server1_cert.pem \
-  --ssl_target_name_override "*.test.example.com"
+  --tls_server_cert_file mozolm/grpc/testdata/cred/x509/server1_cert.pem \
+  --tls_target_name_override "*.test.example.com"
 ```
 
 Example (with CA certificate):
@@ -166,8 +166,8 @@ Example (with CA certificate):
 ```shell
 bazel-bin/mozolm/grpc/client_async \
   --client_config="server { address_uri:\"localhost:38039\" } request_type:RANDGEN" \
-  --ssl_server_cert_file mozolm/grpc/testdata/cred/x509/server_ca_cert.pem \
-  --ssl_target_name_override "*.test.example.com"
+  --tls_server_cert_file mozolm/grpc/testdata/cred/x509/server_ca_cert.pem \
+  --tls_target_name_override "*.test.example.com"
 ```
 
 ##### Mutual Authentication

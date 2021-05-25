@@ -107,15 +107,15 @@ TEST_F(ServerHelperTest, CheckRunServerWithEventLoop) {
 }
 
 // Check starting up of the server with valid SSL/TLS credentials.
-TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
+TEST_F(ServerHelperTest, CheckStartWithValidTlsCreds) {
   // Prepare the initial configuration: Valid key and invalid certificate.
   ServerAuthConfig *auth = config_.mutable_auth();
-  auth->set_credential_type(CREDENTIAL_SSL);
-  auth->mutable_ssl()->set_client_verify(true);
+  auth->set_credential_type(CREDENTIAL_TLS);
+  auth->mutable_tls()->set_client_verify(true);
   std::string contents;
-  test::ReadSslCredFileContents(test::kSslServerPrivateKeyFile, &contents);
-  auth->mutable_ssl()->set_server_key(contents);
-  auth->mutable_ssl()->set_server_cert("invalid");
+  test::ReadTlsCredFileContents(test::kTlsServerPrivateKeyFile, &contents);
+  auth->mutable_tls()->set_server_key(contents);
+  auth->mutable_tls()->set_server_cert("invalid");
 
   // Make sure we can't run with invalid credentials.
   ServerHelper server;
@@ -123,24 +123,24 @@ TEST_F(ServerHelperTest, CheckStartWithValidSslCreds) {
   server.Shutdown();
 
   // Now fix the server's publicate certificate to make the configuration valid.
-  test::ReadSslCredFileContents(test::kSslServerPublicCertFile, &contents);
-  auth->mutable_ssl()->set_server_cert(contents);
+  test::ReadTlsCredFileContents(test::kTlsServerPublicCertFile, &contents);
+  auth->mutable_tls()->set_server_cert(contents);
   ASSERT_OK(server.Init(config_));
   EXPECT_OK(server.Run(/* wait_till_terminated= */false));
   server.Shutdown();
 
   // Check that we can start with no client verification.
-  auth->mutable_ssl()->set_client_verify(false);
+  auth->mutable_tls()->set_client_verify(false);
   ASSERT_OK(server.Init(config_));
   server.Shutdown();
 
   // Provide custom certificate authority: once a valid certificate that should
   // succeed, and once an invalid one should fail to initialize the server.
-  test::ReadSslCredFileContents(test::kSslClientCentralAuthCertFile, &contents);
-  auth->mutable_ssl()->set_custom_ca_cert(contents);
+  test::ReadTlsCredFileContents(test::kTlsClientCentralAuthCertFile, &contents);
+  auth->mutable_tls()->set_custom_ca_cert(contents);
   ASSERT_OK(server.Init(config_));
   server.Shutdown();
-  auth->mutable_ssl()->set_custom_ca_cert("invalid");
+  auth->mutable_tls()->set_custom_ca_cert("invalid");
   ASSERT_FALSE(server.Init(config_).ok());
   server.Shutdown();
 }

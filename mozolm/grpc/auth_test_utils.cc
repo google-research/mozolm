@@ -27,24 +27,24 @@ namespace mozolm {
 namespace grpc {
 namespace test {
 
-void ReadSslCredFileContents(std::string_view filename, std::string *contents) {
+void ReadTlsCredFileContents(std::string_view filename, std::string *contents) {
   const std::filesystem::path file_path = (
       std::filesystem::current_path() /
-      kSslCredTestDir / filename).make_preferred();
+      kTlsCredTestDir / filename).make_preferred();
   const auto read_status = file::ReadBinaryFile(file_path.string());
   ASSERT_OK(read_status) << "Failed to read " << filename;
   *contents = read_status.value();
 }
 
-void ReadAllSslCredentials(
+void ReadAllTlsCredentials(
     absl::flat_hash_map<std::string, std::string> *name2contents) {
   std::string contents;
   const std::vector<std::string> filenames = {
-    kSslServerPrivateKeyFile, kSslServerPublicCertFile,
-    kSslServerCentralAuthCertFile, kSslClientPrivateKeyFile,
-    kSslClientPublicCertFile, kSslClientCentralAuthCertFile };
+    kTlsServerPrivateKeyFile, kTlsServerPublicCertFile,
+    kTlsServerCentralAuthCertFile, kTlsClientPrivateKeyFile,
+    kTlsClientPublicCertFile, kTlsClientCentralAuthCertFile };
   for (const auto &filename : filenames) {
-    ReadSslCredFileContents(filename, &contents);
+    ReadTlsCredFileContents(filename, &contents);
     name2contents->insert({filename, contents});
   }
 }

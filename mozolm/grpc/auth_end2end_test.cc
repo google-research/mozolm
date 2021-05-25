@@ -44,7 +44,7 @@ constexpr double kClientTimeoutSec = 1.0;
 class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
  protected:
   void SetUp() override {
-    test::ReadAllSslCredentials(&ssl_name2contents_);
+    test::ReadAllTlsCredentials(&tls_name2contents_);
   }
 
   void TearDown() override {
@@ -104,14 +104,14 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
   }
 
   // Fills in server SSL config.
-  void MakeServerSslConfig(ServerConfig *config, bool verify_clients) {
+  void MakeServerTlsConfig(ServerConfig *config, bool verify_clients) {
     ServerAuthConfig *auth = config->mutable_auth();
-    auth->set_credential_type(CREDENTIAL_SSL);
-    auth->mutable_ssl()->set_client_verify(verify_clients);
-    auth->mutable_ssl()->set_server_key(
-        ssl_name2contents_[test::kSslServerPrivateKeyFile]);
-    auth->mutable_ssl()->set_server_cert(
-        ssl_name2contents_[test::kSslServerPublicCertFile]);
+    auth->set_credential_type(CREDENTIAL_TLS);
+    auth->mutable_tls()->set_client_verify(verify_clients);
+    auth->mutable_tls()->set_server_key(
+        tls_name2contents_[test::kTlsServerPrivateKeyFile]);
+    auth->mutable_tls()->set_server_cert(
+        tls_name2contents_[test::kTlsServerPublicCertFile]);
   }
 
   // Returns full path to the model.
@@ -124,7 +124,7 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
   }
 
   // Mapping between the names of SSL credential files and the actual contents.
-  absl::flat_hash_map<std::string, std::string> ssl_name2contents_;
+  absl::flat_hash_map<std::string, std::string> tls_name2contents_;
 
   // Global configuration (this includes both client and the server).
   ClientConfig config_;
@@ -140,45 +140,45 @@ TEST_P(AuthEnd2EndTest, CheckInsecure) {
 }
 
 // The certificate presented by the client is not checked by the server at all.
-TEST_P(AuthEnd2EndTest, CheckSslNoClientVerification) {
+TEST_P(AuthEnd2EndTest, CheckTlsNoClientVerification) {
   InitConfig(&config_, /* use_uds= */GetParam());
 
   // Prepare the server credentials and run insecure client.
-  MakeServerSslConfig(config_.mutable_server(), /* verify_clients= */false);
+  MakeServerTlsConfig(config_.mutable_server(), /* verify_clients= */false);
   EXPECT_FALSE(BuildAndRun(config_).ok());
 
   // Prepare the client credentials by setting the target name. Will use the
   // server public certificate authority from the server config.
   ClientAuthConfig *auth = config_.mutable_auth();
-  auth->mutable_ssl()->set_target_name_override(test::kSslAltServerName);
+  auth->mutable_tls()->set_target_name_override(test::kTlsAltServerName);
   EXPECT_OK(BuildAndRun(config_));
 }
 
 // Mutual SSL/TLS verification: server requests client certificate and enforces
 // that the client presents a certificate. This uses Certificate Authority (CA).
-TEST_P(AuthEnd2EndTest, CheckSslWithClientVerification) {
+TEST_P(AuthEnd2EndTest, CheckTlsWithClientVerification) {
   InitConfig(&config_, /* use_uds= */GetParam());
 
   // Prepare the server credentials and run insecure client.
-  MakeServerSslConfig(config_.mutable_server(), /* verify_clients= */true);
+  MakeServerTlsConfig(config_.mutable_server(), /* verify_clients= */true);
   EXPECT_FALSE(BuildAndRun(config_).ok());
 
   // Check that correctly setting target name override is not enough as client
   // does not present any credentials.
-  ClientAuthConfig::SslConfig *client_ssl =
-      config_.mutable_auth()->mutable_ssl();
-  client_ssl->set_target_name_override(test::kSslAltServerName);
+  ClientAuthConfig::TlsConfig *client_tls =
+      config_.mutable_auth()->mutable_tls();
+  client_tls->set_target_name_override(test::kTlsAltServerName);
   EXPECT_FALSE(BuildAndRun(config_).ok());
 
   // Set up all the required certificates and keys. The server certificate and
   // key are already set up. Check successful handshake and run.
   ServerAuthConfig *server_auth = config_.mutable_server()->mutable_auth();
-  server_auth->mutable_ssl()->set_custom_ca_cert(
-      ssl_name2contents_[test::kSslClientCentralAuthCertFile]);
-  client_ssl->set_client_cert(
-      ssl_name2contents_[test::kSslClientPublicCertFile]);
-  client_ssl->set_client_key(
-      ssl_name2contents_[test::kSslClientPrivateKeyFile]);
+  server_auth->mutable_tls()->set_custom_ca_cert(
+      tls_name2contents_[test::kTlsClientCentralAuthCertFile]);
+  client_tls->set_client_cert(
+      tls_name2contents_[test::kTlsClientPublicCertFile]);
+  client_tls->set_client_key(
+      tls_name2contents_[test::kTlsClientPrivateKeyFile]);
   EXPECT_OK(BuildAndRun(config_));
 }
 

@@ -94,19 +94,19 @@ ABSL_FLAG(std::string, server_config_file, "",
 ABSL_FLAG(int, async_pool_size, 0,
           "Number of threads for handling requests asynchronously.");
 
-ABSL_FLAG(std::string, ssl_server_key_file, "",
+ABSL_FLAG(std::string, tls_server_key_file, "",
           "Private server key for SSL/TLS credentials.");
 
-ABSL_FLAG(std::string, ssl_server_cert_file, "",
+ABSL_FLAG(std::string, tls_server_cert_file, "",
           "Public server certificate for SSL/TLS credentials.");
 
-ABSL_FLAG(std::string, ssl_custom_ca_cert_file, "",
+ABSL_FLAG(std::string, tls_custom_ca_cert_file, "",
           "Custom certificate authority file. This is required for mutual "
-          "authentication (when `ssl_client_verify` is enabled) and must "
+          "authentication (when `tls_client_verify` is enabled) and must "
           "contain the certificate authority (CA) that signed the client "
           "certificate.");
 
-ABSL_FLAG(bool, ssl_client_verify, true,
+ABSL_FLAG(bool, tls_client_verify, true,
           "Whether a valid client certificate is required.");
 
 namespace mozolm {
@@ -114,19 +114,19 @@ namespace grpc {
 namespace {
 
 // Initializes SSL/TLS configuration from command-line flags.
-absl::Status InitSslConfig(ServerAuthConfig::SslConfig *ssl_config) {
+absl::Status InitTlsConfig(ServerAuthConfig::TlsConfig *tls_config) {
   std::string contents;
-  ssl_config->set_client_verify(absl::GetFlag(FLAGS_ssl_client_verify));
+  tls_config->set_client_verify(absl::GetFlag(FLAGS_tls_client_verify));
   ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-      absl::GetFlag(FLAGS_ssl_server_key_file)));
-  ssl_config->set_server_key(contents);
+      absl::GetFlag(FLAGS_tls_server_key_file)));
+  tls_config->set_server_key(contents);
   ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-      absl::GetFlag(FLAGS_ssl_server_cert_file)));
-  ssl_config->set_server_cert(contents);
-  if (!absl::GetFlag(FLAGS_ssl_custom_ca_cert_file).empty()) {
+      absl::GetFlag(FLAGS_tls_server_cert_file)));
+  tls_config->set_server_cert(contents);
+  if (!absl::GetFlag(FLAGS_tls_custom_ca_cert_file).empty()) {
     ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
-        absl::GetFlag(FLAGS_ssl_custom_ca_cert_file)));
-    ssl_config->set_custom_ca_cert(contents);
+        absl::GetFlag(FLAGS_tls_custom_ca_cert_file)));
+    tls_config->set_custom_ca_cert(contents);
   }
   return absl::OkStatus();
 }
@@ -159,9 +159,9 @@ absl::Status InitConfigFromFlags(ServerConfig *config) {
   InitConfigDefaults(config);
 
   // Initialize credentials.
-  if (config->auth().credential_type() == CREDENTIAL_SSL &&
-      !absl::GetFlag(FLAGS_ssl_server_key_file).empty()) {
-    return InitSslConfig(config->mutable_auth()->mutable_ssl());
+  if (config->auth().credential_type() == CREDENTIAL_TLS &&
+      !absl::GetFlag(FLAGS_tls_server_key_file).empty()) {
+    return InitTlsConfig(config->mutable_auth()->mutable_tls());
   }
   return absl::OkStatus();
 }

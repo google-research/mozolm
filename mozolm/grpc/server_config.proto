@@ -25,8 +25,11 @@ option java_outer_classname = "ServerConfigProto";
 option java_multiple_files = true;
 
 enum CredentialType {
+  // Not recommended for actual deployments when security and privacy
+  // are required.
   CREDENTIAL_INSECURE = 0;
-  CREDENTIAL_SSL = 1;
+  // https://en.wikipedia.org/wiki/Transport_Layer_Security
+  CREDENTIAL_TLS = 1;
 }
 
 // Next available ID: 3
@@ -34,7 +37,7 @@ message ServerAuthConfig {
   // Type of authorization credentials used in client/server handshake.
   CredentialType credential_type = 1;
 
-  // Configuration for SSL/TSL server credentials.
+  // Configuration for TLS/SSL server credentials.
   //
   // This and the corresponding client-side configuration in
   // `client_config.proto` introduces the following PEM-encoded credentials:
@@ -55,8 +58,8 @@ message ServerAuthConfig {
   // required.
   //
   // Next available ID: 5
-  message SslConfig {
-    // Private server key for SSL (PEM encoded).
+  message TlsConfig {
+    // Private server key for TLS (PEM encoded).
     string server_key = 1;
 
     // Public server certificate (PEM encoded).
@@ -69,9 +72,9 @@ message ServerAuthConfig {
     bool client_verify = 4;
   }
 
-  // SSL/TLS configuration for a secure gRPC channel. If not given, insecure
+  // TLS/TLS configuration for a secure gRPC channel. If not given, insecure
   // connection is used.
-  SslConfig ssl = 2;
+  TlsConfig tls = 2;
 }
 
 // Next available ID: 6

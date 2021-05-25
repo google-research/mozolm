@@ -25,23 +25,23 @@ namespace grpc {
 namespace test {
 
 // Test data for SSL/TLS credentials.
-const char kSslCredTestDir[] =
+const char kTlsCredTestDir[] =
     "mozolm/grpc/testdata/cred/x509";
-const char kSslServerPrivateKeyFile[] = "server1_key.pem";
-const char kSslServerPublicCertFile[] = "server1_cert.pem";
-const char kSslServerCentralAuthCertFile[] = "server_ca_cert.pem";
-const char kSslClientPrivateKeyFile[] = "client1_key.pem";
-const char kSslClientPublicCertFile[] = "client1_cert.pem";
-const char kSslClientCentralAuthCertFile[] = "client_ca_cert.pem";
-const char kSslAltServerName[] = "*.test.example.com";
+const char kTlsServerPrivateKeyFile[] = "server1_key.pem";
+const char kTlsServerPublicCertFile[] = "server1_cert.pem";
+const char kTlsServerCentralAuthCertFile[] = "server_ca_cert.pem";
+const char kTlsClientPrivateKeyFile[] = "client1_key.pem";
+const char kTlsClientPublicCertFile[] = "client1_cert.pem";
+const char kTlsClientCentralAuthCertFile[] = "client_ca_cert.pem";
+const char kTlsAltServerName[] = "*.test.example.com";
 
 // Reads contents of the SSL/TLS credentials file identified by `filename` which
-// is located in the `kSslCredTestDir` directory.
-void ReadSslCredFileContents(std::string_view filename, std::string *contents);
+// is located in the `kTlsCredTestDir` directory.
+void ReadTlsCredFileContents(std::string_view filename, std::string *contents);
 
-// Reads all the SSL/TLS credentials under `kSslCredTestDir` directory into a
+// Reads all the SSL/TLS credentials under `kTlsCredTestDir` directory into a
 // mapping between the filenames and their contents.
-void ReadAllSslCredentials(
+void ReadAllTlsCredentials(
     absl::flat_hash_map<std::string, std::string> *name2contents);
 
 }  // namespace test
