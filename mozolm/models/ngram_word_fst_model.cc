@@ -121,6 +121,16 @@ absl::Status NGramWordFstModel::EstablishLexicographicOrdering() {
   }
   ngram_implicit_states_ = absl::make_unique<NGramImplicitStates>(
       fst(), first_char_begin_index_, first_char_ends_.back());
+
+  // Creates an implicit state for out-of-vocabulary words, which then
+  // transitions to the unigram state at a word boundary.
+  StatusOr<int> oov_state = ngram_implicit_states_->GetState(
+      /*model_state=*/-1, /*prefix_length=*/1, /*symbol_begin_index=*/-1,
+      /*symbol_end_index=*/-1);
+  if (!oov_state.ok()) {
+    return absl::InternalError("Could not establish OOV state");
+  }
+  oov_state_ = *oov_state;
   return absl::OkStatus();
 }
 
@@ -217,8 +227,6 @@ absl::Status NGramWordFstModel::EnsureCacheIndex(int state) {
   return GetNewCacheIndex(state, weights);
 }
 
-// TODO: establish implicit temporary sink state that handles OOV
-// strings, returning to unigram state after word boundary.
 absl::Status NGramWordFstModel::Read(const ModelStorage &storage) {
   RETURN_IF_ERROR(NGramFstModel::Read(storage));
   RETURN_IF_ERROR(EstablishLexicographicOrdering());
@@ -324,10 +332,14 @@ int NGramWordFstModel::NextState(int state, int utf8_sym) {
     // First letter, so using the pre-compiled end indices.
     return NextFirstLetterState(state, utf8_sym);
   }
-  int next_state = model_->UnigramState();  // Default state if OOV or error.
+  if (state == oov_state_ && utf8_sym == 32) {
+    // TODO: introduce better method for detecting word boundary.
+    return model_->UnigramState();
+  }
+  int next_state = oov_state_;  // Default state if OOV or error.
   StatusOr<int> model_state = ngram_implicit_states_->model_state(state);
   StatusOr<int> prefix_length = ngram_implicit_states_->prefix_length(state);
-  if (model_state.ok() && prefix_length.ok()) {
+  if (model_state.ok() && *model_state >= 0 && prefix_length.ok()) {
     if (utf8_sym == 32) {
       // TODO: introduce better method for detecting word boundary.
       return NextCompleteState(state, *model_state, *prefix_length);
@@ -382,8 +394,10 @@ const std::vector<int> NGramWordFstModel::GetNextCharEnds(
   StatusOr<int> prefix_length = ngram_implicit_states_->prefix_length(state);
   StatusOr<int> begin_index = ngram_implicit_states_->symbol_begin_index(state);
   StatusOr<int> end_index = ngram_implicit_states_->symbol_end_index(state);
-  if (!prefix_length.ok() || !begin_index.ok() || !end_index.ok()) {
-    // Returns empty vectors for states not successfully returning these values.
+  if (!prefix_length.ok() || !begin_index.ok() || *begin_index < 0 ||
+      !end_index.ok()) {
+    // Returns empty vectors for states not successfully returning these values
+    // or for begin_index < 0, which is associated with the oov_state_.
     next_chars->clear();
     return std::vector<int>();
   }
@@ -588,6 +602,22 @@ int NGramImplicitStates::FindExistingState(int model_state, int prefix_length,
   return -1;  // State not found.
 }
 
+StatusOr<int> NGramImplicitStates::AddNewState(int model_state,
+                                               int prefix_length,
+                                               int symbol_begin_index,
+                                               int symbol_end_index) {
+  int prefix_idx;
+  ASSIGN_OR_RETURN(prefix_idx, GetPrefixIdx(prefix_length));
+  const int new_state = total_model_states_++;
+  model_state_.push_back(model_state);
+  prefix_length_.push_back(prefix_length);
+  symbol_begin_index_.push_back(symbol_begin_index);
+  symbol_end_index_.push_back(symbol_end_index);
+  prefix_length_implicit_state_map_[prefix_idx].insert(
+      {std::make_pair(model_state, symbol_begin_index), new_state});
+  return new_state;
+}
+
 StatusOr<int> NGramImplicitStates::GetState(int model_state, int prefix_length,
                                             int symbol_begin_index,
                                             int symbol_end_index) {
@@ -603,16 +633,8 @@ StatusOr<int> NGramImplicitStates::GetState(int model_state, int prefix_length,
   if (existing_state >= 0) {
     return existing_state;
   }
-  int prefix_idx;
-  ASSIGN_OR_RETURN(prefix_idx, GetPrefixIdx(prefix_length));
-  int new_state = total_model_states_++;
-  model_state_.push_back(model_state);
-  prefix_length_.push_back(prefix_length);
-  symbol_begin_index_.push_back(symbol_begin_index);
-  symbol_end_index_.push_back(symbol_end_index);
-  prefix_length_implicit_state_map_[prefix_idx].insert(
-      {std::make_pair(model_state, symbol_begin_index), new_state});
-  return new_state;
+  return AddNewState(model_state, prefix_length, symbol_begin_index,
+                     symbol_end_index);
 }
 
 StatusOr<int> NGramImplicitStates::GetImplicitIdx(int state) const {

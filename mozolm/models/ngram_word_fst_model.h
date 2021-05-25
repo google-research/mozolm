@@ -70,6 +70,10 @@ class NGramImplicitStates {
   absl::StatusOr<int> symbol_end_index(int state) const;
 
  private:
+  // Adds a new state with these indices.
+  absl::StatusOr<int> AddNewState(int model_state, int prefix_length,
+                                  int symbol_begin_index, int symbol_end_index);
+
   // Returns the vector index of the implicit state.
   absl::StatusOr<int> GetImplicitIdx(int state) const;
 
@@ -213,6 +217,8 @@ class NGramWordFstModel : public NGramFstModel {
   int first_char_begin_index_;  // Starting index of the lexicographic order.
   std::vector<std::string> first_chars_;  // First characters of all words.
   std::vector<int> first_char_ends_;  // Last index for each first character.
+
+  int oov_state_;  // Implicit state for out-of-vocabulary words.
 
   // TODO: add locking mechanisms for updating cache and implicit states.
   // For caching word probabilities at model states for quick marginalization.

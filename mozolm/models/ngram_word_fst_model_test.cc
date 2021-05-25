@@ -218,11 +218,11 @@ TEST_F(NGramWordFstTest, ContextStateImplicit) {
   NGramWordFstModel model;
   ASSERT_OK(model.Read(storage_));
   // There are 13 states in the model.  If we read in "aa b" then we reach the
-  // third non-explicit state in the model, i.e., after the first a, after the
-  // second a, and after the b.  After the whitespace, we reach a model state,
-  // so no implicit state is created.  Hence we should be at the 16th state,
-  // i.e., state 15.
-  ASSERT_EQ(model.ContextState("aa b"), 15);
+  // fourth non-explicit state in the model, i.e., (1) the oov_state_, (2) after
+  // the first a, (3) after the second a, and (4) after the b.  After the
+  // whitespace, we reach a model state, so no implicit state is created.  Hence
+  // we should be at the 17th state, i.e., state 16.
+  ASSERT_EQ(model.ContextState("aa b"), 16);
 }
 
 // Calculating ContextState functionality for same implicit states.
