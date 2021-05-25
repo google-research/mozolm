@@ -74,7 +74,7 @@ auth {
       "-----BEGIN RSA PRIVATE KEY-----"
       "..."
       "-----END RSA PRIVATE KEY-----"
-    server_ca_cert:
+    server_ca_cert:                     # <--- Optional.
       "-----BEGIN CERTIFICATE-----"
       "..."
       "-----END CERTIFICATE-----"
@@ -124,13 +124,128 @@ server {
 
 ##### Mutual Authentication
 
-TODO: Complete
+The mutual authentication requires each side of the communication channel to
+present and verify the presented certificates.
+
+###### Server
 
 For mutual authentication the corresponding fields in the
 [ServerConfig](../mozolm/grpc/server_config.proto)
 protocol buffer need to be set:
 
+1.  `auth.credential_type`: (required) Set to `CREDENTIAL_TLS`.
+1.  `auth.tls.client_verify`: (required) Set to `true`.
+1.  `auth.tls.server_cert`: (required) The server public TLS certificate.
+1.  `auth.tls.server_key`: (required) The private cryptographic key (only
+    visible to the server).
+1.  `auth.tls.server_ca_cert`: (required) The certificate authority (CA) who has
+    signed the *client* certificates the server expects.
+
+Example:
+
+```protocol-buffer
+...
+auth {
+  credential_type: CREDENTIAL_TLS
+  tls {
+    server_cert:
+      "-----BEGIN CERTIFICATE-----"
+      "..."
+      "-----END CERTIFICATE-----"
+    server_key:
+      "-----BEGIN RSA PRIVATE KEY-----"
+      "..."
+      "-----END RSA PRIVATE KEY-----"
+    server_ca_cert:                     # <--- Mandatory: CA for client.
+      "-----BEGIN CERTIFICATE-----"
+      "..."
+      "-----END CERTIFICATE-----"
+  }
+}
+...
+```
+
+###### Client
+
+The client-side configuration
+[ClientConfig](../mozolm/grpc/client_config.proto)
+includes the corresponding server configuration as a sub-message. The following
+fields need to be set in the client configuration:
+
+1.  `server.auth.credential_type`: (required) Set to `CREDENTIAL_TLS`.
+1.  `server.auth.tls.server_cert`: (required) The public server TLS certificate.
+1.  `server.auth.tls.server_ca_cert`: (optional) The certificate authority (CA)
+    who has signed the *server* certificates the client expects.
+1.  `auth.tls.client_cert`: (required) The public client TLS certificate.
+1.  `auth.tls.client_key`: (required) The private client cryptographic key (only
+    visible to the client).
+1.  `auth.tls.target_name_override`: (optional)
+    [The Subject Alternative Name (SAN)](https://en.wikipedia.org/wiki/Subject_Alternative_Name)
+    is an extension to the X.509 specification that allows users to specify
+    additional host names for a single TLS certificate. Only use for testing,
+    where the certificate may not necessarily be issued for a fixed server name.
+
+Example:
+
+```protocol-buffer
+...
+auth {
+  tls {
+    target_name_override: "*.test.example.com"
+    client_cert:
+      "-----BEGIN CERTIFICATE-----"
+      "..."
+      "-----END CERTIFICATE-----"
+    client_key:
+      "-----BEGIN RSA PRIVATE KEY-----"
+      "..."
+      "-----END RSA PRIVATE KEY-----"
+  }
+}
+server {
+  auth {
+    credential_type: CREDENTIAL_TLS
+    tls {
+      server_cert:
+        "-----BEGIN CERTIFICATE-----"
+        "..."
+        "-----END CERTIFICATE-----"
+      server_ca_cert:                     # <--- Optional: CA for server.
+        "-----BEGIN CERTIFICATE-----"
+        "..."
+        "-----END CERTIFICATE-----"
+    }
+  }
+}
+...
+```
+
 #### Command-line
+
+Rather than keeping the PEM-encoded certificate and key values in client and
+server configuration files it is possible to specify the original files that
+contain these values via the command-line flags. In this case the client and
+server configuration is updated accordingly with the PEM values read from the
+supplied files.
+
+##### Example Data
+
+The example data can be found under the
+[mozolm/grpc/testdata/cred/x509](../mozolm/grpc/testdata/cred/x509/)
+directory that contains:
+
+*   For client and server:
+    *   Self-signed Central Authority (CA) certificates and private keys.
+    *   Certificates and private keys generated using the above CA.
+*   A simple
+    [tool](../mozolm/grpc/testdata/cred/x509/create.sh)
+    to re-generate and verify the certificates and keys using
+    [OpenSSL](https://www.openssl.org/).
+
+For more information on this setup please consult a similar test data
+configuration in
+[gRPC-Go](https://github.com/grpc/grpc-go/tree/master/testdata/x509), the Go
+implementation of gRPC.
 
 ##### Server Authentication
 
@@ -172,4 +287,35 @@ bazel-bin/mozolm/grpc/client_async \
 
 ##### Mutual Authentication
 
-TODO: Complete.
+For mutual authentication of the channel the server needs to be aware of the
+client CA and the client needs to know about the server CA or any other
+certificate which is signed by the server's CA. A simpler example (omitted in
+this documentation) involves a single root certificate that is used to sign both
+client and server certificates, in which case that single CA certificate can be
+shared by both client and server.
+
+###### Server
+
+Example:
+
+```shell
+> bazel-bin/mozolm/grpc/server_async \
+    --server_config_file /tmp/server_config.textproto \
+    --tls_server_key_file mozolm/grpc/testdata/cred/x509/server1_key.pem \
+    --tls_server_cert_file mozolm/grpc/testdata/cred/x509/server1_cert.pem \
+    --tls_custom_ca_cert_file mozolm/grpc/testdata/cred/x509/client_ca_cert.pem \
+    --tls_client_verify
+```
+
+###### Client
+
+Example:
+
+```shell
+> bazel-bin/mozolm/grpc/client_async \
+    --client_config="server { address_uri:\"localhost:34761\" } request_type:RANDGEN" \
+    --tls_server_cert_file mozolm/grpc/testdata/cred/x509/server1_cert.pem \
+    --tls_target_name_override "*.test.example.com" \
+    --tls_client_cert_file mozolm/grpc/testdata/cred/x509/client1_cert.pem \
+    --tls_client_key_file mozolm/grpc/testdata/cred/x509/client1_key.pem
+```
