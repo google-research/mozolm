@@ -62,6 +62,7 @@ cc_library(
 cc_binary(
     name = "server_async",
     srcs = ["server_async_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":server_config_cc_proto",
         ":server_helper",
@@ -147,6 +148,7 @@ cc_test(
 cc_binary(
     name = "client_async",
     srcs = ["client_async_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":client_config_cc_proto",
         ":client_helper",

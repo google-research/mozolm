@@ -19,6 +19,21 @@ workspace(name = "com_google_mozolm")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # ------------------------------------
+# Bazel rules:
+# ------------------------------------
+# See https://github.com/bazelbuild/rules_python.
+#
+# This entry is a bit of a kludge. It makes sure that whichever repos that
+# import `rules_python` import the latest official release. Without it, it
+# seems to be impossible to import `io_bazel_rules_docker` below successfully.
+
+http_archive(
+    name = "rules_python",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+)
+
+# ------------------------------------
 # gRPC (C++) package for Bazel:
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
@@ -200,6 +215,44 @@ yarn_install(
     package_json = "@rules_proto_grpc//js:requirements/package.json",
     yarn_lock = "@rules_proto_grpc//js:requirements/yarn.lock",
 )
+
+# -------------------------------------------------------------------------
+# Bazel container image rules:
+#   https://github.com/bazelbuild/rules_docker
+# -------------------------------------------------------------------------
+
+docker_version = "0.17.0"
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "59d5b42ac315e7eadffa944e86e90c2990110a1c8075f1cd145f487e999d22b3",
+    strip_prefix = "rules_docker-%s" % docker_version,
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v%s/rules_docker-v%s.tar.gz" % (
+        docker_version, docker_version)],
+)
+
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
+
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load("@io_bazel_rules_docker//container:pull.bzl", "container_pull")
+
+# Pull the base Linux distribution: Should be between five and six megabytes.
+container_pull(
+    name = "alpine_linux_amd64",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.13.5",
+    digest = "sha256:def822f9851ca422481ec6fee59a9966f12b351c62ccb9aca841526ffaa9f748",
+)
+
+load("@io_bazel_rules_docker//cc:image.bzl", _cc_image_repos = "repositories")
+
+_cc_image_repos()
 
 # Local Variables:
 # mode: bazel-build
