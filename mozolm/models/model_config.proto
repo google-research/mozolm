@@ -20,6 +20,8 @@ package mozolm;
 
 import "mozolm/models/model_storage.proto";
 
+option java_outer_classname = "ModelConfigProto";
+
 // Next available ID: 4
 message ModelConfig {
   enum ModelType {

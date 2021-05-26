@@ -18,6 +18,8 @@ syntax = "proto3";
 
 package mozolm;
 
+option java_outer_classname = "NGramWordFstOptionsProto";
+
 // Next available ID: 2
 message NGramWordFstOptions {
   // Maximum number of states to cache. Uses default if not set.

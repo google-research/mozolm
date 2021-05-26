@@ -18,6 +18,8 @@ syntax = "proto3";
 
 package mozolm;
 
+option java_outer_classname = "PpmAsFstOptionsProto";
+
 // Next available ID: 7
 message PpmAsFstOptions {
   // Maximum order for the model.  Uses default if not set.

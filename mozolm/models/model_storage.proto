@@ -25,6 +25,8 @@ package mozolm;
 import "mozolm/models/ngram_word_fst_options.proto";
 import "mozolm/models/ppm_as_fst_options.proto";
 
+option java_outer_classname = "ModelStorageProto";
+
 // Next available ID: 5
 message ModelStorage {
   // Actual model file. For example, this can be a text file in ARPA format or
