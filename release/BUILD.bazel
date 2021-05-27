@@ -33,19 +33,18 @@ container_image(
     name = "base_image",
     base = "@alpine_linux_amd64//image",
     visibility = ["//visibility:private"],
-    stamp = True,
 )
 
 cc_image(
     name = "mozolm_server_async_image",
     base = ":base_image",
-    binary = "//mozolm/grpc:server_async",
+    binary = "//mozolm/grpc:server_async_static",
     stamp = True,
 )
 
 cc_image(
     name = "mozolm_client_async_image",
     base = ":base_image",
-    binary = "//mozolm/grpc:client_async",
+    binary = "//mozolm/grpc:client_async_static",
     stamp = True,
 )

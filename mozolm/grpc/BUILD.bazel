@@ -23,7 +23,9 @@ package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
 
+# ------------------------------------------------------------------------------
 # Async server code (completion-queue based).
+# ------------------------------------------------------------------------------
 
 proto_library(
     name = "server_config_proto",
@@ -59,10 +61,9 @@ cc_library(
     ],
 )
 
-cc_binary(
-    name = "server_async",
+cc_library(
+    name = "server_async_main-lib",
     srcs = ["server_async_main.cc"],
-    visibility = ["//visibility:public"],
     deps = [
         ":server_config_cc_proto",
         ":server_helper",
@@ -76,6 +77,20 @@ cc_binary(
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
     ],
+)
+
+cc_binary(
+    name = "server_async",
+    deps = [":server_async_main-lib"],
+)
+
+# Target for inclusion in container images (used by Bazel).
+cc_binary(
+    name = "server_async_static",
+    features = ["fully_static_link"],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [":server_async_main-lib"],
 )
 
 cc_test(
@@ -98,7 +113,47 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "server_helper",
+    srcs = ["server_helper.cc"],
+    hdrs = ["server_helper.h"],
+    deps = [
+        ":server_async_impl",
+        ":server_config_cc_proto",
+        "//mozolm/models:model_factory",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+cc_test(
+    name = "server_helper_test",
+    srcs = ["server_helper_test.cc"],
+    data = ["//mozolm/grpc/testdata/cred/x509:x509_data"],
+    deps = [
+        ":auth_test_utils",
+        ":server_helper",
+        "//mozolm/models:model_config_cc_proto",
+        "//mozolm/models:model_storage_cc_proto",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status-matchers",
+        "//mozolm/utils:file_util",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/time",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+# ------------------------------------------------------------------------------
 # Async client code (completion-queue based).
+# ------------------------------------------------------------------------------
 
 proto_library(
     name = "client_config_proto",
@@ -145,10 +200,9 @@ cc_test(
     ],
 )
 
-cc_binary(
-    name = "client_async",
+cc_library(
+    name = "client_async_main-lib",
     srcs = ["client_async_main.cc"],
-    visibility = ["//visibility:public"],
     deps = [
         ":client_config_cc_proto",
         ":client_helper",
@@ -165,42 +219,18 @@ cc_binary(
     ],
 )
 
-cc_library(
-    name = "server_helper",
-    srcs = ["server_helper.cc"],
-    hdrs = ["server_helper.h"],
-    deps = [
-        ":server_async_impl",
-        ":server_config_cc_proto",
-        "//mozolm/models:model_factory",
-        "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
-        "//mozolm/stubs:status_macros",
-        "@com_github_grpc_grpc//:grpc++",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/synchronization",
-    ],
+cc_binary(
+    name = "client_async",
+    deps = [":client_async_main-lib"],
 )
 
-cc_test(
-    name = "server_helper_test",
-    srcs = ["server_helper_test.cc"],
-    data = ["//mozolm/grpc/testdata/cred/x509:x509_data"],
-    deps = [
-        ":auth_test_utils",
-        ":server_helper",
-        "//mozolm/models:model_config_cc_proto",
-        "//mozolm/models:model_storage_cc_proto",
-        "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
-        "//mozolm/stubs:status-matchers",
-        "//mozolm/utils:file_util",
-        "@com_github_protobuf_matchers//protobuf-matchers",
-        "@com_google_absl//absl/time",
-        "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
-    ],
+# Target for inclusion in container images (used by Bazel).
+cc_binary(
+    name = "client_async_static",
+    features = ["fully_static_link"],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [":client_async_main-lib"],
 )
 
 cc_library(
@@ -252,6 +282,10 @@ cc_test(
     ],
 )
 
+# ------------------------------------------------------------------------------
+# Service definitions.
+# ------------------------------------------------------------------------------
+
 proto_library(
     name = "service_proto",
     srcs = ["service.proto"],
@@ -293,6 +327,10 @@ js_grpc_web_library(
     src = "service.proto",
     deps = [":service_jspb_proto"],
 )
+
+# ------------------------------------------------------------------------------
+# Other.
+# ------------------------------------------------------------------------------
 
 cc_library(
     name = "auth_test_utils",
