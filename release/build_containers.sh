@@ -15,6 +15,8 @@
 #!/bin/bash
 #
 # Utility script for building container images.
+#
+# This script needs to run on Unix (Linux or macOS) platform.
 
 set -euo pipefail
 
