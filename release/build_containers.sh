@@ -67,9 +67,9 @@ touch WORKSPACE || exit 1
 # running on an Intel x64 CPU.
 PLATFORM=//release:linux-x86_64
 ${BAZEL} build -c opt --platforms=${PLATFORM} \
-  release:mozolm_server_async_image || die "Failed to build server image"
+  release:server_async_image || die "Failed to build server image"
 ${BAZEL} build -c opt --platforms=${PLATFORM} \
-  release:mozolm_client_async_image || die "Failed to build client image"
+  release:client_async_image || die "Failed to build client image"
 
 # Clean up.
 rm -f WORKSPACE || exit 1
