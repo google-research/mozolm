@@ -19,6 +19,11 @@ jobs:
       NDK_VERSION: 21.4.7075529
 
     steps:
+    - name: Cancel Previous Runs
+      uses: styfle/cancel-workflow-action@0.9.0
+      with:
+        access_token: ${{ github.token }}
+
     - uses: actions/checkout@v2
 
     - name: Free up some space in an image
