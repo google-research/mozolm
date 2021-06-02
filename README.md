@@ -5,6 +5,7 @@
 [![Build Tests (Windows)](https://github.com/google-research/mozolm/workflows/windows/badge.svg)](https://github.com/google-research/mozolm/actions?query=workflow%3A%22windows%22)
 [![Build Tests (Android)](https://github.com/google-research/mozolm/workflows/android/badge.svg)](https://github.com/google-research/mozolm/actions?query=workflow%3A%22android%22)
 [![Build Tests (iOS)](https://github.com/google-research/mozolm/workflows/ios/badge.svg)](https://github.com/google-research/mozolm/actions?query=workflow%3A%22ios%22)
+[<img src="https://img.shields.io/badge/slack-@openaac-yellow.svg?logo=slack">](https://openaac.slack.com/)
 
 # MozoLM
 
