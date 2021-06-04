@@ -8,13 +8,13 @@ it may take a considerable amount of time dependending on the build host
 hardware specification because there are quite a few dependencies that the
 library relies upon.
 
-### Using the Latest Images from Google Cloud Registry
+### Using the Latest Images from Google Container Registry
 
 In order to circumvent potentially lengthy and resource-intensive building from
 source, the project provides several pre-built Linux container images hosted on
-Google Cloud Registry (GCR) that can be executed on the platform of interest
-using any container runner that supports
-[Open Containers Initiative](https://opencontainers.org/) (OCI) format.
+[Google Container Registry](https://cloud.google.com/container-registry) (GCR)
+that can be executed on the platform of interest using any container runner that
+supports [Open Containers Initiative](https://opencontainers.org/) (OCI) format.
 
 In the examples below we use [Docker](https://www.docker.com/) which you may
 need to install.
@@ -85,7 +85,7 @@ machine mounted by Docker using `-v` option:
 #### Authenticating with GCR using GCP
 
 The container images above are publicly available and should not require
-authentication with Google Cloud Registry. In an unlikely case that they do,
+authentication with Google Container Registry. In an unlikely case that they do,
 please install [Google Cloud SDK](https://cloud.google.com/sdk/docs/install),
 also available as Docker [image](https://hub.docker.com/r/google/cloud-sdk/),
 and authenticate via
@@ -94,5 +94,5 @@ and authenticate via
 docker login -u _token -p "$(gcloud auth print-access-token)" https://gcr.io
 ```
 
-or follow the Google Cloud Registry authentication
+or follow the Google Container Registry authentication
 [instructions](https://cloud.google.com/container-registry/docs/advanced-authentication).

@@ -65,11 +65,19 @@ touch WORKSPACE || exit 1
 # Build the containers for the server and client. Here the host, execution, and
 # target platforms are the same. For example, building a Linux executable
 # running on an Intel x64 CPU.
+echo "Building the containers ..."
 PLATFORM=//release:linux-x86_64
-${BAZEL} build -c opt --platforms=${PLATFORM} \
-  release:server_async_image || die "Failed to build server image"
-${BAZEL} build -c opt --platforms=${PLATFORM} \
-  release:client_async_image || die "Failed to build client image"
+for name in "server_async" "client_async" ; do
+  ${BAZEL} build -c opt --platforms=${PLATFORM} \
+    release:${name}_image || die "Failed to build ${name} image"
+done
+
+# Publish the containers in `gcr.io/mozolm-release`.
+echo "Releasing the containers ..."
+for name in "server_async" "client_async" ; do
+  ${BAZEL} run -c opt --platforms=${PLATFORM} \
+    release:${name}_publish || die "Failed to publish ${name} image"
+done
 
 # Clean up.
 rm -f WORKSPACE || exit 1
