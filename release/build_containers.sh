@@ -57,10 +57,9 @@ fi
 # `WORKSPACE` name. See:
 #   https://github.com/bazelbuild/bazel-gazelle/issues/678
 #   https://github.com/bazelbuild/rules_docker/issues/1139
-if [ ! -f WORKSPACE.bazel ] ; then
+if [ ! -f WORKSPACE ] ; then
   die "This script should run from the MozoLM root directory"
 fi
-touch WORKSPACE || exit 1
 
 # Build the containers for the server and client. Here the host, execution, and
 # target platforms are the same. For example, building a Linux executable
@@ -78,8 +77,5 @@ for name in "server_async" "client_async" ; do
   ${BAZEL} run -c opt --platforms=${PLATFORM} \
     release:${name}_publish || die "Failed to publish ${name} image"
 done
-
-# Clean up.
-rm -f WORKSPACE || exit 1
 
 exit 0

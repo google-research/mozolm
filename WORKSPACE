@@ -1,17 +1,3 @@
-# Copyright 2021 MozoLM Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # Bazel (http://bazel.io/) workspace file for MozoLM server.
 
 workspace(name = "com_google_mozolm")
@@ -38,12 +24,12 @@ http_archive(
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
-grpc_version = "1.37.1"
+grpc_version = "1.38.1"
 
 http_archive(
     name = "com_github_grpc_grpc",
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "acf247ec3a52edaee5dee28644a4e485c5e5badf46bdb24a80ca1d76cb8f1174",
+    sha256 = "f60e5b112913bf776a22c16a3053cc02cf55e60bf27a959fd54d7aaf8e2da6e8",
     strip_prefix = "grpc-%s" % grpc_version,
 )
 
