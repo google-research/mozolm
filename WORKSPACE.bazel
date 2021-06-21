@@ -16,7 +16,7 @@
 
 workspace(name = "com_google_mozolm")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 # ------------------------------------
 # Bazel rules:
@@ -253,6 +253,20 @@ container_pull(
 load("@io_bazel_rules_docker//cc:image.bzl", _cc_image_repos = "repositories")
 
 _cc_image_repos()
+
+# ------------------------------------
+# External language model.
+# ------------------------------------
+# Trained by Keith Vertanen (https://www.keithv.com/) from Michigan
+# Technological University (https://www.mtu.edu/). See:
+#   https://imagineville.org/software/lm/feb21_dasher_char
+
+http_file(
+    name = "edu_mtu_dasher_en_4gram_arpa",
+    urls = ["http://data.imagineville.org/lm/feb21_dasher_char/lm_feb21_dasher_char_4gram.arpa.gz"],
+    downloaded_file_path = "edu_mtu_dasher_en_4gram.arpa.gz",
+    sha256 = "fc2538d568924476de074c9abbc7261061ca6865618978a521b9b42b17c7f9de",
+)
 
 # Local Variables:
 # mode: bazel-build

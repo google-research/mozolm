@@ -1,0 +1,33 @@
+# Copyright 2021 MozoLM Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Package that wrap the models from Keith Vertanen group at Michigan Tech.
+#
+# See: https://www.keithv.com/
+
+package(default_visibility = ["//mozolm:__subpackages__"])
+
+licenses(["notice"])
+
+# ------------------------------------------------------------------------------
+# Character four-gram language model for English. See:
+#   https://imagineville.org/software/lm/feb21_dasher_char
+# ------------------------------------------------------------------------------
+
+genrule(
+   name = "dasher_en_4gram_arpa",
+   srcs = ["@edu_mtu_dasher_en_4gram_arpa//file:edu_mtu_dasher_en_4gram.arpa.gz"],
+   outs = ["dasher_en_4gram.arpa"],
+   cmd = "gunzip -c $< > $@",
+)
