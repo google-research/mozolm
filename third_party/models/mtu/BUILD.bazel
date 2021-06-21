@@ -14,20 +14,19 @@
 
 # Package that wrap the models from Keith Vertanen group at Michigan Tech.
 #
-# See: https://www.keithv.com/
+# See the README.md file in this directory.
 
 package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
 
 # ------------------------------------------------------------------------------
-# Character four-gram language model for English. See:
-#   https://imagineville.org/software/lm/feb21_dasher_char
+# Character four-gram language model for English.
 # ------------------------------------------------------------------------------
 
 genrule(
-   name = "dasher_en_4gram_arpa",
-   srcs = ["@edu_mtu_dasher_en_4gram_arpa//file:edu_mtu_dasher_en_4gram.arpa.gz"],
-   outs = ["dasher_en_4gram.arpa"],
-   cmd = "gunzip -c $< > $@",
+    name = "dasher_en_4gram_arpa",
+    srcs = ["lm_feb21_dasher_char_4gram.arpa.gz"],
+    outs = ["dasher_en_4gram.arpa"],
+    cmd = "gunzip -c $< > $@",
 )
