@@ -247,7 +247,10 @@ cc_library(
 cc_test(
     name = "ngram_char_fst_model_test",
     srcs = ["ngram_char_fst_model_test.cc"],
-    data = ["//mozolm/models/testdata:ngram_fst_data"],
+    data = [
+        "//mozolm/models/testdata:ngram_fst_data",
+        "//third_party/models/mtu:dasher_feb21_eng_char_4gram.fst",
+    ],
     deps = [
         ":model_storage_cc_proto",
         ":ngram_char_fst_model",

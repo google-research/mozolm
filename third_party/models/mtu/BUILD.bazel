@@ -16,6 +16,8 @@
 #
 # See the README.md file in this directory.
 
+load("//mozolm/models:ngram_utils.bzl", "ngram_convert_arpa_to_fst")
+
 package(default_visibility = ["//mozolm:__subpackages__"])
 
 licenses(["notice"])
@@ -24,9 +26,9 @@ licenses(["notice"])
 # Character four-gram language model for English.
 # ------------------------------------------------------------------------------
 
-genrule(
-    name = "dasher_en_4gram_arpa",
-    srcs = ["lm_feb21_dasher_char_4gram.arpa.gz"],
-    outs = ["dasher_en_4gram.arpa"],
-    cmd = "gunzip -c $< > $@",
+# Following rule will create `dasher_feb21_eng_char_4gram.fst` out of
+# `lm_feb21_dasher_char_4gram.arpa.gz`.
+ngram_convert_arpa_to_fst(
+    name = "lm_feb21_dasher_char_4gram",
+    out = "dasher_feb21_eng_char_4gram",
 )

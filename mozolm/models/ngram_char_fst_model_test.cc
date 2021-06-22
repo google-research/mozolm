@@ -38,8 +38,16 @@ namespace mozolm {
 namespace models {
 namespace {
 
-const char kModelPath[] = "mozolm/models/testdata";
+// Simple model trained on "Alice and Wonderland" and "Adventures of Sherlock
+// Holmes" from Project Gutenberg.
+const char kModelDir[] = "mozolm/models/testdata";
 const char kModelName[] = "gutenberg_en_char_ngram_o4_wb.fst";
+
+// Third-party model from Michigan Tech (MTU).
+const char kThirdPartyModelDir[] =
+    "third_party/models/mtu";
+const char kThirdPartyModelName[] = "dasher_feb21_eng_char_4gram.fst";
+
 const char kSampleText[] = R"(
     His manner was not effusive. It seldom was; but he was glad, I think,
     to see me. With hardly a word spoken, but with a kindly eye, he waved
@@ -57,14 +65,18 @@ class NGramCharFstModelHelper : public NGramCharFstModel {
 // smoothing trained on a portion of English books from the Gutenberg corpus.
 class NGramCharFstModelTest : public ::testing::Test {
  protected:
-  void SetUp() override {
+  void Init(const std::string &model_dir, const std::string &model_name) {
     const std::filesystem::path model_path = (
         std::filesystem::current_path() /
-        kModelPath / kModelName).make_preferred();
+        model_dir / model_name).make_preferred();
     model_storage_.set_model_file(model_path.string());
     const auto read_status = model_.Read(model_storage_);
     ASSERT_TRUE(read_status.ok()) << "Failed to read model: "
                                   << read_status.ToString();
+  }
+
+  void Init() {
+    Init(kModelDir, kModelName);
   }
 
   void TopCandidateForContext(const std::string &context,
@@ -86,6 +98,7 @@ class NGramCharFstModelTest : public ::testing::Test {
 };
 
 TEST_F(NGramCharFstModelTest, CheckNonExistent) {
+  Init();
   NGramCharFstModel model;
   ModelStorage bad_storage;
   EXPECT_FALSE(model.Read(bad_storage).ok());
@@ -94,6 +107,7 @@ TEST_F(NGramCharFstModelTest, CheckNonExistent) {
 }
 
 TEST_F(NGramCharFstModelTest, BasicCheck) {
+  Init();
   const auto &fst = model_.fst();
   const int num_symbols = fst.InputSymbols()->NumSymbols();
   EXPECT_LT(1, num_symbols);  // Epsilon + other letters.
@@ -120,6 +134,7 @@ TEST_F(NGramCharFstModelTest, BasicCheck) {
 }
 
 TEST_F(NGramCharFstModelTest, TopCandidates) {
+  Init();
   constexpr int kMaxString = 15;
   std::string buffer = "H";
   int state = -1;
@@ -136,6 +151,8 @@ TEST_F(NGramCharFstModelTest, TopCandidates) {
 }
 
 TEST_F(NGramCharFstModelTest, CheckInDomain) {
+  Init();
+
   // Check for "Alice" as the highly likely word predicted by the model which
   // was trained on "Alice's Adventures in Wonderland".
   std::pair<double, std::string> top_next;
@@ -149,6 +166,14 @@ TEST_F(NGramCharFstModelTest, CheckInDomain) {
   EXPECT_EQ("e", top_next.second);
   TopCandidateForContext("Holme", &top_next);
   EXPECT_EQ("s", top_next.second);
+}
+
+// Check that we can load the FSTs converted from third-party models.
+TEST_F(NGramCharFstModelTest, ThirdPartyBasicTest) {
+  Init(kThirdPartyModelDir, kThirdPartyModelName);
+
+  // TODO: Predictions are all belly-up at the moment. Please
+  // double-check, fix and extend this test..
 }
 
 }  // namespace
