@@ -169,12 +169,19 @@ TEST_F(NGramCharFstModelTest, CheckInDomain) {
 }
 
 // Check that we can load the FSTs converted from third-party models.
+//
+// Note: We don't run this test on Windows because we presently cannot verify
+// that Bazel genrules that generate FSTs from ARPA format work properly. This
+// is because doing so requires configuring a Windows Linux Subsystem (WLS) for
+// Bazel to get access to bash and other Unix utilities.
+#if !defined(_MSC_VER)
 TEST_F(NGramCharFstModelTest, ThirdPartyBasicTest) {
   Init(kThirdPartyModelDir, kThirdPartyModelName);
 
   // TODO: Predictions are all belly-up at the moment. Please
   // double-check, fix and extend this test..
 }
+#endif  // _MSC_VER
 
 }  // namespace
 }  // namespace models

@@ -249,7 +249,7 @@ cc_test(
     srcs = ["ngram_char_fst_model_test.cc"],
     data = [
         "//mozolm/models/testdata:ngram_fst_data",
-        "//third_party/models/mtu:dasher_feb21_eng_char_4gram.fst",
+        "//third_party/models/mtu:fst_models",
     ],
     deps = [
         ":model_storage_cc_proto",

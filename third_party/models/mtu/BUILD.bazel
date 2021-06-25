@@ -32,3 +32,18 @@ ngram_convert_arpa_to_fst(
     name = "lm_feb21_dasher_char_4gram",
     out = "dasher_feb21_eng_char_4gram",
 )
+
+# ------------------------------------------------------------------------------
+# All converted FSTs.
+# ------------------------------------------------------------------------------
+_CONVERTED_FSTS = [
+    ":dasher_feb21_eng_char_4gram.fst",
+]
+
+filegroup(
+    name = "fst_models",
+    srcs = select({
+       "@bazel_tools//src/conditions:windows": [],
+       "//conditions:default": _CONVERTED_FSTS,
+    }),
+)
