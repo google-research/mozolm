@@ -30,7 +30,7 @@
 #include "absl/flags/flag.h"
 #include "absl/strings/str_join.h"
 #include "mozolm/models/model_storage.pb.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 
 using fst::StdArc;
 
@@ -112,7 +112,7 @@ TEST_F(NGramCharFstModelTest, BasicCheck) {
   const int num_symbols = fst.InputSymbols()->NumSymbols();
   EXPECT_LT(1, num_symbols);  // Epsilon + other letters.
 
-  const std::vector<int> input_chars = utf8::StrSplitByCharToUnicode(
+  const std::vector<int> input_chars = nisaba::utf8::StrSplitByCharToUnicode(
       kSampleText);
   int state = -1;
   for (int input_char : input_chars) {

@@ -29,7 +29,7 @@
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "mozolm/models/model_storage.pb.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 
 namespace mozolm {
 namespace models {
@@ -254,8 +254,8 @@ TEST_F(NGramWordFstTest, ExtractLMScoresStart) {
     int idx = 0;
     if (!lm_scores.symbols(i).empty()) {
       char32 utf8_code;
-      ASSERT_TRUE(
-          utf8::DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
+      ASSERT_TRUE(nisaba::utf8::DecodeSingleUnicodeChar(
+          lm_scores.symbols(i), &utf8_code));
       // Offset converts from codepoint index for 'a' and 'b' to symbol idx.
       idx = static_cast<int>(utf8_code) - 96;
     }

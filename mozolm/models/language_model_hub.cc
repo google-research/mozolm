@@ -19,7 +19,7 @@
 
 #include "mozolm/stubs/logging.h"
 #include "ngram/ngram-model.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
@@ -211,7 +211,7 @@ int LanguageModelHub::ContextState(const std::string& context, int init_state) {
   int this_state = init_state < 0 ? 0 : init_state;
   if (!context.empty()) {
     const std::vector<int> context_utf8 =
-        utf8::StrSplitByCharToUnicode(context);
+        nisaba::utf8::StrSplitByCharToUnicode(context);
     for (const auto& utf8_code : context_utf8) {
       this_state = NextState(this_state, utf8_code);
       if (this_state < 0) {

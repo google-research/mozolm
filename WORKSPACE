@@ -19,6 +19,35 @@ http_archive(
     sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
 )
 
+# -------------------------------------------------------------------------
+# utfcpp: See
+#   https://github.com/nemtrif/utfcpp
+# -------------------------------------------------------------------------
+utfcpp_version = "3.2"
+
+http_archive(
+    name = "com_github_utfcpp",
+    urls = ["https://github.com/nemtrif/utfcpp/archive/v%s.tar.gz" % utfcpp_version],
+    sha256 = "cd4f9a66d23dc385bd7ea11bc0abfda8ea1ad1dcf5cd6d3a27bc551e86436364",
+    build_file = "@//:bazel/utfcpp.BUILD.bazel",
+    strip_prefix = "utfcpp-%s" % utfcpp_version,
+)
+
+# ----------------------------------------------
+# Nisaba: Script processing library from Google:
+# ----------------------------------------------
+# We depend on some of core C++ libraries from Nisaba and use the fresh code
+# from the HEAD. See
+#   https://github.com/google-research/nisaba
+
+nisaba_version = "main"
+
+http_archive(
+    name = "com_google_nisaba",
+    url = "https://github.com/google-research/nisaba/archive/refs/heads/%s.zip" % nisaba_version,
+    strip_prefix = "nisaba-%s" % nisaba_version,
+)
+
 # ------------------------------------
 # gRPC (C++) package for Bazel:
 # ------------------------------------
@@ -79,20 +108,6 @@ grpc_deps()
 # Not mentioned in official docs. Mentioned here: https://github.com/grpc/grpc/issues/20511
 load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 grpc_extra_deps()
-
-# -------------------------------------------------------------------------
-# utfcpp: See
-#   https://github.com/nemtrif/utfcpp
-# -------------------------------------------------------------------------
-utfcpp_version = "3.2"
-
-http_archive(
-    name = "com_github_utfcpp",
-    urls = ["https://github.com/nemtrif/utfcpp/archive/v%s.tar.gz" % utfcpp_version],
-    sha256 = "cd4f9a66d23dc385bd7ea11bc0abfda8ea1ad1dcf5cd6d3a27bc551e86436364",
-    build_file = "@//:bazel/utfcpp.BUILD.bazel",
-    strip_prefix = "utfcpp-%s" % utfcpp_version,
-)
 
 # -------------------------------------------------------------------------
 # OpenFst: See

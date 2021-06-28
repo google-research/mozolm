@@ -30,13 +30,14 @@
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
 #include "mozolm/models/model_storage.pb.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 
 namespace mozolm {
 namespace models {
 
 static constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 
+using ::nisaba::utf8::DecodeSingleUnicodeChar;
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
 using ::fst::Isomorphic;
@@ -332,8 +333,7 @@ TEST_F(PpmAsFstTest, ExtractLMScores) {
     int idx = 0;
     if (!lm_scores.symbols(i).empty()) {
       char32 utf8_code;
-      ASSERT_TRUE(
-          utf8::DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
+      ASSERT_TRUE(DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
       // Offset converts from codepoint index for 'a' and 'b' to symbol idx.
       idx = static_cast<int>(utf8_code) - 96;
     }
@@ -379,8 +379,7 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
     int idx = 0;
     if (!lm_scores.symbols(i).empty()) {
       char32 utf8_code;
-      ASSERT_TRUE(
-          utf8::DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
+      ASSERT_TRUE(DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
       // Offset converts from codepoint index for 'a' and 'b' to symbol idx.
       idx = static_cast<int>(utf8_code) - 96;
     }

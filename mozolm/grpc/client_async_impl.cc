@@ -21,7 +21,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "mozolm/models/language_model.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
@@ -131,8 +131,8 @@ absl::Status ClientAsyncImpl::UpdateCountGetDestStateScore(
     int count, int64* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   RETURN_IF_ERROR(UpdateCountGetDestStateScore(
-      utf8::StrSplitByCharToUnicode(context_str), initial_state, timeout_sec,
-      count, normalization, prob_idx_pair_vector));
+      nisaba::utf8::StrSplitByCharToUnicode(context_str), initial_state,
+      timeout_sec, count, normalization, prob_idx_pair_vector));
   return GetNextState(context_str, initial_state, timeout_sec, next_state);
 }
 

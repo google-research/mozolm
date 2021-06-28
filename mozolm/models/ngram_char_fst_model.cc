@@ -20,7 +20,7 @@
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "absl/memory/memory.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 
 using fst::MATCH_INPUT;
 using fst::Matcher;
@@ -34,7 +34,7 @@ namespace models {
 int NGramCharFstModel::NextState(int state, int utf8_sym) {
   // Perform sanity check on the incoming unicode label.
   int64_t label = utf8_sym;
-  const std::string u_char = utf8::EncodeUnicodeChar(utf8_sym);
+  const std::string u_char = nisaba::utf8::EncodeUnicodeChar(utf8_sym);
   if (fst_->InputSymbols()->Find(u_char) == fst::kNoSymbol) {
     label = oov_label_;
   }

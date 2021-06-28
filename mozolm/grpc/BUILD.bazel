@@ -105,11 +105,11 @@ cc_test(
         "//mozolm/models:model_factory",
         "//mozolm/models:model_storage_cc_proto",
         "//mozolm/stubs:status-matchers",
-        "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
+        "@com_google_nisaba//nisaba/port:utf8_util",
     ],
 )
 
@@ -176,11 +176,11 @@ cc_library(
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:status_macros",
-        "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
+        "@com_google_nisaba//nisaba/port:utf8_util",
     ],
 )
 
@@ -245,7 +245,6 @@ cc_library(
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
         "//mozolm/stubs:status_macros",
-        "//mozolm/utils:utf8_util",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/random",
@@ -254,6 +253,7 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
+        "@com_google_nisaba//nisaba/port:utf8_util",
     ],
 )
 

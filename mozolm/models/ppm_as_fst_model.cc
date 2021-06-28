@@ -28,11 +28,14 @@
 #include "absl/status/statusor.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
 namespace models {
+
+using nisaba::utf8::EncodeUnicodeChar;
+using nisaba::utf8::StrSplitByChar;
 
 using fst::ArcIterator;
 using fst::ILabelCompare;
@@ -272,7 +275,7 @@ double BitsFromNats(double nats) {
 
 absl::Status PpmAsFstModel::AddExtraCharacters(
     const std::string& input_string) {
-  std::vector<std::string> syms = utf8::StrSplitByChar(input_string);
+  std::vector<std::string> syms = StrSplitByChar(input_string);
   const int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
   if (unigram_state < 0) {
     return absl::InternalError(
@@ -362,7 +365,7 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
 
 absl::StatusOr<std::vector<int>> PpmAsFstModel::GetSymsVector(
     const std::string& input_string, bool add_sym) {
-  const std::vector<std::string> syms = utf8::StrSplitByChar(input_string);
+  const std::vector<std::string> syms = StrSplitByChar(input_string);
   std::vector<int> unicode_syms(syms.size());
   for (size_t i = 0; i < syms.size(); ++i) {
     unicode_syms[i] = syms_->Find(syms[i]);
@@ -904,7 +907,7 @@ absl::StatusOr<StdArc::StateId> PpmAsFstModel::UpdateModel(
 }
 
 int PpmAsFstModel::NextState(int state, int utf8_sym) {
-  const std::string sym = utf8::EncodeUnicodeChar(utf8_sym);
+  const std::string sym = EncodeUnicodeChar(utf8_sym);
   const int sym_index = fst_->InputSymbols()->Find(sym);
   if (sym_index > 0) {
     const auto dest_state_status = GetDestinationState(state, sym_index);
@@ -935,7 +938,7 @@ bool PpmAsFstModel::UpdateLMCounts(int32 state,
   for (auto utf8_sym : utf8_syms) {
     int sym_index = utf8_sym;
     if (utf8_sym > 0) {
-      const std::string sym = utf8::EncodeUnicodeChar(utf8_sym);
+      const std::string sym = EncodeUnicodeChar(utf8_sym);
       sym_index = fst_->InputSymbols()->Find(sym);
     }
     if (sym_index < 0) {

@@ -20,7 +20,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
@@ -161,7 +161,7 @@ bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
   }
   response->set_normalization(utf8_normalizer_[state]);
   for (size_t i = 0; i < bigram_counts_[state].size(); i++) {
-    response->add_symbols(utf8::EncodeUnicodeChar(utf8_indices_[i]));
+    response->add_symbols(nisaba::utf8::EncodeUnicodeChar(utf8_indices_[i]));
     response->add_probabilities(static_cast<double>(bigram_counts_[state][i]) /
                                 utf8_normalizer_[state]);
   }

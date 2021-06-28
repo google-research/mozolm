@@ -25,8 +25,12 @@
 #include "absl/memory/memory.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
+
+using nisaba::utf8::DecodeSingleUnicodeChar;
+using nisaba::utf8::EncodeUnicodeChar;
+using nisaba::utf8::StrSplitByChar;
 
 using absl::StatusOr;
 using fst::ArcIterator;
@@ -51,7 +55,7 @@ double SafeNegLogDiff(double cost1, double cost2) {
 
 // Returns the character at index idx in the unicode string.
 std::string GetNextChar(const std::string& sym, int idx) {
-  const std::vector<std::string> syms = utf8::StrSplitByChar(sym);
+  const std::vector<std::string> syms = StrSplitByChar(sym);
   if (idx < 0 || syms.size() <= idx) {
     // No symbol at that index for the input string, returns whitespace.
     return " ";
@@ -84,8 +88,7 @@ absl::Status NGramWordFstModel::EstablishLexicographicOrdering() {
   for (int i = 0; i < symbols.size(); ++i) {
     StdArc::Label sym = syms->Find(symbols[i]);
     if (sym != 0 && sym != oov_label()) {
-      const std::vector<std::string> this_string =
-          utf8::StrSplitByChar(symbols[i]);
+      const std::vector<std::string> this_string = StrSplitByChar(symbols[i]);
       int prefix_match = 0;
       int min_len = std::min(last_string.size(), this_string.size());
       while (prefix_match < min_len &&
@@ -256,10 +259,8 @@ std::pair<int, int> NGramWordFstModel::GetBeginEndIndices(int state,
   int begin_index = *orig_begin_index;
   int begin_char = -1;
   while (begin_index <= *final_index && utf8_sym != begin_char) {
-    if (!utf8::DecodeSingleUnicodeChar(
-            impl::GetNextChar(syms->Find(lexicographic_order_[begin_index]),
-                              prefix_length),
-            &begin_char)) {
+    if (!DecodeSingleUnicodeChar(impl::GetNextChar(syms->Find(
+            lexicographic_order_[begin_index]), prefix_length), &begin_char)) {
       return default_pair;
     }
     if (begin_char != utf8_sym) {
@@ -293,8 +294,8 @@ int NGramWordFstModel::NextCompleteState(int state, int model_state,
   if (symbol_begin_index.ok()) {
     // Due to lexicographic sort, the first position should be complete.
     const int sym = lexicographic_order_[*symbol_begin_index];
-    const std::vector<std::string> this_string =
-          utf8::StrSplitByChar(syms->Find(sym));
+    const std::vector<std::string> this_string = StrSplitByChar(
+        syms->Find(sym));
     if (this_string.size() == prefix_length) {
       // This item is complete at this prefix length.
       return NextModelState(model_state, sym);
@@ -305,7 +306,7 @@ int NGramWordFstModel::NextCompleteState(int state, int model_state,
 
 int NGramWordFstModel::NextFirstLetterState(int state, int utf8_sym) {
   // Check for begin/end indices of first letter from pre-computed.
-  const std::string u_char = utf8::EncodeUnicodeChar(utf8_sym);
+  const std::string u_char = EncodeUnicodeChar(utf8_sym);
   int begin_index = first_char_begin_index_;
   int end_index = -1;
   for (int i = 0; i < first_chars_.size(); ++i) {
@@ -550,7 +551,7 @@ NGramImplicitStates::NGramImplicitStates(const StdVectorFst &fst,
   const auto *syms = fst.InputSymbols();
   max_prefix_length_ = 0;
   for (const auto sym : *syms) {
-    int this_len = utf8::StrSplitByChar(sym.Symbol()).size();
+    const int this_len = StrSplitByChar(sym.Symbol()).size();
     if (this_len > max_prefix_length_) {
       max_prefix_length_ = this_len;
     }

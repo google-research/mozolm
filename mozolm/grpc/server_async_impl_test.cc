@@ -27,7 +27,7 @@
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_factory.h"
 #include "mozolm/models/model_storage.pb.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -100,7 +100,7 @@ void CheckUpdateLMScoresContent(int state, int count) {
   request.set_state(state);
   // same symbol as context for ease of checking updates.
   const std::string symbol =
-      utf8::EncodeUnicodeChar(server.ModelStateSym(state));
+      nisaba::utf8::EncodeUnicodeChar(server.ModelStateSym(state));
   request.add_utf8_sym(server.ModelStateSym(state));
   request.set_count(count);
   const UpdateLMScoresRequest* request_ptr(&request);

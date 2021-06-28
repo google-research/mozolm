@@ -18,7 +18,7 @@
 
 #include "ngram/ngram-model.h"
 #include "absl/strings/str_cat.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 
 namespace mozolm {
 namespace models {
@@ -27,7 +27,7 @@ int LanguageModel::ContextState(const std::string& context, int init_state) {
   int this_state = init_state < 0 ? start_state_ : init_state;
   if (!context.empty()) {
     const std::vector<int> context_utf8 =
-        utf8::StrSplitByCharToUnicode(context);
+        nisaba::utf8::StrSplitByCharToUnicode(context);
     for (const auto& sym : context_utf8) {
       this_state = NextState(this_state, static_cast<int>(sym));
       if (this_state < 0) {

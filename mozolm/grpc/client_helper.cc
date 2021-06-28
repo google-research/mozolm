@@ -33,7 +33,7 @@
 #include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/grpc/server_helper.h"
-#include "mozolm/utils/utf8_util.h"
+#include "nisaba/port/utf8_util.h"
 #include "mozolm/stubs/status_macros.h"
 
 namespace mozolm {
@@ -249,7 +249,8 @@ absl::Status ClientHelper::CalcBitsPerCharacter(const std::string& test_file,
   double tot_bits = 0.0;
   double unused_normalization;
   while (status.ok() && std::getline(infile, input_line)) {
-    std::vector<std::string> input_chars = utf8::StrSplitByChar(input_line);
+    std::vector<std::string> input_chars = nisaba::utf8::StrSplitByChar(
+        input_line);
     input_chars.push_back("");  // End-of-string character.
     int64 state = 0;  // Will start at initial state of the model.
     std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
