@@ -19,20 +19,6 @@ http_archive(
     sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
 )
 
-# -------------------------------------------------------------------------
-# utfcpp: See
-#   https://github.com/nemtrif/utfcpp
-# -------------------------------------------------------------------------
-utfcpp_version = "3.2.1"
-
-http_archive(
-    name = "com_github_utfcpp",
-    urls = ["https://github.com/nemtrif/utfcpp/archive/v%s.tar.gz" % utfcpp_version],
-    sha256 = "8d6aa7d77ad0abb35bb6139cb9a33597ac4c5b33da6a004ae42429b8598c9605",
-    build_file = "@//:bazel/utfcpp.BUILD.bazel",
-    strip_prefix = "utfcpp-%s" % utfcpp_version,
-)
-
 # ----------------------------------------------
 # Nisaba: Script processing library from Google:
 # ----------------------------------------------
@@ -47,6 +33,10 @@ http_archive(
     url = "https://github.com/google-research/nisaba/archive/refs/heads/%s.zip" % nisaba_version,
     strip_prefix = "nisaba-%s" % nisaba_version,
 )
+
+load("@com_google_nisaba//bazel:workspace.bzl", "nisaba_public_repositories")
+
+nisaba_public_repositories()
 
 # ------------------------------------
 # gRPC (C++) package for Bazel:
