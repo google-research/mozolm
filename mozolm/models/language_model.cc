@@ -28,8 +28,8 @@ int LanguageModel::ContextState(const std::string& context, int init_state) {
   if (!context.empty()) {
     const std::vector<int> context_utf8 =
         nisaba::utf8::StrSplitByCharToUnicode(context);
-    for (const auto& sym : context_utf8) {
-      this_state = NextState(this_state, static_cast<int>(sym));
+    for (auto sym : context_utf8) {
+      this_state = NextState(this_state, sym);
       if (this_state < 0) {
         // Returns to start state if symbol not found.
         // TODO: should it return to a null context state?
