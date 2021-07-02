@@ -16,7 +16,7 @@
 #
 # See the README.md file in this directory.
 
-load("//mozolm/models:ngram_utils.bzl", "ngram_convert_arpa_to_fst")
+load("//mozolm/utils:ngram_utils.bzl", "ngram_convert_arpa_to_fst")
 
 package(default_visibility = ["//mozolm:__subpackages__"])
 
@@ -31,6 +31,8 @@ licenses(["notice"])
 ngram_convert_arpa_to_fst(
     name = "lm_feb21_dasher_char_4gram",
     out = "dasher_feb21_eng_char_4gram",
+    relabel_keep_symbols = ["<sp>"],
+    relabel_to_codepoints = True,
 )
 
 # ------------------------------------------------------------------------------

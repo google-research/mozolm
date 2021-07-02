@@ -46,7 +46,7 @@ const char kModelName[] = "gutenberg_en_char_ngram_o4_wb.fst";
 // Third-party model from Michigan Tech (MTU).
 const char kThirdPartyModelDir[] =
     "third_party/models/mtu";
-const char kThirdPartyModelName[] = "dasher_feb21_eng_char_4gram.fst";
+const char kThirdParty4GramModelName[] = "dasher_feb21_eng_char_4gram.fst";
 
 const char kSampleText[] = R"(
     His manner was not effusive. It seldom was; but he was glad, I think,
@@ -175,11 +175,19 @@ TEST_F(NGramCharFstModelTest, CheckInDomain) {
 // is because doing so requires configuring a Windows Linux Subsystem (WLS) for
 // Bazel to get access to bash and other Unix utilities.
 #if !defined(_MSC_VER)
-TEST_F(NGramCharFstModelTest, ThirdPartyBasicTest) {
-  Init(kThirdPartyModelDir, kThirdPartyModelName);
+TEST_F(NGramCharFstModelTest, ThirdParty4GramBasicTest) {
+  Init(kThirdPartyModelDir, kThirdParty4GramModelName);
 
-  // TODO: Predictions are all belly-up at the moment. Please
-  // double-check, fix and extend this test..
+  // Trivial 4-gram checks.
+  std::pair<double, std::string> top_next;
+  TopCandidateForContext("worl", &top_next);
+  EXPECT_EQ("d", top_next.second);
+  TopCandidateForContext("an", &top_next);
+  EXPECT_EQ("d", top_next.second);
+  TopCandidateForContext("fo", &top_next);
+  EXPECT_EQ("r", top_next.second);
+  TopCandidateForContext("joh", &top_next);
+  EXPECT_EQ("n", top_next.second);
 }
 #endif  // _MSC_VER
 

@@ -38,3 +38,52 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "ngram_fst_relabel-lib",
+    srcs = ["ngram_fst_relabel.cc"],
+    hdrs = ["ngram_fst_relabel.h"],
+    deps = [
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_nisaba//nisaba/port:utf8_util",
+        "@org_openfst//:fst",
+        "@org_openfst//:symbol-table",
+    ],
+)
+
+cc_test(
+    name = "ngram_fst_relabel_test",
+    srcs = ["ngram_fst_relabel_test.cc"],
+    deps = [
+        ":ngram_fst_relabel-lib",
+        "//mozolm/stubs:status-matchers",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_googletest//:gtest_main",
+        "@org_openfst//:fst",
+        "@org_openfst//:fstscript_compile",
+        "@org_openfst//:symbol-table",
+    ],
+)
+
+cc_binary(
+    name = "ngram_fst_relabel",
+    srcs = ["ngram_fst_relabel_main.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":ngram_fst_relabel-lib",
+        "//mozolm/stubs:integral_types",
+        "//mozolm/stubs:logging",
+        "//mozolm/stubs:status_macros",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@org_openfst//:fst",
+    ],
+)
