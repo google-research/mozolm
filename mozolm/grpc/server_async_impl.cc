@@ -238,7 +238,7 @@ absl::Status ServerAsyncImpl::BuildAndStart(
   // Initialize asynchronous request handlers.
   // TODO: Complete.
   if (async_pool_size > 0) {
-    async_pool_ = absl::make_unique<ThreadPool>(async_pool_size);
+    async_pool_ = absl::make_unique<nisaba::ThreadPool>(async_pool_size);
     async_pool_->StartWorkers();
   } else {
     async_pool_ = nullptr;

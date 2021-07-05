@@ -29,7 +29,7 @@
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/grpc/service.pb.h"
 #include "mozolm/models/language_model_hub.h"
-#include "mozolm/stubs/thread_pool.h"
+#include "nisaba/port/thread_pool.h"
 
 namespace mozolm {
 namespace grpc {
@@ -154,7 +154,7 @@ class ServerAsyncImpl : public MozoLMService::AsyncService {
   int selected_port_;
 
   // Pool for asynchronous request handling.
-  std::unique_ptr<ThreadPool> async_pool_;
+  std::unique_ptr<nisaba::ThreadPool> async_pool_;
 };
 
 }  // namespace grpc

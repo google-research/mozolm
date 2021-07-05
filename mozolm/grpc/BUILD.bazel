@@ -51,13 +51,13 @@ cc_library(
         "//mozolm/models:language_model_hub",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
-        "//mozolm/stubs:thread_pool",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
+        "@com_google_nisaba//nisaba/port:thread_pool",
     ],
 )
 
