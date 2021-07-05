@@ -26,7 +26,7 @@
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
 #include "nisaba/port/utf8_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 using nisaba::utf8::DecodeSingleUnicodeChar;
 using nisaba::utf8::EncodeUnicodeChar;

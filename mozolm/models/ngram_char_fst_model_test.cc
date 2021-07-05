@@ -24,7 +24,7 @@
 
 #include "fst/vector-fst.h"
 #include "gmock/gmock.h"
-#include "mozolm/stubs/status-matchers.h"
+#include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/flags/flag.h"

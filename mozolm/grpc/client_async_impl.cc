@@ -22,7 +22,7 @@
 #include "absl/strings/str_format.h"
 #include "mozolm/models/language_model.h"
 #include "nisaba/port/utf8_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace grpc {

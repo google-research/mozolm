@@ -23,7 +23,7 @@
 #include "mozolm/models/ngram_word_fst_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"
 #include "mozolm/models/simple_bigram_char_model.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace models {

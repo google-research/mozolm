@@ -18,10 +18,10 @@
 #include <vector>
 
 #include "gmock/gmock.h"
-#include "mozolm/stubs/status-matchers.h"
+#include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
-#include "mozolm/utils/file_util.h"
+#include "nisaba/port/file_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -31,7 +31,7 @@ void ReadTlsCredFileContents(std::string_view filename, std::string *contents) {
   const std::filesystem::path file_path = (
       std::filesystem::current_path() /
       kTlsCredTestDir / filename).make_preferred();
-  const auto read_status = file::ReadBinaryFile(file_path.string());
+  const auto read_status = nisaba::file::ReadBinaryFile(file_path.string());
   ASSERT_OK(read_status) << "Failed to read " << filename;
   *contents = read_status.value();
 }

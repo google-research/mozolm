@@ -21,7 +21,7 @@
 #include "mozolm/stubs/logging.h"
 #include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
-#include "mozolm/stubs/status-matchers.h"
+#include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/time/clock.h"
@@ -29,7 +29,7 @@
 #include "mozolm/grpc/auth_test_utils.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_storage.pb.h"
-#include "mozolm/utils/file_util.h"
+#include "nisaba/port/file_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -39,7 +39,7 @@ class ServerHelperTest : public ::testing::Test {
  protected:
   void SetUp() override {
     // Prepare a dummy text file.
-    const auto temp_text_status = file::WriteTempTextFile(
+    const auto temp_text_status = nisaba::file::WriteTempTextFile(
         "corpus.txt", "Hello world!");
     EXPECT_OK(temp_text_status.status());
     model_text_path_ = temp_text_status.value();

@@ -28,7 +28,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "nisaba/port/utf8_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 using fst::kAcceptor;
 using fst::kError;

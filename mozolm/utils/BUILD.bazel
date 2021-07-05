@@ -19,38 +19,17 @@ package(default_visibility = ["//mozolm:__subpackages__"])
 licenses(["notice"])
 
 cc_library(
-    name = "file_util",
-    srcs = ["file_util.cc"],
-    hdrs = ["file_util.h"],
-    deps = [
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_test(
-    name = "file_util_test",
-    srcs = ["file_util_test.cc"],
-    deps = [
-        ":file_util",
-        "//mozolm/stubs:status-matchers",
-        "@com_github_protobuf_matchers//protobuf-matchers",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
     name = "ngram_fst_relabel-lib",
     srcs = ["ngram_fst_relabel.cc"],
     hdrs = ["ngram_fst_relabel.h"],
     deps = [
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
-        "//mozolm/stubs:status_macros",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
+        "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
@@ -62,9 +41,9 @@ cc_test(
     srcs = ["ngram_fst_relabel_test.cc"],
     deps = [
         ":ngram_fst_relabel-lib",
-        "//mozolm/stubs:status-matchers",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_googletest//:gtest_main",
+        "@com_google_nisaba//nisaba/port:status-matchers",
         "@org_openfst//:fst",
         "@org_openfst//:fstscript_compile",
         "@org_openfst//:symbol-table",
@@ -79,11 +58,11 @@ cc_binary(
         ":ngram_fst_relabel-lib",
         "//mozolm/stubs:integral_types",
         "//mozolm/stubs:logging",
-        "//mozolm/stubs:status_macros",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
+        "@com_google_nisaba//nisaba/port:status_macros",
         "@org_openfst//:fst",
     ],
 )

@@ -18,7 +18,7 @@
 #include <string>
 
 #include "gmock/gmock.h"
-#include "mozolm/stubs/status-matchers.h"
+#include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_map.h"
@@ -27,8 +27,8 @@
 #include "mozolm/grpc/auth_test_utils.h"
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_helper.h"
-#include "mozolm/utils/file_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/file_util.h"
+#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace grpc {
@@ -88,7 +88,7 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
     // Initialize server part.
     ServerConfig *server_config = config->mutable_server();
     if (use_uds) {
-      uds_path_ = file::TempFilePath(kUdsEndpointName);
+      uds_path_ = nisaba::file::TempFilePath(kUdsEndpointName);
       server_config->set_address_uri(absl::StrCat("unix://", uds_path_));
     } else {
       server_config->set_address_uri("localhost:0");

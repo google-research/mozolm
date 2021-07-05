@@ -80,8 +80,8 @@
 #include "absl/strings/str_cat.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/grpc/server_helper.h"
-#include "mozolm/utils/file_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/file_util.h"
+#include "nisaba/port/status_macros.h"
 
 ABSL_FLAG(std::string, server_config, "",
           "Contents of (`mozolm.grpc.ServerConfig`) protocol buffer in text "
@@ -113,18 +113,20 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
+using nisaba::file::ReadBinaryFile;
+
 // Initializes SSL/TLS configuration from command-line flags.
 absl::Status InitTlsConfig(ServerAuthConfig::TlsConfig *tls_config) {
   std::string contents;
   tls_config->set_client_verify(absl::GetFlag(FLAGS_tls_client_verify));
-  ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+  ASSIGN_OR_RETURN(contents, ReadBinaryFile(
       absl::GetFlag(FLAGS_tls_server_key_file)));
   tls_config->set_server_key(contents);
-  ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+  ASSIGN_OR_RETURN(contents, ReadBinaryFile(
       absl::GetFlag(FLAGS_tls_server_cert_file)));
   tls_config->set_server_cert(contents);
   if (!absl::GetFlag(FLAGS_tls_custom_ca_cert_file).empty()) {
-    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+    ASSIGN_OR_RETURN(contents, ReadBinaryFile(
         absl::GetFlag(FLAGS_tls_custom_ca_cert_file)));
     tls_config->set_custom_ca_cert(contents);
   }
@@ -135,7 +137,7 @@ absl::Status InitTlsConfig(ServerAuthConfig::TlsConfig *tls_config) {
 absl::Status InitConfigContents(std::string *config_contents) {
   const std::string config_file = absl::GetFlag(FLAGS_server_config_file);
   if (!config_file.empty()) {
-    ASSIGN_OR_RETURN(*config_contents, file::ReadBinaryFile(config_file));
+    ASSIGN_OR_RETURN(*config_contents, ReadBinaryFile(config_file));
   } else if (!absl::GetFlag(FLAGS_server_config).empty()) {
     *config_contents = absl::GetFlag(FLAGS_server_config);
   } else {

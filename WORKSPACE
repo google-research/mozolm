@@ -32,6 +32,7 @@ http_archive(
     name = "com_google_nisaba",
     url = "https://github.com/google-research/nisaba/archive/refs/heads/%s.zip" % nisaba_version,
     strip_prefix = "nisaba-%s" % nisaba_version,
+    sha256 = "a7323c815dc0d37cddbb59b4cd1bb03c3ffd6349a2e10a7f1ec0aacbb3caf3a3",
 )
 
 load("@com_google_nisaba//bazel:workspace.bzl", "nisaba_public_repositories")

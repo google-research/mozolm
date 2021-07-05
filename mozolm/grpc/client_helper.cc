@@ -34,7 +34,7 @@
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/grpc/server_helper.h"
 #include "nisaba/port/utf8_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace grpc {

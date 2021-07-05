@@ -21,7 +21,7 @@
 #include "mozolm/stubs/integral_types.h"
 #include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
 #include "gmock/gmock.h"
-#include "mozolm/stubs/status-matchers.h"
+#include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/memory/memory.h"

@@ -23,7 +23,7 @@
 #include "mozolm/stubs/logging.h"
 #include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
-#include "mozolm/stubs/status-matchers.h"
+#include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/memory/memory.h"
@@ -32,7 +32,7 @@
 #include "mozolm/grpc/server_helper.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/ppm_as_fst_options.pb.h"
-#include "mozolm/utils/file_util.h"
+#include "nisaba/port/file_util.h"
 
 namespace mozolm {
 namespace grpc {
@@ -165,7 +165,7 @@ TEST_P(ClientHelperTest, CheckRandGen) {
 
 TEST_P(ClientHelperTest, CheckCalcBitsPerCharacter) {
   // Mock test file.
-  const auto temp_text_status = file::WriteTempTextFile(
+  const auto temp_text_status = nisaba::file::WriteTempTextFile(
       "test.txt", "Hello world!");
   EXPECT_OK(temp_text_status.status());
   const std::string test_file = temp_text_status.value();

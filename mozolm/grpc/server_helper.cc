@@ -19,7 +19,7 @@
 #include "absl/memory/memory.h"
 #include "absl/synchronization/notification.h"
 #include "mozolm/models/model_factory.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace grpc {

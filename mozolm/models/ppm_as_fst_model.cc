@@ -29,7 +29,7 @@
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "nisaba/port/utf8_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace models {

@@ -44,8 +44,8 @@
 #include "mozolm/grpc/client_config.pb.h"
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_config.pb.h"
-#include "mozolm/utils/file_util.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/file_util.h"
+#include "nisaba/port/status_macros.h"
 
 ABSL_FLAG(std::string, client_config, "",
           "Contents of protocol buffer `mozolm.grpc.ClientConfig` in text "
@@ -77,11 +77,13 @@ namespace mozolm {
 namespace grpc {
 namespace {
 
+using nisaba::file::ReadBinaryFile;
+
 // Initializes configuration from command-line flags.
 absl::Status InitConfigContents(std::string *config_contents) {
   const std::string config_file = absl::GetFlag(FLAGS_client_config_file);
   if (!config_file.empty()) {
-    ASSIGN_OR_RETURN(*config_contents, file::ReadBinaryFile(config_file));
+    ASSIGN_OR_RETURN(*config_contents, ReadBinaryFile(config_file));
   } else if (!absl::GetFlag(FLAGS_client_config).empty()) {
     *config_contents = absl::GetFlag(FLAGS_client_config);
   } else {
@@ -98,7 +100,7 @@ absl::Status InitTlsConfig(ClientConfig *config) {
 
   // Set server certificate.
   std::string contents;
-  ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+  ASSIGN_OR_RETURN(contents, ReadBinaryFile(
       absl::GetFlag(FLAGS_tls_server_cert_file)));
   ServerAuthConfig *server_auth = config->mutable_server()->mutable_auth();
   server_auth->set_credential_type(CREDENTIAL_TLS);
@@ -108,12 +110,12 @@ absl::Status InitTlsConfig(ClientConfig *config) {
 
   // Set client certificate and key.
   if (!absl::GetFlag(FLAGS_tls_client_cert_file).empty()) {
-    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+    ASSIGN_OR_RETURN(contents, ReadBinaryFile(
         absl::GetFlag(FLAGS_tls_client_cert_file)));
     cli_auth->mutable_tls()->set_client_cert(contents);
   }
   if (!absl::GetFlag(FLAGS_tls_client_key_file).empty()) {
-    ASSIGN_OR_RETURN(contents, file::ReadBinaryFile(
+    ASSIGN_OR_RETURN(contents, ReadBinaryFile(
         absl::GetFlag(FLAGS_tls_client_key_file)));
     cli_auth->mutable_tls()->set_client_key(contents);
   }

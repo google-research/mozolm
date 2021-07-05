@@ -38,7 +38,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "mozolm/utils/ngram_fst_relabel.h"
-#include "mozolm/stubs/status_macros.h"
+#include "nisaba/port/status_macros.h"
 
 ABSL_FLAG(std::string, input_fst_file, "",
           "Input n-gram character model file in FST format.");
