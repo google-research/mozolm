@@ -16,7 +16,7 @@
 
 #include <utility>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "mozolm/models/ngram_char_fst_model.h"

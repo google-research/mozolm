@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"

@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "absl/memory/memory.h"

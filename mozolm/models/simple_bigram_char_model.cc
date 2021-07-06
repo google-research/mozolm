@@ -16,7 +16,7 @@
 
 #include <fstream>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"

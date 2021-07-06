@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "ngram/ngram-model.h"
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/status_macros.h"

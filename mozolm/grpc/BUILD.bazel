@@ -50,7 +50,6 @@ cc_library(
         ":service_cc_proto",
         "//mozolm/models:language_model_hub",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/memory",
@@ -58,6 +57,7 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
         "@com_google_nisaba//nisaba/port:thread_pool",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -68,7 +68,6 @@ cc_library(
         ":server_config_cc_proto",
         ":server_helper",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/status",
@@ -122,12 +121,12 @@ cc_library(
         ":server_config_cc_proto",
         "//mozolm/models:model_factory",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/synchronization",
         "@com_google_nisaba//nisaba/port:status_macros",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -141,7 +140,6 @@ cc_test(
         "//mozolm/models:model_config_cc_proto",
         "//mozolm/models:model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/time",
         "@com_google_googletest//:gtest_main",
@@ -174,13 +172,13 @@ cc_library(
         ":service_cc_grpc_proto",
         "//mozolm/models:language_model",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -191,12 +189,12 @@ cc_test(
         ":client_async_impl",
         ":service_cc_grpc_proto",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/memory",
         "@com_google_googletest//:gtest_main",
         "@com_google_nisaba//nisaba/port:status-matchers",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -208,7 +206,6 @@ cc_library(
         ":client_helper",
         ":server_config_cc_proto",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/status",
@@ -243,7 +240,6 @@ cc_library(
         ":server_config_cc_proto",
         ":server_helper",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/random",
@@ -254,6 +250,7 @@ cc_library(
         "@com_google_absl//absl/synchronization",
         "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -271,7 +268,6 @@ cc_test(
         "//mozolm/models:model_config_cc_proto",
         "//mozolm/models:ppm_as_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",

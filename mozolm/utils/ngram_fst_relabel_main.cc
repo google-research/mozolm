@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "fst/vector-fst.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"

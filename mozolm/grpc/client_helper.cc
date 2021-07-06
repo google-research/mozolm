@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"

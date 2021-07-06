@@ -22,9 +22,3 @@ cc_library(
     name = "integral_types",
     hdrs = ["integral_types.h"],
 )
-
-cc_library(
-    name = "logging",
-    hdrs = ["logging.h"],
-    deps = ["@com_google_protobuf//:protobuf"],
-)

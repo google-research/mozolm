@@ -14,7 +14,7 @@
 
 #include "mozolm/models/ngram_fst_model.h"
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"

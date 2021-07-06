@@ -18,7 +18,7 @@
 #include <string>
 #include <string_view>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"

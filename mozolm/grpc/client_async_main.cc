@@ -35,7 +35,7 @@
 
 #include <string>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"

@@ -18,7 +18,7 @@
 #include <utility>
 
 #include "mozolm/stubs/integral_types.h"
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "fst/arcsort.h"
 #include "fst/fst.h"
 #include "fst/relabel.h"

@@ -24,13 +24,13 @@ cc_library(
     hdrs = ["ngram_fst_relabel.h"],
     deps = [
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
+        "@com_google_protobuf//:protobuf",
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
     ],
@@ -57,12 +57,12 @@ cc_binary(
     deps = [
         ":ngram_fst_relabel-lib",
         "//mozolm/stubs:integral_types",
-        "//mozolm/stubs:logging",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_nisaba//nisaba/port:status_macros",
+        "@com_google_protobuf//:protobuf",
         "@org_openfst//:fst",
     ],
 )

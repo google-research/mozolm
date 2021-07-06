@@ -17,7 +17,7 @@
 #include <cmath>
 #include <fstream>
 
-#include "mozolm/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "fst/arcsort.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
