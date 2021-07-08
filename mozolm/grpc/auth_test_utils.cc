@@ -14,13 +14,13 @@
 
 #include "mozolm/grpc/auth_test_utils.h"
 
-#include <filesystem>
 #include <vector>
 
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
+#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
 
 namespace mozolm {
@@ -28,10 +28,8 @@ namespace grpc {
 namespace test {
 
 void ReadTlsCredFileContents(std::string_view filename, std::string *contents) {
-  const std::filesystem::path file_path = (
-      std::filesystem::current_path() /
-      kTlsCredTestDir / filename).make_preferred();
-  const auto read_status = nisaba::file::ReadBinaryFile(file_path.string());
+  const std::string &file_path = TestFilePath(kTlsCredTestDir, filename);
+  const auto read_status = nisaba::file::ReadBinaryFile(file_path);
   ASSERT_OK(read_status) << "Failed to read " << filename;
   *contents = read_status.value();
 }

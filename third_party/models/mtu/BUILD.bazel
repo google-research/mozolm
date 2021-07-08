@@ -23,7 +23,7 @@ package(default_visibility = ["//mozolm:__subpackages__"])
 licenses(["notice"])
 
 # ------------------------------------------------------------------------------
-# Character four-gram language model for English.
+# Character language models for English.
 # ------------------------------------------------------------------------------
 
 # Following rule will create `dasher_feb21_eng_char_4gram.fst` out of
@@ -36,10 +36,20 @@ ngram_convert_arpa_to_fst(
 )
 
 # ------------------------------------------------------------------------------
+# Word-based language models for English.
+# ------------------------------------------------------------------------------
+
+ngram_convert_arpa_to_fst(
+    name = "lm_feb21_dasher_5k_tiny_3gram",
+    out = "dasher_feb21_eng_word_5k_3gram",
+)
+
+# ------------------------------------------------------------------------------
 # All converted FSTs.
 # ------------------------------------------------------------------------------
 _CONVERTED_FSTS = [
     ":dasher_feb21_eng_char_4gram.fst",
+    ":dasher_feb21_eng_word_5k_3gram.fst",
 ]
 
 filegroup(

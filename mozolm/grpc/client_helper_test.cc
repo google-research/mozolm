@@ -32,6 +32,7 @@
 #include "mozolm/grpc/server_helper.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/ppm_as_fst_options.pb.h"
+#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
 
 namespace mozolm {
@@ -39,7 +40,7 @@ namespace grpc {
 namespace {
 
 const char kModelsTestDir[] =
-    "mozolm/models/testdata";
+    "com_google_mozolm/mozolm/models/testdata";
 const char kCharFstModelFilename[] = "gutenberg_en_char_ngram_o2_kn.fst";
 const char kPpmAsFstModelFilename[] = "gutenberg_praise_of_folly.txt";
 const int kDefaultTimeoutSec = 2;  // Default client timeout (in seconds).
@@ -85,15 +86,6 @@ class ClientHelperTest : public ::testing::TestWithParam<ModelParams>  {
   }
 
  private:
-  // Returns full path to the model.
-  std::string ModelPath(std::string_view model_dir,
-                        std::string_view model_filename) const {
-    const std::filesystem::path model_path = (
-        std::filesystem::current_path() /
-        model_dir / model_filename).make_preferred();
-    return model_path.string();
-  }
-
   // Makes a single simple model configuration given basic parameters.
   bool MakeModelConfig(ModelInfo model_info, ModelConfig *model) const {
     const ModelConfig::ModelType model_type = model_info.first;
@@ -103,9 +95,9 @@ class ClientHelperTest : public ::testing::TestWithParam<ModelParams>  {
       // Simple character bigram can get by without data, in which case it will
       // resort to uniform distribution estimates.
     } else if (model_type == ModelConfig::CHAR_NGRAM_FST) {
-      model_path = ModelPath(kModelsTestDir, kCharFstModelFilename);
+      model_path = TestFilePath(kModelsTestDir, kCharFstModelFilename);
     } else if (model_type == ModelConfig::PPM_AS_FST) {
-      model_path = ModelPath(kModelsTestDir, kPpmAsFstModelFilename);
+      model_path = TestFilePath(kModelsTestDir, kPpmAsFstModelFilename);
       auto *options = model->mutable_storage()->mutable_ppm_options();
       options->set_max_order(2);  // Bigrams.
       options->set_static_model(model_info.second);

@@ -268,6 +268,7 @@ cc_test(
         "//mozolm/models:model_config_cc_proto",
         "//mozolm/models:ppm_as_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//mozolm/utils:test_utils",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
@@ -334,6 +335,7 @@ cc_library(
     srcs = ["auth_test_utils.cc"],
     hdrs = ["auth_test_utils.h"],
     deps = [
+        "//mozolm/utils:test_utils",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_googletest//:gtest",
@@ -353,6 +355,7 @@ cc_test(
         ":auth_test_utils",
         ":client_helper",
         ":server_helper",
+        "//mozolm/utils:test_utils",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status",

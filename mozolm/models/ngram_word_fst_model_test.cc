@@ -16,7 +16,6 @@
 
 #include <cmath>
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -29,18 +28,22 @@
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "mozolm/models/model_test_utils.h"
+#include "mozolm/utils/test_utils.h"
+#include "nisaba/port/file_util.h"
 #include "nisaba/port/utf8_util.h"
-
-namespace mozolm {
-namespace models {
-
-static constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
 using ::fst::StdArc;
 using ::fst::StdVectorFst;
 using ::fst::SymbolTable;
+
+namespace mozolm {
+namespace models {
+namespace {
+
+constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 
 class NGramWordFstTest : public ::testing::Test {
  protected:
@@ -192,10 +195,7 @@ class NGramWordFstTest : public ::testing::Test {
 
   void SetUp() override {
     // Setup the treegram count file.
-    const std::filesystem::path tmp_dir =
-        std::filesystem::temp_directory_path();
-    std::filesystem::path file_path = tmp_dir / "trigram_word_mod.fst";
-    trigram_model_file_ = file_path.string();
+    trigram_model_file_ = nisaba::file::TempFilePath("trigram_word_mod.fst");
     CreateFstWordTrigramModelFile();
 
     // Configure the model.
@@ -311,5 +311,38 @@ TEST_F(NGramWordFstTest, ExtractLMScoresImplicitWordBoundary) {
               kFloatDelta);
 }
 
+// Check that we can use the FSTs converted from third-party models.
+//
+// Note: We don't run this test on Windows because we presently cannot verify
+// that Bazel genrules that generate FSTs from ARPA format work properly. This
+// is because doing so requires configuring a Windows Linux Subsystem (WLS) for
+// Bazel to get access to bash and other Unix utilities.
+#if !defined(_MSC_VER)
+TEST(NGramWordFstStandaloneTest, ThirdPartyModelTest) {
+  // Third-party model from Michigan Tech (MTU).
+  constexpr char kThirdPartyModelDir[] =
+      "com_google_mozolm/third_party/models/mtu";
+  constexpr char kThirdParty3GramModelName[] =
+      "dasher_feb21_eng_word_5k_3gram.fst";
+  ModelStorage model_storage;
+  const std::string model_path = TestFilePath(kThirdPartyModelDir,
+                                              kThirdParty3GramModelName);
+  model_storage.set_model_file(model_path);
+  NGramWordFstModel model;
+  ASSERT_OK(model.Read(model_storage))
+      << "Failed to read model from " << model_path;
+
+  // Trivial 3-gram checks.
+  std::pair<double, std::string> top_next;
+  CheckTopCandidateForContext("four years a", &model, &top_next);
+  EXPECT_EQ("g", top_next.second);
+  CheckTopCandidateForContext("four years ag", &model, &top_next);
+  EXPECT_EQ("o", top_next.second);
+  CheckTopCandidateForContext("four years ago", &model, &top_next);
+  EXPECT_EQ(" ", top_next.second);
+}
+#endif  // _MSC_VER
+
+}  // namespace
 }  // namespace models
 }  // namespace mozolm

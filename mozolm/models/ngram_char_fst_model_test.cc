@@ -17,7 +17,6 @@
 #include "mozolm/models/ngram_char_fst_model.h"
 
 #include <algorithm>
-#include <filesystem>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -30,6 +29,8 @@
 #include "absl/flags/flag.h"
 #include "absl/strings/str_join.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "mozolm/models/model_test_utils.h"
+#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/utf8_util.h"
 
 using fst::StdArc;
@@ -40,15 +41,16 @@ namespace {
 
 // Simple model trained on "Alice and Wonderland" and "Adventures of Sherlock
 // Holmes" from Project Gutenberg.
-const char kModelDir[] = "mozolm/models/testdata";
-const char kModelName[] = "gutenberg_en_char_ngram_o4_wb.fst";
+constexpr char kModelDir[] =
+    "com_google_mozolm/mozolm/models/testdata";
+constexpr char kModelName[] = "gutenberg_en_char_ngram_o4_wb.fst";
 
 // Third-party model from Michigan Tech (MTU).
-const char kThirdPartyModelDir[] =
-    "third_party/models/mtu";
-const char kThirdParty4GramModelName[] = "dasher_feb21_eng_char_4gram.fst";
+constexpr char kThirdPartyModelDir[] =
+    "com_google_mozolm/third_party/models/mtu";
+constexpr char kThirdParty4GramModelName[] = "dasher_feb21_eng_char_4gram.fst";
 
-const char kSampleText[] = R"(
+constexpr char kSampleText[] = R"(
     His manner was not effusive. It seldom was; but he was glad, I think,
     to see me. With hardly a word spoken, but with a kindly eye, he waved
     me to an armchair, threw across his case of cigars, and indicated a
@@ -66,10 +68,7 @@ class NGramCharFstModelHelper : public NGramCharFstModel {
 class NGramCharFstModelTest : public ::testing::Test {
  protected:
   void Init(const std::string &model_dir, const std::string &model_name) {
-    const std::filesystem::path model_path = (
-        std::filesystem::current_path() /
-        model_dir / model_name).make_preferred();
-    model_storage_.set_model_file(model_path.string());
+    model_storage_.set_model_file(TestFilePath(model_dir, model_name));
     const auto read_status = model_.Read(model_storage_);
     ASSERT_TRUE(read_status.ok()) << "Failed to read model: "
                                   << read_status.ToString();
@@ -79,18 +78,10 @@ class NGramCharFstModelTest : public ::testing::Test {
     Init(kModelDir, kModelName);
   }
 
-  void TopCandidateForContext(const std::string &context,
-                              std::pair<double, std::string> *cand) {
-    const int state = model_.ContextState(context);
-    EXPECT_LT(0, state);
-    LMScores result;
-    EXPECT_TRUE(model_.ExtractLMScores(state, &result));
-    EXPECT_LT(0, result.normalization());
-    const auto scores_status = GetTopHypotheses(result, /* top_n= */1);
-    EXPECT_TRUE(scores_status.ok());
-    const auto scores = std::move(scores_status.value());
-    *cand = std::move(scores[0]);
-    EXPECT_LT(0.0, cand->first);
+  void CheckTopCandidateForContext(const std::string &context,
+                                   std::pair<double, std::string> *cand) {
+    return ::mozolm::models::CheckTopCandidateForContext(
+        context, &model_, cand);
   }
 
   ModelStorage model_storage_;
@@ -156,19 +147,19 @@ TEST_F(NGramCharFstModelTest, CheckInDomain) {
   // Check for "Alice" as the highly likely word predicted by the model which
   // was trained on "Alice's Adventures in Wonderland".
   std::pair<double, std::string> top_next;
-  TopCandidateForContext("Ali", &top_next);
+  CheckTopCandidateForContext("Ali", &top_next);
   EXPECT_EQ("c", top_next.second);
-  TopCandidateForContext("Alice", &top_next);
+  CheckTopCandidateForContext("Alice", &top_next);
   EXPECT_EQ(" ", top_next.second);
 
   // Check for Sherlock Holmes.
-  TopCandidateForContext("Holm", &top_next);
+  CheckTopCandidateForContext("Holm", &top_next);
   EXPECT_EQ("e", top_next.second);
-  TopCandidateForContext("Holme", &top_next);
+  CheckTopCandidateForContext("Holme", &top_next);
   EXPECT_EQ("s", top_next.second);
 }
 
-// Check that we can load the FSTs converted from third-party models.
+// Check that we can use the FSTs converted from third-party models.
 //
 // Note: We don't run this test on Windows because we presently cannot verify
 // that Bazel genrules that generate FSTs from ARPA format work properly. This
@@ -180,13 +171,13 @@ TEST_F(NGramCharFstModelTest, ThirdParty4GramBasicTest) {
 
   // Trivial 4-gram checks.
   std::pair<double, std::string> top_next;
-  TopCandidateForContext("worl", &top_next);
+  CheckTopCandidateForContext("worl", &top_next);
   EXPECT_EQ("d", top_next.second);
-  TopCandidateForContext("an", &top_next);
+  CheckTopCandidateForContext("an", &top_next);
   EXPECT_EQ("d", top_next.second);
-  TopCandidateForContext("fo", &top_next);
+  CheckTopCandidateForContext("fo", &top_next);
   EXPECT_EQ("r", top_next.second);
-  TopCandidateForContext("joh", &top_next);
+  CheckTopCandidateForContext("joh", &top_next);
   EXPECT_EQ("n", top_next.second);
 }
 #endif  // _MSC_VER

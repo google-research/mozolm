@@ -26,7 +26,7 @@ namespace test {
 
 // Test data for SSL/TLS credentials.
 const char kTlsCredTestDir[] =
-    "mozolm/grpc/testdata/cred/x509";
+    "com_google_mozolm/mozolm/grpc/testdata/cred/x509";
 const char kTlsServerPrivateKeyFile[] = "server1_key.pem";
 const char kTlsServerPublicCertFile[] = "server1_cert.pem";
 const char kTlsServerCentralAuthCertFile[] = "server_ca_cert.pem";

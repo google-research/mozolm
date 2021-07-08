@@ -27,6 +27,7 @@
 #include "mozolm/grpc/auth_test_utils.h"
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_helper.h"
+#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
 #include "nisaba/port/status_macros.h"
 
@@ -35,7 +36,7 @@ namespace grpc {
 namespace {
 
 const char kModelsTestDir[] =
-    "mozolm/models/testdata";
+    "com_google_mozolm/mozolm/models/testdata";
 const char kCharFstModelFilename[] = "gutenberg_en_char_ngram_o2_kn.fst";
 const char kUdsEndpointName[] = "auth_end2end_test.sock";
 constexpr double kClientTimeoutSec = 1.0;
@@ -97,7 +98,7 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
     auto *model = server_config->mutable_model_hub_config()->add_model_config();
     model->set_type(ModelConfig::CHAR_NGRAM_FST);
     model->mutable_storage()->set_model_file(
-        ModelPath(kModelsTestDir, kCharFstModelFilename));
+        TestFilePath(kModelsTestDir, kCharFstModelFilename));
 
     // Initialize the client part.
     config->set_timeout_sec(kClientTimeoutSec);
@@ -112,15 +113,6 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
         tls_name2contents_[test::kTlsServerPrivateKeyFile]);
     auth->mutable_tls()->set_server_cert(
         tls_name2contents_[test::kTlsServerPublicCertFile]);
-  }
-
-  // Returns full path to the model.
-  std::string ModelPath(std::string_view model_dir,
-                        std::string_view model_filename) const {
-    const std::filesystem::path model_path = (
-        std::filesystem::current_path() /
-        model_dir / model_filename).make_preferred();
-    return model_path.string();
   }
 
   // Mapping between the names of SSL credential files and the actual contents.
