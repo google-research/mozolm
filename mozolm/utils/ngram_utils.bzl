@@ -65,7 +65,7 @@ def ngram_convert_arpa_to_fst(
 
     # Relabel, if requested.
     if not relabel_to_codepoints:
-        pass
+        return
     relabeler_rule = "//mozolm/utils:ngram_fst_relabel"
     keep_symbols = "--keep_symbols \"%s\"" % ",".join(relabel_keep_symbols) if relabel_keep_symbols else ""
     native.genrule(
