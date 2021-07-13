@@ -13,10 +13,13 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # import `rules_python` import the latest official release. Without it, it
 # seems to be impossible to import `io_bazel_rules_docker` below successfully.
 
+rules_python_version = "0.3.0"
+
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
-    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/%s/rules_python-%s.tar.gz" % (
+        rules_python_version, rules_python_version),
+    sha256 = "934c9ceb552e84577b0faf1e5a2f0450314985b4d8712b2b70717dc679fdc01b",
 )
 
 # ----------------------------------------------
@@ -32,7 +35,6 @@ http_archive(
     name = "com_google_nisaba",
     url = "https://github.com/google-research/nisaba/archive/refs/heads/%s.zip" % nisaba_version,
     strip_prefix = "nisaba-%s" % nisaba_version,
-    sha256 = "2e83f3d2e576010f41be14c521b7954d23dc5088b2a13c2fdc4de0238f73aa2f",
 )
 
 load("@com_google_nisaba//bazel:workspace.bzl", "nisaba_public_repositories")
@@ -58,13 +60,13 @@ http_archive(
 # --------------------------------------------------------
 # See https://github.com/bazelbuild/rules_jvm_external
 
-rules_jvm_version = "4.0"
+rules_jvm_version = "4.1"
 
 http_archive(
     name = "rules_jvm_external",
-    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % rules_jvm_version,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/refs/tags/%s.tar.gz" % rules_jvm_version,
     strip_prefix = "rules_jvm_external-%s" % rules_jvm_version,
-    sha256 = "31701ad93dbfe544d597dbe62c9a1fdd76d81d8a9150c2bf1ecf928ecdf97169",
+    sha256 = "995ea6b5f41e14e1a17088b727dcff342b2c6534104e73d6f06f1ae0422c2308",
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -72,15 +74,15 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 # ------------------------------------
 # gRPC (Java) package for Bazel:
 # ------------------------------------
-# See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
+# See https://github.com/grpc/grpc-java
 
-grpc_version = "1.37.0"
+java_grpc_version = "1.39.0"
 
 http_archive(
     name = "com_github_grpc_grpc_java",
-    urls = ["https://github.com/grpc/grpc-java/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "4796b6e434545ecc9e827f9ba52c0604a3c84e175c54f0882121965b1ee5c367",
-    strip_prefix = "grpc-java-%s" % grpc_version,
+    url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.tar.gz" % java_grpc_version,
+    sha256 = "85927f857e0b3ad5c4e51c2e6d29213d3e0319f20784aa2113552f71311ba74c",
+    strip_prefix = "grpc-java-%s" % java_grpc_version,
 )
 
 # ------------------------------------
