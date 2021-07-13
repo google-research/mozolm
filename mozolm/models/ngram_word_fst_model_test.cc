@@ -29,10 +29,11 @@
 #include "gtest/gtest.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/model_test_utils.h"
-#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
+#include "nisaba/port/test_utils.h"
 #include "nisaba/port/utf8_util.h"
 
+using ::nisaba::testing::TestFilePath;
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
 using ::fst::StdArc;

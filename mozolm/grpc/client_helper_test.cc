@@ -32,8 +32,10 @@
 #include "mozolm/grpc/server_helper.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/ppm_as_fst_options.pb.h"
-#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
+#include "nisaba/port/test_utils.h"
+
+using nisaba::testing::TestFilePath;
 
 namespace mozolm {
 namespace grpc {

@@ -20,15 +20,16 @@
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
-#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
+#include "nisaba/port/test_utils.h"
 
 namespace mozolm {
 namespace grpc {
 namespace test {
 
 void ReadTlsCredFileContents(std::string_view filename, std::string *contents) {
-  const std::string &file_path = TestFilePath(kTlsCredTestDir, filename);
+  const std::string &file_path = nisaba::testing::TestFilePath(
+      kTlsCredTestDir, filename);
   const auto read_status = nisaba::file::ReadBinaryFile(file_path);
   ASSERT_OK(read_status) << "Failed to read " << filename;
   *contents = read_status.value();

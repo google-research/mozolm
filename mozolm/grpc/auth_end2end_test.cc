@@ -27,8 +27,8 @@
 #include "mozolm/grpc/auth_test_utils.h"
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_helper.h"
-#include "mozolm/utils/test_utils.h"
 #include "nisaba/port/file_util.h"
+#include "nisaba/port/test_utils.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {
@@ -98,7 +98,7 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
     auto *model = server_config->mutable_model_hub_config()->add_model_config();
     model->set_type(ModelConfig::CHAR_NGRAM_FST);
     model->mutable_storage()->set_model_file(
-        TestFilePath(kModelsTestDir, kCharFstModelFilename));
+        nisaba::testing::TestFilePath(kModelsTestDir, kCharFstModelFilename));
 
     // Initialize the client part.
     config->set_timeout_sec(kClientTimeoutSec);
