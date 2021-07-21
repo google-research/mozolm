@@ -17,12 +17,11 @@
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
 #include "mozolm/models/ngram_char_fst_model.h"
 #include "mozolm/models/ngram_word_fst_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"
 #include "mozolm/models/simple_bigram_char_model.h"
+#include "nisaba/port/timer.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {
@@ -43,10 +42,9 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
     return absl::UnimplementedError("Unsupported model type!");
   }
   GOOGLE_LOG(INFO) << "Reading ...";
-  const absl::Time before_t = absl::Now();
+  nisaba::Timer timer;
   RETURN_IF_ERROR(model->Read(storage));
-  GOOGLE_LOG(INFO) << "Model read in " << (absl::Now() - before_t) /
-      absl::Milliseconds(1) << " msec.";
+  GOOGLE_LOG(INFO) << "Model read in " << timer.ElapsedMillis() << " msec.";
   return std::move(model);
 }
 

@@ -26,8 +26,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
+#include "nisaba/port/timer.h"
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/status_macros.h"
 
@@ -498,10 +497,9 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     syms_->AddSymbol("<epsilon>");
     ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
-    const absl::Time before_t = absl::Now();
+    nisaba::Timer timer;
     RETURN_IF_ERROR(TrainFromText(storage.model_file()));
-    GOOGLE_LOG(INFO) << "Constructed in " << (absl::Now() - before_t) /
-        absl::Milliseconds(1) << " msec.";
+    GOOGLE_LOG(INFO) << "Constructed in " << timer.ElapsedMillis() << " msec.";
   }
   if (!storage.vocabulary_file().empty()) {
     std::ifstream infile(storage.vocabulary_file());
