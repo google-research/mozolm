@@ -111,21 +111,8 @@ openfst_version = "1.8.2-rc1"
 http_archive(
     name = "org_openfst",
     urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
-    sha256 = "0e86f73a7b4ebeadcb62af65479c352db9e0241a05317942767ec2670e58a6fb",
+    sha256 = "8d5c5b02174254807980fd01b1f4e0ff3b406234bb083df7c8d2c9a709061bea",
     strip_prefix = "openfst-%s" % openfst_version,
-)
-
-# -------------------------------------------------------------------------
-# OpenGrm N-Gram: See
-#   http://www.openfst.org/twiki/bin/view/GRM/NGramLibrary
-# -------------------------------------------------------------------------
-opengrm_ngram_version = "1.3.13-rc1"
-
-http_archive(
-    name = "org_opengrm_ngram",
-    urls = ["https://github.com/agutkin/finite_state/raw/main/ngram-%s.tar.gz" % opengrm_ngram_version],
-    sha256 = "c027cee208090f35a1f725dc9cc22bc0d977adba346d765bf2e1f55990a4fa40",
-    strip_prefix = "ngram-%s" % opengrm_ngram_version,
 )
 
 # -------------------------------------------------------------------------
