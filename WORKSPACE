@@ -111,7 +111,7 @@ openfst_version = "1.8.2-rc1"
 http_archive(
     name = "org_openfst",
     urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
-    sha256 = "8d5c5b02174254807980fd01b1f4e0ff3b406234bb083df7c8d2c9a709061bea",
+    sha256 = "b6117911787029da0220c1b19be74d695ad7287b9369f07262164bf9c04d9a8d",
     strip_prefix = "openfst-%s" % openfst_version,
 )
 
