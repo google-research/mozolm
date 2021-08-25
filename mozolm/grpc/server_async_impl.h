@@ -18,14 +18,14 @@
 #include <memory>
 #include <string>
 
+#include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/synchronization/notification.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/server_credentials.h"
 #include "include/grpcpp/server.h"
 #include "include/grpcpp/server_context.h"
 #include "include/grpcpp/support/async_stream.h"
-#include "absl/status/status.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/synchronization/notification.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/grpc/service.pb.h"
 #include "mozolm/models/language_model_hub.h"

@@ -21,15 +21,15 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "include/grpcpp/create_channel.h"
-#include "include/grpcpp/grpcpp.h"
-#include "include/grpcpp/security/credentials.h"
 #include "absl/memory/memory.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/synchronization/notification.h"
+#include "include/grpcpp/create_channel.h"
+#include "include/grpcpp/grpcpp.h"
+#include "include/grpcpp/security/credentials.h"
 #include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/grpc/server_helper.h"

@@ -18,10 +18,10 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "include/grpcpp/server_builder.h"
 #include "absl/functional/bind_front.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/match.h"
+#include "include/grpcpp/server_builder.h"
 
 namespace mozolm {
 namespace grpc {

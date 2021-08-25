@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "mozolm/grpc/server_async_impl.h"
+
 #include <string>
 #include <vector>
 
-#include "include/grpcpp/grpcpp.h"
-#include "include/grpcpp/server_context.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
-#include "mozolm/grpc/server_async_impl.h"
+#include "include/grpcpp/grpcpp.h"
+#include "include/grpcpp/server_context.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_factory.h"

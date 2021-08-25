@@ -20,9 +20,9 @@
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
-#include "include/grpcpp/create_channel.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "include/grpcpp/create_channel.h"
 #include "mozolm/grpc/client_async_impl.h"
 #include "mozolm/grpc/client_config.pb.h"
 

@@ -15,9 +15,9 @@
 #include "mozolm/grpc/server_helper.h"
 
 #include "google/protobuf/stubs/logging.h"
-#include "include/grpcpp/security/server_credentials.h"
 #include "absl/memory/memory.h"
 #include "absl/synchronization/notification.h"
+#include "include/grpcpp/security/server_credentials.h"
 #include "mozolm/models/model_factory.h"
 #include "nisaba/port/status_macros.h"
 

@@ -19,13 +19,13 @@
 #include <memory>
 
 #include "mozolm/stubs/integral_types.h"
-#include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 #include "absl/memory/memory.h"
-#include "include/grpc++/alarm.h"
+#include "include/grpcpp/alarm.h"
+#include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
 #include "mozolm/grpc/service.grpc.pb.h"
 #include "mozolm/grpc/service_mock.grpc.pb.h"
 
