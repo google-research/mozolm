@@ -46,12 +46,12 @@ nisaba_public_repositories()
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
-grpc_version = "1.38.1"
+grpc_version = "1.39.1"
 
 http_archive(
     name = "com_github_grpc_grpc",
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "f60e5b112913bf776a22c16a3053cc02cf55e60bf27a959fd54d7aaf8e2da6e8",
+    sha256 = "024118069912358e60722a2b7e507e9c3b51eeaeee06e2dd9d95d9c16f6639ec",
     strip_prefix = "grpc-%s" % grpc_version,
 )
 
@@ -76,12 +76,12 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 # ------------------------------------
 # See https://github.com/grpc/grpc-java
 
-java_grpc_version = "1.39.0"
+java_grpc_version = "1.40.0"
 
 http_archive(
     name = "com_github_grpc_grpc_java",
     url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.tar.gz" % java_grpc_version,
-    sha256 = "85927f857e0b3ad5c4e51c2e6d29213d3e0319f20784aa2113552f71311ba74c",
+    sha256 = "bb35847c18c8bdf392f618396feb50f6473a3b4150a199d555715fd3260a9ab8",
     strip_prefix = "grpc-java-%s" % java_grpc_version,
 )
 
@@ -202,11 +202,11 @@ yarn_install(
 #   https://github.com/bazelbuild/rules_docker
 # -------------------------------------------------------------------------
 
-docker_version = "0.17.0"
+docker_version = "0.18.0"
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "59d5b42ac315e7eadffa944e86e90c2990110a1c8075f1cd145f487e999d22b3",
+    sha256 = "5d31ad261b9582515ff52126bf53b954526547a3e26f6c25a9d64c48a31e45ac",
     strip_prefix = "rules_docker-%s" % docker_version,
     urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v%s/rules_docker-v%s.tar.gz" % (
         docker_version, docker_version)],
