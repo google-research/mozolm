@@ -14,9 +14,11 @@
 
 #include "mozolm/models/model_factory.h"
 
+#include <string>
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/str_cat.h"
 #include "mozolm/models/ngram_char_fst_model.h"
 #include "mozolm/models/ngram_word_fst_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"
@@ -29,6 +31,8 @@ namespace models {
 
 absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
     const ModelConfig::ModelType &model_type, const ModelStorage &storage) {
+  const std::string model_type_name(ModelConfig::ModelType_Name(model_type));
+  GOOGLE_LOG(INFO) << "[" << model_type_name << "] Manufacturing model ...";
   std::unique_ptr<LanguageModel> model;
   if (model_type == ModelConfig::SIMPLE_CHAR_BIGRAM) {
     model.reset(new SimpleBigramCharModel);
@@ -39,12 +43,14 @@ absl::StatusOr<std::unique_ptr<LanguageModel>> MakeModel(
   } else if (model_type == ModelConfig::WORD_NGRAM_FST) {
     model.reset(new NGramWordFstModel);
   } else {  // Shouldn't be here.
-    return absl::UnimplementedError("Unsupported model type!");
+    return absl::UnimplementedError(absl::StrCat("Unsupported model type: ",
+                                                 model_type_name));
   }
-  GOOGLE_LOG(INFO) << "Reading ...";
+  GOOGLE_LOG(INFO) << "[" << model_type_name << "] Reading ...";
   nisaba::Timer timer;
   RETURN_IF_ERROR(model->Read(storage));
-  GOOGLE_LOG(INFO) << "Model read in " << timer.ElapsedMillis() << " msec.";
+  GOOGLE_LOG(INFO) << "[" << model_type_name << "] Model read in "
+            << timer.ElapsedMillis() << " msec.";
   return std::move(model);
 }
 
@@ -57,7 +63,7 @@ absl::StatusOr<std::unique_ptr<LanguageModelHub>> MakeModelHub(
     const ModelHubConfig &config) {
   std::unique_ptr<LanguageModelHub> model_hub(new LanguageModelHub);
   if (config.model_config_size() == 0) {
-    // No models specified, adds a single default model.
+    GOOGLE_LOG(INFO) << "No models specified, adding a single default model.";
     auto model_status = models::MakeModel(ModelConfig());
     if (!model_status.ok()) return model_status.status();
     model_hub->AddModel(std::move(model_status.value()));
