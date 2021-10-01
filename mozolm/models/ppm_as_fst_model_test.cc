@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "fst/arcsort.h"
 #include "fst/isomorphic.h"
@@ -160,7 +161,7 @@ class PpmAsFstTest : public ::testing::Test {
   ModelStorage storage_;  // Default storage proto for initializing model;
 };
 
-// Initializing with either corpus or fst yields same result for static model.
+// Initializing with either corpus or FST yields same result for static model.
 TEST_F(PpmAsFstTest, InitializingFromFstOrTextTheSame) {
   PpmAsFstModel model_from_fst;
   ModelStorage storage_fst = storage_;
@@ -174,7 +175,7 @@ TEST_F(PpmAsFstTest, InitializingFromFstOrTextTheSame) {
       Isomorphic<StdArc>(model_from_fst.GetFst(), model_from_text.GetFst()));
 }
 
-// Initializing with either corpus or fst yields same result for dynamic model.
+// Initializing with either corpus or FST yields same result for dynamic model.
 TEST_F(PpmAsFstTest, InitializingFromFstOrTextTheSameDynamic) {
   PpmAsFstModel model_from_fst;
   ModelStorage storage_fst = storage_;
@@ -352,7 +353,7 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   ModelStorage storage = storage_;
   storage.mutable_ppm_options()->set_static_model(false);
   ASSERT_OK(model.Read(storage));
-  int start_state = model.ContextState("");
+  const int start_state = model.ContextState("");
 
   // Add a single count at the start state for both "b" and </S>. Since these
   // are unobserved, the start state count goes to 1 for each and the unigram
@@ -391,6 +392,41 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   for (int i = 0; i < 3; ++i) {
     ASSERT_NEAR(extracted_probs[i], expected_probs[i], kFloatDelta);
   }
+}
+
+// Updating probs through UpdateLMCounts for a model initialized without
+// training data or vocabulary.
+TEST(PpmAsFstOtherTest, UpdateLMCountsForEmptyModel) {
+  // Set up configuration for an empty initial model.
+  ModelStorage storage;
+  const int max_order = 3;
+  storage.mutable_ppm_options()->set_max_order(max_order);
+  storage.mutable_ppm_options()->set_static_model(false);
+  storage.mutable_ppm_options()->set_model_is_fst(false);
+
+  // Initialize the empty FST.
+  PpmAsFstModel model;
+  ASSERT_OK(model.Read(storage));
+
+  // Check the initial model estimates. These only include the estimates for
+  // the single end-of-sentence symbol.
+  LMScores lm_scores;
+  const int start_state = model.ContextState("");
+  ASSERT_TRUE(model.ExtractLMScores(start_state, &lm_scores));
+  ASSERT_EQ(1, lm_scores.symbols().size());
+  EXPECT_TRUE(lm_scores.symbols()[0].empty());  // End-of-sentence.
+  ASSERT_EQ(1, lm_scores.probabilities().size());
+  EXPECT_EQ(1.0, lm_scores.probabilities()[0]);
+
+  // Update the model with single observations for `a` and `b`.
+  //
+  // TODO: The returned LM symbols are clearly wrong. Fix.
+  EXPECT_TRUE(model.UpdateLMCounts(start_state, {97}, 1));
+  EXPECT_TRUE(model.UpdateLMCounts(start_state, {98}, 1));
+  ASSERT_TRUE(model.ExtractLMScores(start_state, &lm_scores));
+  ASSERT_EQ(2, lm_scores.symbols().size());
+  EXPECT_EQ("", lm_scores.symbols()[0]);
+  EXPECT_EQ("", lm_scores.symbols()[1]);
 }
 
 }  // namespace models

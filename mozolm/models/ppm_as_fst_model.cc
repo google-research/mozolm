@@ -24,6 +24,7 @@
 #include "ngram/ngram-count.h"
 #include "ngram/ngram-model.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
 #include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
 #include "nisaba/port/timer.h"
@@ -48,12 +49,23 @@ using fst::SymbolTableIterator;
 namespace impl {
 namespace {
 
+void MakeEmpty(StdVectorFst *fst) {
+  const int start_state = fst->AddState();
+  const int unigram_state = fst->AddState();
+  fst->SetStart(start_state);
+  fst->SetFinal(unigram_state, 0.0);
+  fst->AddArc(start_state, StdArc(0, 0, 0.0, unigram_state));
+}
+
 // Returns the backoff state for the current state if exists, otherwise -1.
 int GetBackoffState(const StdVectorFst& fst, StdArc::StateId s) {
   int backoff_state = -1;
   if (s >= 0 && s < fst.NumStates()) {
     // Checks first arc leaving state. Will have label 0 if there is a backoff.
     ArcIterator<StdVectorFst> aiter(fst, s);
+    if (aiter.Done()) {  // No arcs leaving state.
+      return backoff_state;
+    }
     const StdArc arc = aiter.Value();
     if (arc.ilabel == 0) {
       backoff_state = arc.nextstate;
@@ -196,6 +208,7 @@ absl::Status CalculateUpdateExclusions(StdVectorFst *fst) {
 // Returns true if the state has no observed continuations.
 bool NoObservations(const StdVectorFst& fst, StdArc::StateId s) {
   ArcIterator<StdVectorFst> aiter(fst, s);
+  if (aiter.Done()) return true;  // Empty FST.
   const StdArc arc = aiter.Value();
   if (fst.Final(s) == StdArc::Weight::Zero() && fst.NumArcs(s) == 1 &&
       arc.ilabel == 0) {
@@ -295,7 +308,7 @@ absl::Status PpmAsFstModel::AddExtraCharacters(
 
 absl::StatusOr<int> PpmAsFstModel::CalculateStateOrder(int s) {
   if (state_orders_[s] >= 0) return state_orders_[s];
-  int backoff_state = impl::GetBackoffState(*fst_, s);
+  const int backoff_state = impl::GetBackoffState(*fst_, s);
   if (backoff_state < 0) {
     return absl::InternalError(
         "No backoff state found when computing state orders.");
@@ -311,7 +324,7 @@ absl::StatusOr<int> PpmAsFstModel::CalculateStateOrder(int s) {
 absl::Status PpmAsFstModel::CalculateStateOrders(bool save_state_orders) {
   state_orders_.resize(fst_->NumStates(), -1);
   state_orders_[fst_->Start()] = 1;
-  int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
+  const int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
   state_orders_[unigram_state] = 0;
   int max_state_order = 1;
   for (int s = 0; s < state_orders_.size(); ++s) {
@@ -329,7 +342,7 @@ absl::Status PpmAsFstModel::CalculateStateOrders(bool save_state_orders) {
 }
 
 absl::Status PpmAsFstModel::AddPriorCounts() {
-  int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
+  const int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
   if (unigram_state < 0) {
     return absl::InternalError(
         "No unigram state found when adding prior counts.");
@@ -403,7 +416,8 @@ absl::Status PpmAsFstModel::TrainFromText(const std::string& input_file) {
   std::vector<std::string> istrings;
   std::ifstream infile(input_file);
   if (!infile.is_open()) {
-    return absl::NotFoundError(absl::StrCat("File not found: ", input_file));
+    return absl::NotFoundError(absl::StrCat("Training text file not found: ",
+                                            input_file));
   }
   GOOGLE_LOG(INFO) << "Loading from \"" << input_file << "\" ...";
   std::string input_line;
@@ -419,11 +433,7 @@ absl::Status PpmAsFstModel::TrainFromText(
     const std::vector<std::string>& istrings) {
   absl::Status train_status = absl::OkStatus();
   if (istrings.empty()) {
-    int start_state = fst_->AddState();
-    int unigram_state = fst_->AddState();
-    fst_->SetStart(start_state);
-    fst_->SetFinal(unigram_state, 0.0);
-    fst_->AddArc(start_state, StdArc(0, 0, 0.0, unigram_state));
+    impl::MakeEmpty(fst_.get());
   } else {
     for (const auto& input_line : istrings) {
       if (!input_line.empty()) {
@@ -482,11 +492,12 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
                         ? ppm_as_fst_config.max_cache_size()
                         : kMaxCache;
   if (!storage.model_file().empty() && ppm_as_fst_config.model_is_fst()) {
+    GOOGLE_LOG(INFO) << "Reading as FST ...";
     fst_ = absl::WrapUnique(StdVectorFst::Read(storage.model_file()));
     const auto syms = *fst_->InputSymbols();
     syms_ = absl::make_unique<SymbolTable>(syms);
   } else {
-    // Train ppm from given text file if non-empty, empty Fst otherwise.
+    // Train PPM from given text file if non-empty, empty FST otherwise.
     fst_ = absl::make_unique<StdVectorFst>();
     syms_ = absl::make_unique<SymbolTable>();
     fst_->SetInputSymbols(syms_.get());
@@ -498,14 +509,20 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
     nisaba::Timer timer;
-    RETURN_IF_ERROR(TrainFromText(storage.model_file()));
+    if (!storage.model_file().empty()) {
+      GOOGLE_LOG(INFO) << "Training from text ...";
+      RETURN_IF_ERROR(TrainFromText(storage.model_file()));
+    } else {
+      GOOGLE_LOG(INFO) << "Empty initial FST ...";
+      impl::MakeEmpty(fst_.get());
+    }
     GOOGLE_LOG(INFO) << "Constructed in " << timer.ElapsedMillis() << " msec.";
   }
   if (!storage.vocabulary_file().empty()) {
     std::ifstream infile(storage.vocabulary_file());
     if (!infile.is_open()) {
-      return absl::NotFoundError(
-          absl::StrCat("File not found: ", storage.vocabulary_file()));
+      return absl::NotFoundError(absl::StrCat(
+          "Vocabulary file not found: ", storage.vocabulary_file()));
     }
     std::string input_line;
     while (std::getline(infile, input_line)) {
@@ -720,7 +737,7 @@ absl::StatusOr<PpmStateCache> PpmAsFstModel::EnsureCacheAtState(
     StdArc::StateId s) {
   bool update_access = true;
   if (cache_index_[s] < 0 || LowerOrderCacheUpdated(s)) {
-    absl::Status update_status = UpdateCacheAtState(s);
+    const absl::Status update_status = UpdateCacheAtState(s);
     if (update_status != absl::OkStatus()) return update_status;
     update_access = false;
   }
@@ -1032,10 +1049,15 @@ bool PpmStateCache::FillLMScores(const SymbolTable& syms,
   response->mutable_symbols()->Reserve(num_scores);
   response->add_symbols("");  // Empty string by default end-of-string.
   response->mutable_probabilities()->Reserve(num_scores);
-  response->add_probabilities(std::exp(-neg_log_probabilities_[0]));
-  for (size_t i = 1; i < neg_log_probabilities_.size(); i++) {
-    response->add_symbols(syms.Find(i));
-    response->add_probabilities(std::exp(-neg_log_probabilities_[i]));
+  if (!neg_log_probabilities_.empty()) {
+    response->add_probabilities(std::exp(-neg_log_probabilities_[0]));
+    for (size_t i = 1; i < neg_log_probabilities_.size(); i++) {
+      response->add_symbols(syms.Find(i));
+      response->add_probabilities(std::exp(-neg_log_probabilities_[i]));
+    }
+  } else {
+    // Retrieving scores from an empty model.
+    response->add_probabilities(1.0);
   }
   return true;
 }
