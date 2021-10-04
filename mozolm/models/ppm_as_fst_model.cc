@@ -485,6 +485,10 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
                         : kMaxCache;
   if (!storage.model_file().empty() && ppm_as_fst_config.model_is_fst()) {
     fst_ = absl::WrapUnique(StdVectorFst::Read(storage.model_file()));
+    if (!fst_) {
+      return absl::NotFoundError(absl::StrCat("Can't read FST model from ",
+                                              storage.model_file()));
+    }
     const auto syms = *fst_->InputSymbols();
     syms_ = absl::make_unique<SymbolTable>(syms);
   } else {
