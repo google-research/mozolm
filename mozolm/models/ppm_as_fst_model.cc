@@ -15,7 +15,6 @@
 #include "mozolm/models/ppm_as_fst_model.h"
 
 #include <cmath>
-#include <fstream>
 
 #include "google/protobuf/stubs/logging.h"
 #include "fst/arcsort.h"
@@ -28,12 +27,14 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "nisaba/port/timer.h"
+#include "nisaba/port/file_util.h"
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace models {
 
+using nisaba::file::ReadLines;
 using nisaba::utf8::EncodeUnicodeChar;
 using nisaba::utf8::StrSplitByChar;
 
@@ -48,6 +49,15 @@ using fst::SymbolTableIterator;
 
 namespace impl {
 namespace {
+
+// Creates initial empty FST with a start and unigram states.
+void MakeEmpty(StdVectorFst *fst) {
+  const int start_state = fst->AddState();
+  const int unigram_state = fst->AddState();
+  fst->SetStart(start_state);
+  fst->SetFinal(unigram_state, 0.0);
+  fst->AddArc(start_state, StdArc(0, 0, 0.0, unigram_state));
+}
 
 // Returns the backoff state for the current state if exists, otherwise -1.
 int GetBackoffState(const StdVectorFst& fst, StdArc::StateId s) {
@@ -400,60 +410,30 @@ absl::StatusOr<StdVectorFst> PpmAsFstModel::String2Fst(
   return fst;
 }
 
-absl::Status PpmAsFstModel::TrainFromText(const std::string& input_file) {
-  std::vector<std::string> istrings;
-  std::ifstream infile(input_file);
-  if (!infile.is_open()) {
-    return absl::NotFoundError(absl::StrCat("Training text file not found: ",
-                                            input_file));
-  }
-  GOOGLE_LOG(INFO) << "Loading from \"" << input_file << "\" ...";
-  std::string input_line;
-  while (std::getline(infile, input_line)) {
-    istrings.push_back(input_line);
-  }
-  infile.close();
-  GOOGLE_LOG(INFO) << "Constructing ...";
-  return TrainFromText(istrings);
-}
-
 absl::Status PpmAsFstModel::TrainFromText(
     const std::vector<std::string>& istrings) {
-  absl::Status train_status = absl::OkStatus();
-  if (istrings.empty()) {
-    int start_state = fst_->AddState();
-    int unigram_state = fst_->AddState();
-    fst_->SetStart(start_state);
-    fst_->SetFinal(unigram_state, 0.0);
-    fst_->AddArc(start_state, StdArc(0, 0, 0.0, unigram_state));
-  } else {
-    for (const auto& input_line : istrings) {
-      if (!input_line.empty()) {
-        const auto fst_status = String2Fst(input_line);
-        if (!fst_status.ok()) {
-          return fst_status.status();
-        }
-        const StdVectorFst& fst = fst_status.value();
-        if (fst.NumStates() <= 0) {
-          return absl::InternalError("Line read as empty string.");
-        }
-        if (!ngram_counter_->Count(fst)) {
-          return absl::InternalError("Failure to count ngrams from string.");
-        }
+  for (const auto& input_line : istrings) {
+    if (!input_line.empty()) {
+      const auto fst_status = String2Fst(input_line);
+      if (!fst_status.ok()) {
+        return fst_status.status();
+      }
+      const StdVectorFst& fst = fst_status.value();
+      if (fst.NumStates() <= 0) {
+        return absl::InternalError("Line read as empty string.");
+      }
+      if (!ngram_counter_->Count(fst)) {
+        return absl::InternalError("Failure to count ngrams from string.");
       }
     }
-    ngram_counter_->GetFst(fst_.get());
-    ArcSort(fst_.get(), ILabelCompare<StdArc>());
-    train_status = impl::CalculateUpdateExclusions(fst_.get());
-    if (train_status == absl::OkStatus()) {
-      train_status = AddPriorCounts();
-    }
   }
-  if (train_status == absl::OkStatus()) {
-    fst_->SetInputSymbols(syms_.get());
-    fst_->SetOutputSymbols(syms_.get());
-  }
-  return train_status;
+  ngram_counter_->GetFst(fst_.get());
+  ArcSort(fst_.get(), ILabelCompare<StdArc>());
+  RETURN_IF_ERROR(impl::CalculateUpdateExclusions(fst_.get()));
+  RETURN_IF_ERROR(AddPriorCounts());
+  fst_->SetInputSymbols(syms_.get());
+  fst_->SetOutputSymbols(syms_.get());
+  return absl::OkStatus();
 }
 
 absl::Status PpmAsFstModel::WriteFst(const std::string& ofile) {
@@ -492,7 +472,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     const auto syms = *fst_->InputSymbols();
     syms_ = absl::make_unique<SymbolTable>(syms);
   } else {
-    // Train ppm from given text file if non-empty, empty Fst otherwise.
+    // Train PPM from given text file if non-empty, empty FST otherwise.
     fst_ = absl::make_unique<StdVectorFst>();
     syms_ = absl::make_unique<SymbolTable>();
     fst_->SetInputSymbols(syms_.get());
@@ -503,21 +483,31 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     syms_->AddSymbol("<epsilon>");
     ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
-    nisaba::Timer timer;
-    RETURN_IF_ERROR(TrainFromText(storage.model_file()));
-    GOOGLE_LOG(INFO) << "Constructed in " << timer.ElapsedMillis() << " msec.";
+    if (!storage.model_file().empty()) {
+      nisaba::Timer timer;
+      std::vector<std::string> text_lines;
+      ASSIGN_OR_RETURN(text_lines, ReadLines(storage.model_file()));
+      if (!text_lines.empty()) RETURN_IF_ERROR(TrainFromText(text_lines));
+      GOOGLE_LOG(INFO) << "Constructed in " << timer.ElapsedMillis() << " msec.";
+    } else if (storage.vocabulary_file().empty()) {
+      return absl::InternalError(absl::StrCat(
+          "No vocabulary supplied and training text file \"",
+          storage.model_file(), "\" is empty"));
+    } else {
+      // No training data, but vocabulary has been supplied.
+      impl::MakeEmpty(fst_.get());
+    }
   }
   if (!storage.vocabulary_file().empty()) {
-    std::ifstream infile(storage.vocabulary_file());
-    if (!infile.is_open()) {
-      return absl::NotFoundError(absl::StrCat(
-          "Vocabulary file not found: ", storage.vocabulary_file()));
+    std::vector<std::string> vocab_lines;
+    ASSIGN_OR_RETURN(vocab_lines, ReadLines(storage.vocabulary_file()));
+    if (vocab_lines.empty()) {
+      return absl::InternalError(absl::StrCat(
+          "Vocabulary file \"", storage.vocabulary_file(), "\" is empty"));
     }
-    std::string input_line;
-    while (std::getline(infile, input_line)) {
-      RETURN_IF_ERROR(AddExtraCharacters(input_line));
+    for (const auto &line : vocab_lines) {
+      RETURN_IF_ERROR(AddExtraCharacters(line));
     }
-    infile.close();
   }
   RETURN_IF_ERROR(CalculateStateOrders(/*save_state_orders=*/!static_model_));
   if (max_cache_size_ < max_order_) {

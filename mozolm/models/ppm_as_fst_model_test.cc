@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "fst/arcsort.h"
 #include "fst/isomorphic.h"
@@ -30,6 +31,7 @@
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
 #include "mozolm/models/model_storage.pb.h"
+#include "nisaba/port/file_util.h"
 #include "nisaba/port/utf8_util.h"
 
 namespace mozolm {
@@ -37,6 +39,7 @@ namespace models {
 
 static constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 
+using ::nisaba::file::WriteTempTextFile;
 using ::nisaba::utf8::DecodeSingleUnicodeChar;
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
@@ -391,6 +394,37 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   for (int i = 0; i < 3; ++i) {
     ASSERT_NEAR(extracted_probs[i], expected_probs[i], kFloatDelta);
   }
+}
+
+TEST(PpmAsFstOtherTest, CheckBadInitializationConditions) {
+  ModelStorage storage;
+  PpmAsFstModel model;
+  ASSERT_FALSE(model.Read(storage).ok());
+  const int max_order = 3;
+  storage.mutable_ppm_options()->set_max_order(max_order);
+  ASSERT_FALSE(model.Read(storage).ok());
+  storage.mutable_ppm_options()->set_static_model(false);
+  ASSERT_FALSE(model.Read(storage).ok());
+
+  // Add vocabulary. Model initialization should succeed setting the estimates
+  // to uniform distribution.
+  constexpr char kVocabName[] = "vocab.txt";
+  auto write_status = WriteTempTextFile(kVocabName, "a\nb\nc\n");
+  ASSERT_OK(write_status.status());
+  std::string vocab_path = write_status.value();
+  storage.set_vocabulary_file(vocab_path);
+  ASSERT_OK(model.Read(storage));
+  EXPECT_TRUE(std::filesystem::remove(vocab_path));
+
+  // Set the vocabulary file to empty. No training data and no vocabulary
+  // should fail.
+  write_status = WriteTempTextFile(kVocabName, "");
+  ASSERT_OK(write_status.status());
+  vocab_path = write_status.value();
+  EXPECT_FALSE(vocab_path.empty());
+  storage.set_vocabulary_file(vocab_path);
+  ASSERT_FALSE(model.Read(storage).ok());
+  EXPECT_TRUE(std::filesystem::remove(vocab_path));
 }
 
 }  // namespace models

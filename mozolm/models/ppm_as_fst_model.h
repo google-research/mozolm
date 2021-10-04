@@ -197,9 +197,6 @@ class PpmAsFstModel : public LanguageModel {
       const std::vector<int>& sym_indices, bool return_bits = false);
 
  private:
-  // Trains fst model from text corpus.
-  absl::Status TrainFromText(const std::string& ifile);
-
   // Trains fst model from vector of strings.
   absl::Status TrainFromText(const std::vector<std::string>& istrings);
 
