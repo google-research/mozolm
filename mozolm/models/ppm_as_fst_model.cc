@@ -26,6 +26,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "nisaba/port/timer.h"
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/status_macros.h"
@@ -329,7 +330,7 @@ absl::Status PpmAsFstModel::CalculateStateOrders(bool save_state_orders) {
 }
 
 absl::Status PpmAsFstModel::AddPriorCounts() {
-  int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
+  const int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
   if (unigram_state < 0) {
     return absl::InternalError(
         "No unigram state found when adding prior counts.");
@@ -403,7 +404,8 @@ absl::Status PpmAsFstModel::TrainFromText(const std::string& input_file) {
   std::vector<std::string> istrings;
   std::ifstream infile(input_file);
   if (!infile.is_open()) {
-    return absl::NotFoundError(absl::StrCat("File not found: ", input_file));
+    return absl::NotFoundError(absl::StrCat("Training text file not found: ",
+                                            input_file));
   }
   GOOGLE_LOG(INFO) << "Loading from \"" << input_file << "\" ...";
   std::string input_line;
@@ -457,7 +459,7 @@ absl::Status PpmAsFstModel::TrainFromText(
 absl::Status PpmAsFstModel::WriteFst(const std::string& ofile) {
   ArcSort(fst_.get(), ILabelCompare<StdArc>());
   if (!fst_->Write(ofile)) {
-    return absl::InternalError(absl::StrCat("Failed to write to ", ofile));
+    return absl::InternalError(absl::StrCat("Failed to write FST to ", ofile));
   } else {
     return absl::OkStatus();
   }
@@ -504,8 +506,8 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
   if (!storage.vocabulary_file().empty()) {
     std::ifstream infile(storage.vocabulary_file());
     if (!infile.is_open()) {
-      return absl::NotFoundError(
-          absl::StrCat("File not found: ", storage.vocabulary_file()));
+      return absl::NotFoundError(absl::StrCat(
+          "Vocabulary file not found: ", storage.vocabulary_file()));
     }
     std::string input_line;
     while (std::getline(infile, input_line)) {
@@ -720,7 +722,7 @@ absl::StatusOr<PpmStateCache> PpmAsFstModel::EnsureCacheAtState(
     StdArc::StateId s) {
   bool update_access = true;
   if (cache_index_[s] < 0 || LowerOrderCacheUpdated(s)) {
-    absl::Status update_status = UpdateCacheAtState(s);
+    const absl::Status update_status = UpdateCacheAtState(s);
     if (update_status != absl::OkStatus()) return update_status;
     update_access = false;
   }
