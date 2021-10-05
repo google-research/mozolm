@@ -36,8 +36,10 @@
 
 namespace mozolm {
 namespace models {
+namespace {
 
-static constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
+constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
+constexpr char kVocabFileName[] = "vocab.txt";
 
 using ::nisaba::file::WriteTempTextFile;
 using ::nisaba::utf8::DecodeSingleUnicodeChar;
@@ -47,6 +49,8 @@ using ::fst::Isomorphic;
 using ::fst::StdArc;
 using ::fst::StdVectorFst;
 using ::fst::SymbolTable;
+using ::testing::DoubleEq;
+using ::testing::Each;
 
 class PpmAsFstTest : public ::testing::Test {
  protected:
@@ -355,7 +359,7 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   ModelStorage storage = storage_;
   storage.mutable_ppm_options()->set_static_model(false);
   ASSERT_OK(model.Read(storage));
-  int start_state = model.ContextState("");
+  const int start_state = model.ContextState("");
 
   // Add a single count at the start state for both "b" and </S>. Since these
   // are unobserved, the start state count goes to 1 for each and the unigram
@@ -396,6 +400,7 @@ TEST_F(PpmAsFstTest, UpdateLMCounts) {
   }
 }
 
+// Checks various bad initialization conditions.
 TEST(PpmAsFstOtherTest, CheckBadInitializationConditions) {
   ModelStorage storage;
   PpmAsFstModel model;
@@ -415,8 +420,7 @@ TEST(PpmAsFstOtherTest, CheckBadInitializationConditions) {
 
   // Add vocabulary. Model initialization should succeed setting the estimates
   // to uniform distribution.
-  constexpr char kVocabName[] = "vocab.txt";
-  auto write_status = WriteTempTextFile(kVocabName, "a\nb\nc\n");
+  auto write_status = WriteTempTextFile(kVocabFileName, "a\nb\nc\n");
   ASSERT_OK(write_status.status());
   std::string vocab_path = write_status.value();
   storage.set_vocabulary_file(vocab_path);
@@ -425,7 +429,7 @@ TEST(PpmAsFstOtherTest, CheckBadInitializationConditions) {
 
   // Set the vocabulary file to empty. No training data and no vocabulary
   // should fail.
-  write_status = WriteTempTextFile(kVocabName, "");
+  write_status = WriteTempTextFile(kVocabFileName, "");
   ASSERT_OK(write_status.status());
   vocab_path = write_status.value();
   EXPECT_FALSE(vocab_path.empty());
@@ -434,5 +438,46 @@ TEST(PpmAsFstOtherTest, CheckBadInitializationConditions) {
   EXPECT_TRUE(std::filesystem::remove(vocab_path));
 }
 
+TEST(PpmAsFstOtherTest, CheckVocabularyOnly) {
+  // Initialize bigram model given the vocabulary {'a', 'b'}.
+  ModelStorage storage;
+  PpmAsFstModel model;
+  const int max_order = 2;
+  storage.mutable_ppm_options()->set_max_order(max_order);
+  storage.mutable_ppm_options()->set_static_model(false);
+  const auto write_status = WriteTempTextFile(kVocabFileName, "ab");
+  ASSERT_OK(write_status.status());
+  const std::string vocab_path = write_status.value();
+  EXPECT_FALSE(vocab_path.empty());
+  storage.set_vocabulary_file(vocab_path);
+  ASSERT_OK(model.Read(storage));
+  EXPECT_TRUE(std::filesystem::remove(vocab_path));
+
+  // Retrieve initial estimates.
+  LMScores scores;
+  const int start_state = model.ContextState("");
+  ASSERT_TRUE(model.ExtractLMScores(start_state, &scores));
+  ASSERT_EQ(3, scores.symbols_size());
+  EXPECT_EQ("", scores.symbols(0));  // </S>.
+  EXPECT_EQ("a", scores.symbols(1));
+  EXPECT_EQ("b", scores.symbols(2));
+  ASSERT_EQ(3, scores.probabilities_size());
+  EXPECT_THAT(scores.probabilities(), Each(DoubleEq(1.0 / 3)));
+
+  // Update the model.
+  ASSERT_TRUE(model.UpdateLMCounts(
+      start_state, {97}, 1));  // updates "a" count.
+  ASSERT_TRUE(model.UpdateLMCounts(
+      start_state, {98}, 1));  // updates "b" count.
+
+  // Retrieve new estimates.
+  ASSERT_TRUE(model.ExtractLMScores(start_state, &scores));
+  ASSERT_EQ(3, scores.probabilities_size());
+  EXPECT_NEAR(0.2, scores.probabilities(0), kFloatDelta);
+  EXPECT_NEAR(0.4, scores.probabilities(1), kFloatDelta);
+  EXPECT_NEAR(0.4, scores.probabilities(2), kFloatDelta);
+}
+
+}  // namespace
 }  // namespace models
 }  // namespace mozolm

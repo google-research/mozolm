@@ -285,19 +285,18 @@ double BitsFromNats(double nats) {
 
 absl::Status PpmAsFstModel::AddExtraCharacters(
     const std::string& input_string) {
-  std::vector<std::string> syms = StrSplitByChar(input_string);
+  const std::vector<std::string> syms = StrSplitByChar(input_string);
   const int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
   if (unigram_state < 0) {
     return absl::InternalError(
         "No unigram state found when adding extra characters.");
   }
   for (const auto& sym : syms) {
-    int idx = fst_->InputSymbols()->Find(sym);
-    if (idx < 0) {
+    if (fst_->InputSymbols()->Find(sym) < 0) {
       fst_->MutableInputSymbols()->AddSymbol(sym);
       fst_->MutableOutputSymbols()->AddSymbol(sym);
       syms_->AddSymbol(sym);
-      idx = fst_->InputSymbols()->Find(sym);
+      const int idx = fst_->InputSymbols()->Find(sym);
       fst_->AddArc(unigram_state, StdArc(idx, idx, 0.0, unigram_state));
     }
   }
@@ -306,7 +305,7 @@ absl::Status PpmAsFstModel::AddExtraCharacters(
 
 absl::StatusOr<int> PpmAsFstModel::CalculateStateOrder(int s) {
   if (state_orders_[s] >= 0) return state_orders_[s];
-  int backoff_state = impl::GetBackoffState(*fst_, s);
+  const int backoff_state = impl::GetBackoffState(*fst_, s);
   if (backoff_state < 0) {
     return absl::InternalError(
         "No backoff state found when computing state orders.");
@@ -322,7 +321,10 @@ absl::StatusOr<int> PpmAsFstModel::CalculateStateOrder(int s) {
 absl::Status PpmAsFstModel::CalculateStateOrders(bool save_state_orders) {
   state_orders_.resize(fst_->NumStates(), -1);
   state_orders_[fst_->Start()] = 1;
-  int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
+  const int unigram_state = impl::GetBackoffState(*fst_, fst_->Start());
+  if (unigram_state < 0) {
+    return absl::InternalError("Invalid unigram state: -1");
+  }
   state_orders_[unigram_state] = 0;
   int max_state_order = 1;
   for (int s = 0; s < state_orders_.size(); ++s) {
@@ -479,9 +481,9 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     }
     fst_ = absl::make_unique<StdVectorFst>();
     syms_ = absl::make_unique<SymbolTable>();
+    syms_->AddSymbol("<epsilon>");
     fst_->SetInputSymbols(syms_.get());
     fst_->SetOutputSymbols(syms_.get());
-    syms_->AddSymbol("<epsilon>");
     ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
     if (!storage.model_file().empty()) {
@@ -510,6 +512,11 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     }
     for (const auto &line : vocab_lines) {
       RETURN_IF_ERROR(AddExtraCharacters(line));
+    }
+    if (storage.model_file().empty()) {
+      // We've initialized solely from the vocabulary.
+      ArcSort(fst_.get(), ILabelCompare<StdArc>());
+      RETURN_IF_ERROR(AddPriorCounts());
     }
   }
   RETURN_IF_ERROR(CalculateStateOrders(/*save_state_orders=*/!static_model_));
@@ -1026,6 +1033,7 @@ absl::StatusOr<double> PpmStateCache::NegLogProbability(int sym_index) const {
 
 bool PpmStateCache::FillLMScores(const SymbolTable& syms,
                                  LMScores* response) const {
+  response->Clear();
   response->set_normalization(std::exp(-normalization_));
   const int num_scores = neg_log_probabilities_.size() + 1;
   response->mutable_symbols()->Reserve(num_scores);
