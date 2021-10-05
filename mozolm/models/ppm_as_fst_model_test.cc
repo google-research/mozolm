@@ -406,6 +406,13 @@ TEST(PpmAsFstOtherTest, CheckBadInitializationConditions) {
   storage.mutable_ppm_options()->set_static_model(false);
   ASSERT_FALSE(model.Read(storage).ok());
 
+  // We shouldn't crash with an empty FST model.
+  storage.mutable_ppm_options()->set_model_is_fst(true);
+  storage.set_model_file("invalid");
+  ASSERT_FALSE(model.Read(storage).ok());
+  storage.mutable_ppm_options()->set_model_is_fst(false);
+  storage.mutable_model_file()->clear();
+
   // Add vocabulary. Model initialization should succeed setting the estimates
   // to uniform distribution.
   constexpr char kVocabName[] = "vocab.txt";
