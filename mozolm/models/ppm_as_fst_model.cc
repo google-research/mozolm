@@ -464,6 +464,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
                         ? ppm_as_fst_config.max_cache_size()
                         : kMaxCache;
   if (!storage.model_file().empty() && ppm_as_fst_config.model_is_fst()) {
+    GOOGLE_LOG(INFO) << "Reading FST model  ...";
     fst_ = absl::WrapUnique(StdVectorFst::Read(storage.model_file()));
     if (!fst_) {
       return absl::NotFoundError(absl::StrCat("Can't read FST model from ",
@@ -473,17 +474,18 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     syms_ = absl::make_unique<SymbolTable>(syms);
   } else {
     // Train PPM from given text file if non-empty, empty FST otherwise.
+    if (max_order_ <= 0) {
+      return absl::InternalError("max_order_ must be at least 1.");
+    }
     fst_ = absl::make_unique<StdVectorFst>();
     syms_ = absl::make_unique<SymbolTable>();
     fst_->SetInputSymbols(syms_.get());
     fst_->SetOutputSymbols(syms_.get());
-    if (max_order_ <= 0) {
-      return absl::InternalError("max_order_ must be at least 1.");
-    }
     syms_->AddSymbol("<epsilon>");
     ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
     if (!storage.model_file().empty()) {
+      GOOGLE_LOG(INFO) << "Initializing from training data ...";
       nisaba::Timer timer;
       std::vector<std::string> text_lines;
       ASSIGN_OR_RETURN(text_lines, ReadLines(storage.model_file()));
@@ -495,6 +497,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
           storage.model_file(), "\" is empty"));
     } else {
       // No training data, but vocabulary has been supplied.
+      GOOGLE_LOG(INFO) << "Making empty model ...";
       impl::MakeEmpty(fst_.get());
     }
   }
