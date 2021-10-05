@@ -19,6 +19,18 @@ package(default_visibility = ["//mozolm:__subpackages__"])
 licenses(["notice"])
 
 java_binary(
+    name = "VocabOnlyModelClientExample",
+    srcs = ["VocabOnlyModelClientExample.java"],
+    runtime_deps = ["@com_github_grpc_grpc_java//netty"],
+    deps = [
+        "//mozolm/grpc:service_java_grpc_proto",
+        "//mozolm/grpc:service_java_proto",
+        "//mozolm/models:lm_scores_java_proto",
+        "@com_github_grpc_grpc_java//core",
+    ],
+)
+
+java_binary(
     name = "SimpleClientExample",
     srcs = ["SimpleClientExample.java"],
     runtime_deps = ["@com_github_grpc_grpc_java//netty"],

@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Simple demonstration of MozoLM client API. This example implements a simple
-// client that connects to the server providing an existing trained model and
-// queries for probabilities of the sample text.
+// Simple demonstration of MozoLM client API for the server initialized with
+// vocabulary only.
 
 package com.google.mozolm.examples;
 
 import com.google.mozolm.LMScores;
-import com.google.mozolm.grpc.GetContextRequest;
 import com.google.mozolm.grpc.MozoLMServiceGrpc;
+import com.google.mozolm.grpc.UpdateLMScoresRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,14 +32,15 @@ import java.util.logging.Logger;
 /**
  * Simple gRPC client for communicating with MozoLM server.
  *
- * This client connects to the MozoLM server that provides an existing model and
- * requests the probabilities of extending a given string context.
+ * This client connects to the MozoLM server providing dynamic model which can
+ * be started with vocabulary only, updates the model with several observations
+ * and requests the probabilities of extending a given string context.
  */
-final class SimpleClientExample {
+final class VocabOnlyModelClientExample {
   private static final Logger logger = Logger.getLogger(
-      SimpleClientExample.class.getName());
+      VocabOnlyModelClientExample.class.getName());
 
-  private SimpleClientExample() {
+  private VocabOnlyModelClientExample() {
   }
 
   public static void main(String[] args) throws InterruptedException {
@@ -56,7 +55,7 @@ final class SimpleClientExample {
       }
       serverSpec = args[0];
     }
-    new SimpleClientExample().run(serverSpec);
+    new VocabOnlyModelClientExample().run(serverSpec);
   }
 
   private void run(String serverSpec) throws InterruptedException {
@@ -66,36 +65,42 @@ final class SimpleClientExample {
         ManagedChannelBuilder.forTarget(serverSpec).executor(executor).
         usePlaintext().build();
     try {
+      // Update observations for 'a' and 'b'.
       final MozoLMServiceGrpc.MozoLMServiceBlockingStub blockingStub =
           MozoLMServiceGrpc.newBlockingStub(channel);
-      final ArrayList<Pair<Double, String>> topCands = getTopCandidates(
-          blockingStub, "Hello wo");
-      // For the "Hello wo..." context above, the next batch of hypotheses
-      // should (for a decent language model) contain letter "r".
-      final int numTopCands = 5;
-      for (int i = 0; i < numTopCands; ++i) {
-        info("Candidate {0}: {1} ({2})", i, topCands.get(i).getSecond(),
-            topCands.get(i).getFirst());
-        if (topCands.get(i).getSecond().equals("r")) {
-          info("===> Correct hypothesis found.");
-        }
+      info("Updating 'a' ...");
+      updateModel(blockingStub, 'a', 1);  // Observe 'a' once.
+      info("Updating 'b' ...");
+      ArrayList<Pair<Double, String>> cands = updateModel(
+          blockingStub, 'b', '1');  // Observe 'b' once.
+
+      // We should get back the estimates for three symbols:
+      //   '' (end-of-sentence), 'a' and 'b'.
+      for (int i = 0; i < cands.size(); ++i) {
+        info("===> {0}: \"{1}\" ({2})", i, cands.get(i).getSecond(),
+            cands.get(i).getFirst());
       }
-    } finally {
+     } finally {
       info("Shutting down ...");
       channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
     }
   }
 
-  /** Fetches probabilities for all the symbols continuing the supplied context. */
-  private ArrayList<Pair<Double, String>> getTopCandidates(
-      MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, String contextString)
-      throws AssertionError {
-    final int initialState = -1;
-    final GetContextRequest request = GetContextRequest.newBuilder()
-                                      .setState(initialState)
-                                      .setContext(contextString)
-                                      .build();
-    final LMScores scores = stub.getLMScores(request);
+  /**
+   * Updates the model with `count` observations for `symbol`. Fetches probabilities for all the
+   * symbols continuing the initial state.
+   */
+  private ArrayList<Pair<Double, String>> updateModel(
+      MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, char symbol, int count) {
+    final int initialState = 0;
+    @SuppressWarnings("CharacterGetNumericValue")
+    final UpdateLMScoresRequest request =
+        UpdateLMScoresRequest.newBuilder()
+            .setState(initialState)
+            .addUtf8Sym(Character.getNumericValue(symbol))
+            .setCount(count)
+            .build();
+    final LMScores scores = stub.updateLMScores(request);
     final int vocabSize = scores.getSymbolsCount();
     if (vocabSize != scores.getProbabilitiesCount()) {
       throw new AssertionError("Sizes of vocabulary and probability "
@@ -107,20 +112,11 @@ final class SimpleClientExample {
       symbolProbs.add(Pair.createPair(
           scores.getProbabilities(i), scores.getSymbols(i)));
     }
-    symbolProbs.sort(new ProbComparator());
     return symbolProbs;
   }
 
   private void info(String msg, Object... params) {
     logger.log(Level.INFO, msg, params);
-  }
-
-  /** Compares by decreasing probabilities. */
-  static class ProbComparator implements Comparator<Pair<Double, String>> {
-    @Override
-    public int compare(Pair<Double, String> a, Pair<Double, String> b) {
-      return -Double.compare(a.getFirst(), b.getFirst());
-    }
   }
 
   /**
