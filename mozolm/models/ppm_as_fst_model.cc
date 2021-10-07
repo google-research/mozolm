@@ -449,22 +449,7 @@ absl::Status PpmAsFstModel::WriteFst(const std::string& ofile) {
 
 absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
   const PpmAsFstOptions ppm_as_fst_config = storage.ppm_options();
-  max_order_ = ppm_as_fst_config.max_order() > 0 ? ppm_as_fst_config.max_order()
-                                                 : kMaxOrder;
-  alpha_ = ppm_as_fst_config.alpha();
-  if (alpha_ <= 0.0 || alpha_ >= 1.0) {
-    // Hyper-parameter out-of-range, setting to default.
-    alpha_ = kAlpha;
-  }
-  beta_ = ppm_as_fst_config.beta();
-  if (beta_ <= 0.0 || beta_ >= 1.0) {
-    // Hyper-parameter out-of-range, setting to default.
-    beta_ = kBeta;
-  }
-  static_model_ = ppm_as_fst_config.static_model();
-  max_cache_size_ = ppm_as_fst_config.max_cache_size() > max_order_
-                        ? ppm_as_fst_config.max_cache_size()
-                        : kMaxCache;
+  InitParameters(ppm_as_fst_config);
   if (!storage.model_file().empty() && ppm_as_fst_config.model_is_fst()) {
     GOOGLE_LOG(INFO) << "Reading FST model  ...";
     fst_ = absl::WrapUnique(StdVectorFst::Read(storage.model_file()));
@@ -528,6 +513,27 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
   cache_index_.resize(fst_->NumStates(), -1);
   set_start_state(fst_->Start());
   return absl::OkStatus();
+}
+
+void PpmAsFstModel::InitParameters(const PpmAsFstOptions& options) {
+  max_order_ = options.max_order() > 0 ? options.max_order() : kMaxOrder;
+  alpha_ = options.alpha();
+  if (alpha_ <= 0.0 || alpha_ >= 1.0) {
+    // Hyper-parameter out-of-range, setting to default.
+    alpha_ = kAlpha;
+  }
+  beta_ = options.beta();
+  if (beta_ <= 0.0 || beta_ >= 1.0) {
+    // Hyper-parameter out-of-range, setting to default.
+    beta_ = kBeta;
+  }
+  static_model_ = options.static_model();
+  max_cache_size_ = options.max_cache_size() > max_order_
+                    ? options.max_cache_size()
+                    : kMaxCache;
+  GOOGLE_LOG(INFO) << "Parameters: max order: " << max_order_ << ", alpha: " << alpha_
+            << ", beta: " << beta_ << ", static_model: " << static_model_
+            << ", max cache size: " << max_cache_size_;
 }
 
 int PpmAsFstModel::FindOldestLastAccessedCache() const {

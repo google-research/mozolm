@@ -197,6 +197,9 @@ class PpmAsFstModel : public LanguageModel {
       const std::vector<int>& sym_indices, bool return_bits = false);
 
  private:
+  // Initializes model parameters from the supplied proto.
+  void InitParameters(const PpmAsFstOptions& options);
+
   // Trains fst model from vector of strings.
   absl::Status TrainFromText(const std::vector<std::string>& istrings);
 
