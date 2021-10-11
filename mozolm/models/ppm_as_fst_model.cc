@@ -503,6 +503,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
       ArcSort(fst_.get(), ILabelCompare<StdArc>());
       RETURN_IF_ERROR(AddPriorCounts());
     }
+    GOOGLE_LOG(INFO) << "Added " << syms_->NumSymbols() << " symbols to vocabulary";
   }
   RETURN_IF_ERROR(CalculateStateOrders(/*save_state_orders=*/!static_model_));
   if (max_cache_size_ < max_order_) {
