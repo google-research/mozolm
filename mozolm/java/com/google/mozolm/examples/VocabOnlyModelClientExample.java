@@ -18,7 +18,9 @@
 package com.google.mozolm.examples;
 
 import com.google.mozolm.LMScores;
+import com.google.mozolm.grpc.GetContextRequest;
 import com.google.mozolm.grpc.MozoLMServiceGrpc;
+import com.google.mozolm.grpc.NextState;
 import com.google.mozolm.grpc.UpdateLMScoresRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -65,17 +67,27 @@ final class VocabOnlyModelClientExample {
         ManagedChannelBuilder.forTarget(serverSpec).executor(executor).
         usePlaintext().build();
     try {
-      // Update observations for 'a' and 'b'.
       final MozoLMServiceGrpc.MozoLMServiceBlockingStub blockingStub =
           MozoLMServiceGrpc.newBlockingStub(channel);
-      info("Updating 'a' ...");
-      updateModel(blockingStub, 'a', 1);  // Observe 'a' once.
-      info("Updating 'b' ...");
-      ArrayList<Pair<Double, String>> cands = updateModel(
-          blockingStub, 'b', '1');  // Observe 'b' once.
 
-      // We should get back the estimates for three symbols:
-      //   '' (end-of-sentence), 'a' and 'b'.
+      // We should get back the uniform probability mass for the following three
+      // symbols: '' (end-of-sentence), 'a' and 'b'.
+      ArrayList<Pair<Double, String>> cands = getProbs(blockingStub,
+          0, "");
+      info("Initial counts ...");
+      for (int i = 0; i < cands.size(); ++i) {
+        info("===> {0}: \"{1}\" ({2})", i, cands.get(i).getSecond(),
+            cands.get(i).getFirst());
+      }
+
+      // Update the model.
+      updateModel(blockingStub, "aaaaabbbbbbbbbbbbbbbbbbbbbb");
+
+      // Retrieve the estimates after updating the model. These should be
+      // different from the initial estimates.
+      // TODO: Fix.
+      info("Final counts ...");
+      cands = getProbs(blockingStub, 0, "");
       for (int i = 0; i < cands.size(); ++i) {
         info("===> {0}: \"{1}\" ({2})", i, cands.get(i).getSecond(),
             cands.get(i).getFirst());
@@ -91,16 +103,52 @@ final class VocabOnlyModelClientExample {
    * symbols continuing the initial state.
    */
   private ArrayList<Pair<Double, String>> updateModel(
-      MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, char symbol, int count) {
-    final int initialState = 0;
-    @SuppressWarnings("CharacterGetNumericValue")
-    final UpdateLMScoresRequest request =
-        UpdateLMScoresRequest.newBuilder()
-            .setState(initialState)
-            .addUtf8Sym(Character.getNumericValue(symbol))
-            .setCount(count)
-            .build();
-    final LMScores scores = stub.updateLMScores(request);
+      MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, String symbols) {
+    // Prepare the sentence.
+    final Character endOfSentenceChar = Character.MIN_VALUE;
+    ArrayList<Character> chars = new ArrayList<>();
+    for (char c : symbols.toCharArray()) {
+      chars.add(c);
+    }
+    chars.add(endOfSentenceChar);
+
+    // Send the sentence updating the counts character-by-character.
+    final long initialState = 0;
+    long state = initialState;
+    String context = "";
+    for (char c : chars) {
+      // Update the count of a given character at the current `state`.
+      @SuppressWarnings("CharacterGetNumericValue")
+      final UpdateLMScoresRequest request =
+          UpdateLMScoresRequest.newBuilder()
+              .setState(state)
+              .addUtf8Sym(Character.getNumericValue(c))
+              .setCount(1)
+              .build();
+      stub.updateLMScores(request);
+
+      // Advance the state.
+      context += Character.toString(c);
+      final GetContextRequest contextRequest = GetContextRequest.newBuilder()
+                                               .setState(state)
+                                               .setContext(context)
+                                               .build();
+      final NextState nextState = stub.getNextState(contextRequest);
+      state = nextState.getNextState();
+    }
+    return getProbs(stub, initialState, "");
+  }
+
+  /**
+   * Fetches the probabilities of being in the `state` corresponding to the
+   * `context` given the blocking  client connection `stub`.
+   */
+  private ArrayList<Pair<Double, String>> getProbs(
+      MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, long state, String context) {
+    final LMScores scores = stub.getLMScores(GetContextRequest.newBuilder()
+        .setState(state)
+        .setContext(context)
+        .build());
     final int vocabSize = scores.getSymbolsCount();
     if (vocabSize != scores.getProbabilitiesCount()) {
       throw new AssertionError("Sizes of vocabulary and probability "
