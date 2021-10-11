@@ -27,7 +27,7 @@ option java_multiple_files = true;
 // Next available ID: 3
 message GetContextRequest {
   // Initial state for getting state information.
-  int32 state = 1;
+  int64 state = 1;
 
   // Context string (from initial state) for info.
   string context = 2;
@@ -41,7 +41,7 @@ message NextState {
 // Next available ID: 4
 message UpdateLMScoresRequest {
   // State where count should be updated.
-  int32 state = 1;
+  int64 state = 1;
 
   // String of symbols whose count should be updated at that state.
   repeated int32 utf8_sym = 2;
