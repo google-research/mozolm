@@ -39,6 +39,23 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "language_model_hub_test",
+    srcs = ["language_model_hub_test.cc"],
+    deps = [
+        ":language_model_hub",
+        ":lm_scores_cc_proto",
+        ":model_config_cc_proto",
+        ":model_factory",
+        ":model_storage_cc_proto",
+        ":ppm_as_fst_options_cc_proto",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_nisaba//nisaba/port:file_util",
+        "@com_google_nisaba//nisaba/port:status-matchers",
+    ],
+)
+
 cc_library(
     name = "language_model",
     srcs = ["language_model.cc"],
