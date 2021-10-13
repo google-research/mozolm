@@ -74,7 +74,8 @@ absl::StatusOr<std::unique_ptr<LanguageModelHub>> MakeModelHub(
       model_hub->AddModel(std::move(model_status.value()));
     }
   }
-  model_hub->InitializeModels(config);
+  const auto status = model_hub->InitializeModels(config);
+  if (!status.ok()) return status;
   return std::move(model_hub);
 }
 

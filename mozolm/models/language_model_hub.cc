@@ -74,7 +74,7 @@ void ExtractMixture(
 }  // namespace
 }  // namespace impl
 
-bool LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
+absl::Status LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
   mixture_weights_.clear();
   switch (config.mixture_type()) {
     case ModelHubConfig::NONE:
@@ -106,7 +106,7 @@ bool LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
       }
       break;
     default:
-      return false;  // Unknown mixture type.
+      return absl::InternalError("Unknown mixture type");
   }
   // Creates a start hub state, by convention index 0.
   hub_states_.clear();
@@ -114,16 +114,15 @@ bool LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
   const std::vector<int> dummy_states(language_models_.size());
   hub_states_[0] = std::unique_ptr<LanguageModelHubState>(
       new LanguageModelHubState(dummy_states, -1, 0));
-  if (InitializeStartHubState() != absl::OkStatus()) {
-    return false;
-  }
+  RETURN_IF_ERROR(InitializeStartHubState());
+
   if (config.maximim_maintained_states() < 10) {
     max_hub_states_ = kMaxHubStates;
   } else {
     max_hub_states_ = config.maximim_maintained_states();
   }
   last_created_hub_state_ = 0;
-  return true;
+  return absl::OkStatus();
 }
 
 int LanguageModelHub::StateSym(int state) {

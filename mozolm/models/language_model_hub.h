@@ -98,7 +98,7 @@ class LanguageModelHub {
   }
 
   // Initializes set of models after all models have been added.
-  bool InitializeModels(const ModelHubConfig &config);
+  absl::Status InitializeModels(const ModelHubConfig &config);
 
   // Provides the last symbol to reach the state.
   int StateSym(int state);
