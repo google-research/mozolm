@@ -161,17 +161,10 @@ absl::StatusOr<int> LanguageModelHub::AssignNewHubState(
     idx = last_created_hub_state_ + 1;
     if (idx >= max_hub_states_) {
       // Going back to overwrite earlier states, reinitializes start state.
-      auto init_hub_state_status = InitializeStartHubState();
-      if (init_hub_state_status != absl::OkStatus()) {
-        return init_hub_state_status;
-      }
+      RETURN_IF_ERROR(InitializeStartHubState());
       idx = 1;
     }
-    auto update_hub_state =
-        UpdateHubState(idx, model_states, prev_state, state_sym);
-    if (update_hub_state != absl::OkStatus()) {
-      return update_hub_state;
-    }
+    RETURN_IF_ERROR(UpdateHubState(idx, model_states, prev_state, state_sym));
   } else {
     idx = hub_states_.size();
     hub_states_.push_back(std::unique_ptr<LanguageModelHubState>());
@@ -188,7 +181,7 @@ int LanguageModelHub::NextState(int state, int utf8_sym) {
     // Resets invalid state to the start state, by convention 0.
     state = 0;
   }
-  int next_state = hub_states_[state]->next_state(utf8_sym);
+  const int next_state = hub_states_[state]->next_state(utf8_sym);
   if (next_state >= 0) {
     // Already created next state for that symbol.
     return next_state;
