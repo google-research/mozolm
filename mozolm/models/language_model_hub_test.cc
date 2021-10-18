@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <vector>
 #include <utility>
 
 #include "gmock/gmock.h"
@@ -78,29 +79,34 @@ class VocabOnlySingleModelTest : public ::testing::Test {
     EXPECT_LE(0, start_state_);
   }
 
+  // Checks that the initial estimates are distributed according to a uniform
+  // distribution over the three symbols.
+  void CheckUniform() const {
+    LMScores scores;
+    ASSERT_TRUE(hub_->ExtractLMScores(start_state_, &scores));
+    ASSERT_EQ(3, scores.symbols_size());
+    EXPECT_EQ("", scores.symbols(0));  // </S>.
+    EXPECT_EQ("a", scores.symbols(1));
+    EXPECT_EQ("b", scores.symbols(2));
+    ASSERT_EQ(3, scores.probabilities_size());
+    EXPECT_THAT(scores.probabilities(), Each(DoubleEq(1.0 / 3)));
+  }
+
   ModelHubConfig config_;
   std::unique_ptr<LanguageModelHub> hub_;
   int start_state_;
 };
 
 TEST_F(VocabOnlySingleModelTest, NonUniformProbs) {
-  // Retrieve initial estimates: These should correspond to the uniform
-  // distribution over the three symbols.
-  LMScores scores;
-  ASSERT_TRUE(hub_->ExtractLMScores(start_state_, &scores));
-  ASSERT_EQ(3, scores.symbols_size());
-  EXPECT_EQ("", scores.symbols(0));  // </S>.
-  EXPECT_EQ("a", scores.symbols(1));
-  EXPECT_EQ("b", scores.symbols(2));
-  ASSERT_EQ(3, scores.probabilities_size());
-  EXPECT_THAT(scores.probabilities(), Each(DoubleEq(1.0 / 3)));
+  CheckUniform();
 
-  // Update the model.
+  // Update the model with single-symbol observations.
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiA}, 1));
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiA}, 1));
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiB}, 1));
 
   // Get new estimates.
+  LMScores scores;
   ASSERT_TRUE(hub_->ExtractLMScores(start_state_, &scores));
   ASSERT_EQ(3, scores.probabilities_size());
   EXPECT_NEAR(scores.probabilities(0), 0.142857, kEpsilon);  // </S>
@@ -130,6 +136,27 @@ TEST_F(VocabOnlySingleModelTest, CheckNextStateAndStateSymbol) {
   EXPECT_EQ(4, hub_->NextState(1, /* </S> */0));
   EXPECT_EQ(5, hub_->NextState(1, kAsciiA));
   EXPECT_EQ(6, hub_->NextState(1, kAsciiB));
+}
+
+TEST_F(VocabOnlySingleModelTest, NonUniformProbsForSequenceWithNextState) {
+  CheckUniform();
+
+  // Feed the input until we've reached the state corresponding to last symbol.
+  const std::vector<int> symbols = { kAsciiA, kAsciiA, kAsciiA, kAsciiB };
+  int curr_state = start_state_;
+  for (auto sym : symbols) {
+    curr_state = hub_->NextState(curr_state, sym);
+    EXPECT_GE(start_state_, 0);
+  }
+  EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, symbols, 1));
+
+  // Fetch the scores from the last state.
+  LMScores scores;
+  ASSERT_TRUE(hub_->ExtractLMScores(curr_state, &scores));
+  ASSERT_EQ(3, scores.probabilities_size());
+  EXPECT_NEAR(scores.probabilities(0), 0.222222, kEpsilon);  // </S>
+  EXPECT_NEAR(scores.probabilities(1), 0.444444, kEpsilon);  // "a"
+  EXPECT_NEAR(scores.probabilities(2), 0.333333, kEpsilon);  // "b"
 }
 
 }  // namespace
