@@ -32,8 +32,7 @@ class SimpleBigramCharModel : public LanguageModel {
   ~SimpleBigramCharModel() override = default;
 
   // Reads the model from the model storage.
-  absl::Status Read(const ModelStorage &storage)
-      ABSL_EXCLUSIVE_LOCKS_REQUIRED(normalizer_lock_, counts_lock_) override;
+  absl::Status Read(const ModelStorage &storage) override;
 
   // Provides the symbol associated with the state.
   int StateSym(int state) override;
@@ -49,6 +48,14 @@ class SimpleBigramCharModel : public LanguageModel {
   bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
                       int64 count)
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
+
+  // Returns number of symbols in the model.
+  int NumSymbols() const { return utf8_indices_.size(); }
+
+ protected:
+  // Computes negative log probability for observing the supplied label in a
+  // given state.
+  double LabelCostInState(int state, int label);
 
  private:
   // Provides the state associated with the symbol.

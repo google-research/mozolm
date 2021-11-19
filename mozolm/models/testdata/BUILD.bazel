@@ -33,3 +33,11 @@ filegroup(
         "gutenberg_praise_of_folly.txt",
     ],
 )
+
+filegroup(
+    name = "simple_bigram_data",
+    srcs = [
+        "en_wiki_1Mline_char_bigram.matrix.txt",
+        "en_wiki_1Mline_char_bigram.rows.txt",
+    ],
+)

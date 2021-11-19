@@ -190,6 +190,24 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "simple_bigram_char_model_test",
+    srcs = ["simple_bigram_char_model_test.cc"],
+    data = ["//mozolm/models/testdata:simple_bigram_data"],
+    deps = [
+        ":model_storage_cc_proto",
+        ":model_test_utils",
+        ":simple_bigram_char_model",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_nisaba//nisaba/port:status-matchers",
+        "@com_google_nisaba//nisaba/port:test_utils",
+        "@com_google_nisaba//nisaba/port:utf8_util",
+    ],
+)
+
 cc_library(
     name = "ngram_fst_model",
     srcs = ["ngram_fst_model.cc"],

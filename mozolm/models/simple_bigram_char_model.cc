@@ -93,6 +93,8 @@ absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
 }  // namespace
 
 absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
+  absl::ReaderMutexLock nl(&normalizer_lock_);
+  absl::ReaderMutexLock cl(&counts_lock_);
   const std::string &vocab_file = storage.vocabulary_file();
   const std::string &counts_file = storage.model_file();
   if (!vocab_file.empty()) {
@@ -150,6 +152,18 @@ int SimpleBigramCharModel::SymState(int utf8_sym) {
 
 int SimpleBigramCharModel::NextState(int state, int utf8_sym) {
   return SymState(utf8_sym);
+}
+
+double SimpleBigramCharModel::LabelCostInState(int state, int label) {
+  absl::ReaderMutexLock nl(&normalizer_lock_);
+  absl::ReaderMutexLock cl(&counts_lock_);
+  double prob = 0.0;
+  int next_state = NextState(state, label);
+  if (next_state >= 0) {
+    prob = static_cast<double>(bigram_counts_[state][next_state]) /
+           utf8_normalizer_[state];
+  }
+  return -log(prob);
 }
 
 bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Unit tests for a simple n-gram character model.
+// Unit tests for an n-gram character model encoded as an FST.
 
 #include "mozolm/models/ngram_char_fst_model.h"
 
