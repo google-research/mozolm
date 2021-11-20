@@ -965,9 +965,9 @@ bool PpmAsFstModel::UpdateLMCounts(int32 state,
       for (int c = 1; c < count; c++) {
         // Any subsequent observations accrue only at state.
         update_status = UpdateModel(state, state, sym_index);
-        if (update_status.ok()) return false;
+        if (!update_status.ok()) return false;
       }
-      state = NextState(state, utf8_sym);
+       state = NextState(state, utf8_sym);
     }
   }
   return true;

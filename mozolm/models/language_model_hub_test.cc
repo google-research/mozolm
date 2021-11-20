@@ -114,10 +114,20 @@ TEST_F(VocabOnlySingleModelTest, NonUniformProbs) {
   EXPECT_NEAR(scores.probabilities(2), 0.285714, kEpsilon);  // "b"
 }
 
-TEST_F(VocabOnlySingleModelTest, UpdateByNonSingletonCountBug) {
-  // TODO: Following is a bug. Can't update by count > 1, have
-  // to repeat the call `count` times instead.
-  EXPECT_FALSE(hub_->UpdateLMCounts(start_state_, {kAsciiA}, 2));
+TEST_F(VocabOnlySingleModelTest, UpdateByNonSingletonCount) {
+  CheckUniform();
+
+  // Update the model with single-symbol observations.
+  EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiA}, 2));
+  EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiB}, 1));
+
+  // Get new estimates.
+  LMScores scores;
+  ASSERT_TRUE(hub_->ExtractLMScores(start_state_, &scores));
+  ASSERT_EQ(3, scores.probabilities_size());
+  EXPECT_NEAR(scores.probabilities(0), 0.142857, kEpsilon);  // </S>
+  EXPECT_NEAR(scores.probabilities(1), 0.571429, kEpsilon);  // "a"
+  EXPECT_NEAR(scores.probabilities(2), 0.285714, kEpsilon);  // "b"
 }
 
 TEST_F(VocabOnlySingleModelTest, CheckNextStateAndStateSymbol) {
