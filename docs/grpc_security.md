@@ -6,7 +6,7 @@ It is important to note that by default the gRPC connections in MozoLM are not
 secured to ease the development and, in particular, debugging and stress
 testing. This insecure mode should not be used in the deployment settings.
 
-To secure the communication channels between the MozoLM microservice and the
+To secure the communication channels between MozoLM microservice and the
 clients we make use of some of the security
 [mechanisms](https://grpc.io/docs/guides/auth/) built-in into the gRPC, which we
 describe below.
