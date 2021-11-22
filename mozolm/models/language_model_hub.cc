@@ -182,8 +182,8 @@ int LanguageModelHub::NextState(int state, int utf8_sym) {
     state = 0;
   }
   const int next_state = hub_states_[state]->next_state(utf8_sym);
-  if (next_state >= 0) {
-    // Already created next state for that symbol.
+  if (utf8_sym < 0 || next_state >= 0) {
+    // Provided symbol is bad or already created next state for that symbol.
     return next_state;
   }
   std::vector<int> next_states(language_models_.size());

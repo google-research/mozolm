@@ -131,21 +131,27 @@ TEST_F(VocabOnlySingleModelTest, UpdateByNonSingletonCount) {
 }
 
 TEST_F(VocabOnlySingleModelTest, CheckNextStateAndStateSymbol) {
-  constexpr int kBadSymbol = 1234;
-  EXPECT_GT(0, hub_->StateSym(kBadSymbol));
-  // TODO: Following line exposes another bug. The call actually
-  // succeeds in adding a state, but it shouldn't.
-  // constexpr int kBadState = 100;
-  // EXPECT_LT(0, hub_->NextState(kBadState, kBadSymbol));
+  constexpr int kBadState = 100;
+  int kBadSymbol = hub_->StateSym(kBadState);
+  EXPECT_GT(0, kBadSymbol);
+  EXPECT_GT(0, hub_->NextState(kBadState, kBadSymbol));
 
+  // By convention, symbol 0 serves as both </S> and <S> symbols.
   const int start_sym = hub_->StateSym(start_state_);
-  EXPECT_EQ(0, start_sym);  // "</S>"
-  EXPECT_EQ(1, hub_->NextState(start_state_, /* </S> */0));
+  EXPECT_EQ(0, start_sym);
+  EXPECT_EQ(1, hub_->NextState(start_state_, start_sym));
+  EXPECT_EQ(start_sym,
+            hub_->StateSym(hub_->NextState(start_state_, start_sym)));
   EXPECT_EQ(2, hub_->NextState(start_state_, kAsciiA));
+  EXPECT_EQ(kAsciiA, hub_->StateSym(hub_->NextState(start_state_, kAsciiA)));
   EXPECT_EQ(3, hub_->NextState(start_state_, kAsciiB));
-  EXPECT_EQ(4, hub_->NextState(1, /* </S> */0));
+  EXPECT_EQ(kAsciiB, hub_->StateSym(hub_->NextState(start_state_, kAsciiB)));
+  EXPECT_EQ(4, hub_->NextState(1, start_sym));
+  EXPECT_EQ(start_sym, hub_->StateSym(hub_->NextState(1, start_sym)));
   EXPECT_EQ(5, hub_->NextState(1, kAsciiA));
+  EXPECT_EQ(kAsciiA, hub_->StateSym(hub_->NextState(1, kAsciiA)));
   EXPECT_EQ(6, hub_->NextState(1, kAsciiB));
+  EXPECT_EQ(kAsciiB, hub_->StateSym(hub_->NextState(1, kAsciiB)));
 }
 
 TEST_F(VocabOnlySingleModelTest, NonUniformProbsForSequenceWithNextState) {
