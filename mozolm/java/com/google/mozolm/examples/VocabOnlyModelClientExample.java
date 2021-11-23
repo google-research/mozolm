@@ -85,7 +85,6 @@ final class VocabOnlyModelClientExample {
 
       // Retrieve the estimates after updating the model. These should be
       // different from the initial estimates.
-      // TODO: Fix.
       info("Final counts ...");
       cands = getProbs(blockingStub, 0, "");
       for (int i = 0; i < cands.size(); ++i) {
@@ -104,38 +103,30 @@ final class VocabOnlyModelClientExample {
    */
   private ArrayList<Pair<Double, String>> updateModel(
       MozoLMServiceGrpc.MozoLMServiceBlockingStub stub, String symbols) {
-    // Prepare the sentence.
-    final Character endOfSentenceChar = Character.MIN_VALUE;
-    ArrayList<Character> chars = new ArrayList<>();
-    for (char c : symbols.toCharArray()) {
-      chars.add(c);
-    }
-    chars.add(endOfSentenceChar);
-
     // Send the sentence updating the counts character-by-character.
     final long initialState = 0;
     long state = initialState;
-    String context = "";
-    for (char c : chars) {
-      // Update the count of a given character at the current `state`.
-      @SuppressWarnings("CharacterGetNumericValue")
-      final UpdateLMScoresRequest request =
-          UpdateLMScoresRequest.newBuilder()
-              .setState(state)
-              .addUtf8Sym(Character.getNumericValue(c))
-              .setCount(1)
-              .build();
+    for (int pos = 0; pos < symbols.length(); ++pos) {
+      // Update the count of a given character (codepont) at the current `state`.
+      final int codepointAtPos = Character.codePointAt(symbols, pos);
+      final UpdateLMScoresRequest request = UpdateLMScoresRequest.newBuilder()
+                                                .setState(state)
+                                                .addUtf8Sym(codepointAtPos)
+                                                .setCount(1)
+                                                .build();
       stub.updateLMScores(request);
-
-      // Advance the state.
-      context += Character.toString(c);
-      final GetContextRequest contextRequest = GetContextRequest.newBuilder()
-                                               .setState(state)
-                                               .setContext(context)
-                                               .build();
+      // Advance the state given the character at this position.
+      final String characterAtPos = Character.toString(symbols.charAt(pos));
+      final GetContextRequest contextRequest =
+          GetContextRequest.newBuilder().setState(state).setContext(characterAtPos).build();
       final NextState nextState = stub.getNextState(contextRequest);
       state = nextState.getNextState();
     }
+    // Update end-of-string character.
+    @SuppressWarnings("CharacterGetNumericValue")
+    final UpdateLMScoresRequest request =
+        UpdateLMScoresRequest.newBuilder().setState(state).addUtf8Sym(0).setCount(1).build();
+    stub.updateLMScores(request);
     return getProbs(stub, initialState, "");
   }
 
