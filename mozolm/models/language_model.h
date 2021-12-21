@@ -57,11 +57,19 @@ class LanguageModel {
     return false;  // Requires a derived class to complete.
   }
 
+  // Returns the negative log probability of the utf8_sym at the state.
+  virtual double SymLMScore(int state, int utf8_sym) {
+    return -log(0.0);  // Requires a derived class to complete.
+  }
+
   // Updates the count for the utf8_syms at the current state.
   virtual bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
                               int64 count) {
     return false;  // Requires a derived class to complete.
   }
+
+  // Returns true if model is static, false if model is dynamic.
+  virtual bool IsStatic() const { return true; }
 
  protected:
   LanguageModel() : start_state_(0) {}

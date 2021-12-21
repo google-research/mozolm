@@ -449,6 +449,27 @@ double NGramWordFstModel::GetBackedoffFinalCost(int state) {
   return cost;
 }
 
+double NGramWordFstModel::SymLMScore(int state, int utf8_sym) {
+  // TODO: create more efficient way to query scores.
+  LMScores response;
+  if (ExtractLMScores(state, &response)) {
+    for (int i = 0; i < response.probabilities_size(); i++) {
+      int utf8_code;
+      if (response.symbols(i).empty()) {
+        utf8_code = 0;
+      } else {
+        if (!DecodeSingleUnicodeChar(response.symbols(i), &utf8_code)) {
+          utf8_code = -1;
+        }
+      }
+      if (utf8_sym == utf8_code) {
+        return -std::log(response.probabilities(i));
+      }
+    }
+  }
+  return StdArc::Weight::Zero().Value();
+}
+
 bool NGramWordFstModel::ExtractLMScores(int state, LMScores *response) {
   const StdArc::StateId current_state = CheckCurrentState(state);
   std::vector<std::string> next_chars;

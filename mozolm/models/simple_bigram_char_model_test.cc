@@ -17,6 +17,7 @@
 #include "mozolm/models/simple_bigram_char_model.h"
 
 #include <algorithm>
+#include <cmath>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -48,12 +49,6 @@ constexpr char kSampleText[] = R"(
     As a Senator he backed the amendment to the Colombian Constitution
     permitting Presidential re-election.)";
 
-// Helper stub for the n-gram model.
-class SimpleBigramCharModelHelper : public SimpleBigramCharModel {
- public:
-  using SimpleBigramCharModel::LabelCostInState;
-};
-
 // The tests run on a simple bigram character model stored in a dense matrix.
 class SimpleBigramCharModelTest : public ::testing::Test {
  protected:
@@ -77,7 +72,7 @@ class SimpleBigramCharModelTest : public ::testing::Test {
   }
 
   ModelStorage model_storage_;
-  SimpleBigramCharModelHelper model_;
+  SimpleBigramCharModel model_;
 };
 
 // If no model file given, initializes uniform over lower-case ASCII letters,
@@ -126,6 +121,17 @@ TEST_F(SimpleBigramCharModelTest, BasicCheck) {
     const auto &probs = result.probabilities();
     const double total_prob = std::accumulate(probs.begin(), probs.end(), 0.0);
     EXPECT_NEAR(1.0, total_prob, 1E-6);
+    const auto &syms = result.symbols();
+    for (int i = 0; i < syms.size(); ++i) {
+      int utf8_sym;
+      if (syms[i].empty()) {
+        utf8_sym = 0;
+      } else {
+        EXPECT_TRUE(nisaba::utf8::DecodeSingleUnicodeChar(syms[i], &utf8_sym));
+      }
+      EXPECT_NEAR(model_.SymLMScore(state, utf8_sym), -std::log(probs[i]),
+                  1E-6);
+    }
   }
 }
 

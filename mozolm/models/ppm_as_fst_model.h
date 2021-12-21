@@ -105,16 +105,16 @@ class PpmStateCache {
   void UpdateCache(int access_counter, const PpmStateCache& state_cache);
 
   // Returns state associated with this cache.
-  int state() const { return state_; };
+  int state() const { return state_; }
 
   // Returns index of last time accessed.
-  int last_accessed() const { return last_accessed_; };
+  int last_accessed() const { return last_accessed_; }
 
   // Returns index of last time accessed.
-  int last_updated() const { return last_updated_; };
+  int last_updated() const { return last_updated_; }
 
   // Returns the size of the cached vectors.
-  int VectorSize() const { return destination_states_.size(); };
+  int VectorSize() const { return destination_states_.size(); }
 
   // Verifies sym_index within range.
   absl::Status VerifyAccess(int sym_index, size_t vector_size) const;
@@ -177,12 +177,18 @@ class PpmAsFstModel : public LanguageModel {
   // Provides the state reached from state following utf8_sym.
   int NextState(int state, int utf8_sym) override;
 
+  // Returns the negative log probability of the utf8_sym at the state.
+  double SymLMScore(int state, int utf8_sym) override;
+
   // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
 
   // Updates the counts for the utf8_syms at the current state.
   bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
                       int64 count) override;
+
+  // Returns value of static_model_ bool.
+  bool IsStatic() const override { return static_model_; }
 
   // Converts string to vector of symbol table indices. Requires sticking to
   // allowed symbols.

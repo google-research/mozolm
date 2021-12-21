@@ -39,11 +39,21 @@ class NGramCharFstModel : public NGramFstModel {
   // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
 
+  // Returns the negative log probability of the utf8_sym at the state.
+  double SymLMScore(int state, int utf8_sym) override;
+
  protected:
   // Computes negative log probability for observing the supplied label in a
   // given state.
   fst::StdArc::Weight LabelCostInState(fst::StdArc::StateId state,
                                            fst::StdArc::Label label) const;
+
+ private:
+  fst::StdArc::Label SymLabel(int utf8_sym) const;
+
+  // Returns negative log probability of the end-of-string at the given state.
+  fst::StdArc::Weight FinalCostInState(
+      fst::StdArc::StateId state) const;
 };
 
 }  // namespace models

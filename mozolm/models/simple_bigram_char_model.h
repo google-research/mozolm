@@ -44,20 +44,27 @@ class SimpleBigramCharModel : public LanguageModel {
   bool ExtractLMScores(int state, LMScores* response)
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
 
+  // Returns the negative log probability of the utf8_sym at the state.
+  double SymLMScore(int state, int utf8_sym) override;
+
   // Updates the counts for the utf8_syms at the current state.
   bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
                       int64 count)
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
 
+  // Returns false since these models are always dynamic.
+  bool IsStatic() const override { return false; }
+
   // Returns number of symbols in the model.
   int NumSymbols() const { return utf8_indices_.size(); }
 
- protected:
-  // Computes negative log probability for observing the supplied label in a
-  // given state.
-  double LabelCostInState(int state, int label);
-
  private:
+  // Returns true if state is within the range of states in the model.
+  bool ValidState(int state) const;
+
+  // Returns true if utf8_syn is a symbol within the model.
+  bool ValidSym(int utf8_sym) const;
+
   // Provides the state associated with the symbol.
   int SymState(int utf8_sym);
 

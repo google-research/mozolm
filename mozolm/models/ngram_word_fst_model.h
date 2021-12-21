@@ -158,6 +158,9 @@ class NGramWordFstModel : public NGramFstModel {
   // Copies the probs and normalization from the given state into the response.
   bool ExtractLMScores(int state, LMScores* response) override;
 
+  // Returns the negative log probability of the utf8_sym at the state.
+  double SymLMScore(int state, int utf8_sym) override;
+
  private:
   // Creates lexicographic ordering of symbol table for efficient summing.
   absl::Status EstablishLexicographicOrdering();

@@ -17,6 +17,7 @@
 #include "mozolm/models/ngram_char_fst_model.h"
 
 #include <algorithm>
+#include <cmath>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -111,18 +112,33 @@ TEST_F(NGramCharFstModelTest, BasicCheck) {
     state = model_.NextState(state, input_char);
     LMScores result;
     EXPECT_TRUE(model_.ExtractLMScores(state, &result));
-    EXPECT_EQ(num_symbols - 1, result.symbols().size());
-    EXPECT_EQ(num_symbols - 1, result.probabilities().size());
+    EXPECT_EQ(num_symbols, result.symbols().size());
+    EXPECT_EQ(num_symbols, result.probabilities().size());
 
     const auto &probs = result.probabilities();
     const double total_prob = std::accumulate(probs.begin(), probs.end(), 0.0);
     EXPECT_NEAR(1.0, total_prob, 1E-6);
+    const auto &syms = result.symbols();
+    for (int i = 0; i < syms.size(); ++i) {
+      int utf8_sym;
+      if (syms[i] != "<unk>") {
+        // Tested function only covers single character tokens.
+        if (syms[i].empty()) {
+          utf8_sym = 0;
+        } else {
+          EXPECT_TRUE(
+              nisaba::utf8::DecodeSingleUnicodeChar(syms[i], &utf8_sym));
+        }
+        EXPECT_NEAR(model_.SymLMScore(state, utf8_sym), -std::log(probs[i]),
+                    1E-4);
+      }
+    }
   }
 
   // Check OOV symbol.
   constexpr int kOutOfVocabQuery = 9924;  // ⛄
-  EXPECT_EQ(StdArc::Weight::Zero(), model_.LabelCostInState(
-      model_.fst().Start(), kOutOfVocabQuery));
+  EXPECT_EQ(StdArc::Weight::Zero(),
+            model_.LabelCostInState(model_.fst().Start(), kOutOfVocabQuery));
 }
 
 TEST_F(NGramCharFstModelTest, TopCandidates) {

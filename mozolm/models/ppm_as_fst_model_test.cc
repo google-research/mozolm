@@ -103,28 +103,28 @@ class PpmAsFstTest : public ::testing::Test {
     // suffix state -- proper suffix if not ascending.  Also add epsilon backoff
     // arcs to backoff states with -log sum of counts on that arc.  N-grams with
     // </S> go to final cost rather than arcs.
-    fst.AddArc(aa_state, StdArc(2, 2, -log(2.0), ab_state));  // a a b     2
-    fst.AddArc(aa_state, StdArc(0, 0, -log(2.0), a_state));
-    fst.AddArc(ab_state, StdArc(1, 1, -log(2.0), ba_state));     // a b a     2
-    fst.SetFinal(ab_state, -log(2.0));                           // a b </S>  2
-    fst.AddArc(ab_state, StdArc(0, 0, -log(4.0), b_state));
-    fst.AddArc(ba_state, StdArc(1, 1, -log(1.0), aa_state));     // b a a     1
-    fst.AddArc(ba_state, StdArc(2, 2, -log(1.0), ab_state));     // b a b     1
-    fst.AddArc(ba_state, StdArc(0, 0, -log(2.0), a_state));
-    fst.AddArc(start_state, StdArc(1, 1, -log(2.0), sa_state));  // <S> a     2
-    fst.AddArc(start_state, StdArc(0, 0, -log(2.0), unigram_state));
-    fst.AddArc(sa_state, StdArc(1, 1, -log(1.0), aa_state));     // <S> a a   1
-    fst.AddArc(sa_state, StdArc(2, 2, -log(1.0), ab_state));     // <S> a b   1
-    fst.AddArc(sa_state, StdArc(0, 0, -log(2.0), a_state));
-    fst.AddArc(a_state, StdArc(1, 1, -log(2.0), aa_state));       // a a     2
-    fst.AddArc(a_state, StdArc(2, 2, -log(3.0), ab_state));       // a b     3
-    fst.AddArc(a_state, StdArc(0, 0, -log(5.0), unigram_state));
-    fst.AddArc(b_state, StdArc(1, 1, -log(1.0), ba_state));       // b a     1
-    fst.SetFinal(b_state, -log(1.0));                             // b </S>  1
-    fst.AddArc(b_state, StdArc(0, 0, -log(2.0), unigram_state));
-    fst.AddArc(unigram_state, StdArc(1, 1, -log(4.0), a_state));  // a       4
-    fst.AddArc(unigram_state, StdArc(2, 2, -log(2.0), b_state));  // b       2
-    fst.SetFinal(unigram_state, -log(2.0));                       // </S>    2
+    fst.AddArc(aa_state, StdArc(2, 2, -std::log(2.0), ab_state));  // a a b 2
+    fst.AddArc(aa_state, StdArc(0, 0, -std::log(2.0), a_state));
+    fst.AddArc(ab_state, StdArc(1, 1, -std::log(2.0), ba_state));     // a b a 2
+    fst.SetFinal(ab_state, -std::log(2.0));  // a b </S>  2
+    fst.AddArc(ab_state, StdArc(0, 0, -std::log(4.0), b_state));
+    fst.AddArc(ba_state, StdArc(1, 1, -std::log(1.0), aa_state));     // b a a 1
+    fst.AddArc(ba_state, StdArc(2, 2, -std::log(1.0), ab_state));     // b a b 1
+    fst.AddArc(ba_state, StdArc(0, 0, -std::log(2.0), a_state));
+    fst.AddArc(start_state, StdArc(1, 1, -std::log(2.0), sa_state));  // <S> a 2
+    fst.AddArc(start_state, StdArc(0, 0, -std::log(2.0), unigram_state));
+    fst.AddArc(sa_state, StdArc(1, 1, -std::log(1.0), aa_state));  // <S> a a 1
+    fst.AddArc(sa_state, StdArc(2, 2, -std::log(1.0), ab_state));  // <S> a b 1
+    fst.AddArc(sa_state, StdArc(0, 0, -std::log(2.0), a_state));
+    fst.AddArc(a_state, StdArc(1, 1, -std::log(2.0), aa_state));  // a a     2
+    fst.AddArc(a_state, StdArc(2, 2, -std::log(3.0), ab_state));  // a b     3
+    fst.AddArc(a_state, StdArc(0, 0, -std::log(5.0), unigram_state));
+    fst.AddArc(b_state, StdArc(1, 1, -std::log(1.0), ba_state));  // b a     1
+    fst.SetFinal(b_state, -std::log(1.0));                        // b </S>  1
+    fst.AddArc(b_state, StdArc(0, 0, -std::log(2.0), unigram_state));
+    fst.AddArc(unigram_state, StdArc(1, 1, -std::log(4.0), a_state));  // a 4
+    fst.AddArc(unigram_state, StdArc(2, 2, -std::log(2.0), b_state));  // b 2
+    fst.SetFinal(unigram_state, -std::log(2.0));  // </S>    2
     ArcSort(&fst, ILabelCompare<StdArc>());
     fst.SetInputSymbols(&syms);
     fst.SetOutputSymbols(&syms);
@@ -236,13 +236,13 @@ TEST_F(PpmAsFstTest, StaticProbsMatchHand) {
   // P(a) = 0.5; P(b) = 0.25; P(</S>) = 0.25.
   // Then P(b | <S>) = 0 / D + (kBeta + kAlpha) P(b) / D
   //                 = (0.5 + 0.75) 0.25 / (2 + 0.5) = 0.125.
-  ASSERT_NEAR(neg_log_probs[0], -log(0.125), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[0], -std::log(0.125), kFloatDelta);
 
   // Next P(a | <S>b) = P(a | b) since c(<S>b) == 0.
   // P(a | b) = (c(ba) - kBeta) / D + (2 kBeta + kAlpha) P(a) / D
   //          = (1 - 0.75) / (2 + 0.5) + (2 x 0.75 + 0.5) 0.5 / (2 + 0.5)
   //          = 0.1 + 0.4 = 0.5.
-  ASSERT_NEAR(neg_log_probs[1], -log(0.5), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[1], -std::log(0.5), kFloatDelta);
 
   // Next P(b | ba) = (c(bab) - kBeta) / D_0 + (2 kBeta + kAlpha) P(b | a) / D_0
   // where P(b | a) = (c(ab) - kBeta) / D_1 + (2 kBeta + kAlpha) P(b) / D_1
@@ -250,7 +250,7 @@ TEST_F(PpmAsFstTest, StaticProbsMatchHand) {
   //                = 0.409090909 + 0.0909090909 = 0.5
   // Hence P(b | ba) = (1 - 0.75) / (2 + 0.5) + (2 x 0.75 + 0.5) 0.5 / (2 + 0.5)
   //                 = 0.1 + 0.4 = 0.5
-  ASSERT_NEAR(neg_log_probs[2], -log(0.5), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[2], -std::log(0.5), kFloatDelta);
 
   // Finally,
   // P(</S> | ab) = (c(ab</S>) - kBeta)/D_0 + (2 kBeta + kAlpha) P(</S> | b)/D_0
@@ -259,7 +259,7 @@ TEST_F(PpmAsFstTest, StaticProbsMatchHand) {
   //                   = 0.1 + 0.2 = 0.3
   // Hence P(</S> | ab) = (2 - 0.75)/(4 + 0.5) + (2 x 0.75 + 0.5) 0.3/(4 + 0.5)
   //                    = 0.2777777 + 0.133333333 = 0.41111111
-  ASSERT_NEAR(neg_log_probs[3], -log(0.41111111), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[3], -std::log(0.41111111), kFloatDelta);
 }
 
 // Dynamic model probabilities match hand calculations.
@@ -279,7 +279,7 @@ TEST_F(PpmAsFstTest, DynamicProbsMatchHand) {
   const std::vector<double> neg_log_probs = neg_log_probs_status.value();
   ASSERT_EQ(neg_log_probs.size(), 4);
   // For the initial observation, the result is same as static model:
-  ASSERT_NEAR(neg_log_probs[0], -log(0.125), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[0], -std::log(0.125), kFloatDelta);
 
   // Next P(a | <S>b) = P(a | b) since c(<S>b) == 0. (Still true, no
   // continuation observations.)
@@ -289,7 +289,7 @@ TEST_F(PpmAsFstTest, DynamicProbsMatchHand) {
   // P(a | b) = (c(ba) - kBeta) / D + (2 kBeta + kAlpha) P(a) / D
   //          = (1 - 0.75) / (2 + 0.5) + (2 x 0.75 + 0.5) 0.444444 / (2 + 0.5)
   //          = 0.1 + 0.3555555 = 0.455555555.
-  ASSERT_NEAR(neg_log_probs[1], -log(0.455555555), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[1], -std::log(0.455555555), kFloatDelta);
 
   // None of the count updates for the previous step impact this, so just the
   // updated unigrams from the earlier dynamic count.
@@ -299,7 +299,7 @@ TEST_F(PpmAsFstTest, DynamicProbsMatchHand) {
   //                = 0.409090909 + 0.1212121212 = 0.53030303
   // Thus P(b | ba) = (1 - 0.75)/(2 + 0.5) + (2 x 0.75 + 0.5) 0.530303/(2 + 0.5)
   //                 = 0.1 + 0.4242424 = 0.5242424
-  ASSERT_NEAR(neg_log_probs[2], -log(0.52424242424), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[2], -std::log(0.52424242424), kFloatDelta);
 
   // Finally, the count c(ba) updated by 1 earlier in the string, since <S>ba is
   // a new trigram backing off to it, so this bigram distribution is updated.
@@ -309,7 +309,7 @@ TEST_F(PpmAsFstTest, DynamicProbsMatchHand) {
   //                   = 0.0714286 + 0.126984 = 0.1984127
   // Hence P(</S> | ab) = (2 - 0.75)/4.5 + (2 x 0.75 + 0.5) 0.1984127/4.5
   //                    = 0.2777777 + 0.088183422 = 0.3659612
-  ASSERT_NEAR(neg_log_probs[3], -log(0.3659612), kFloatDelta);
+  ASSERT_NEAR(neg_log_probs[3], -std::log(0.3659612), kFloatDelta);
 }
 
 // Calculating ContextState functionality.
@@ -338,15 +338,21 @@ TEST_F(PpmAsFstTest, ExtractLMScores) {
   ASSERT_EQ(lm_scores.probabilities_size(), 3);
   for (int i = 0; i < lm_scores.probabilities_size(); i++) {
     int idx = 0;
+    double lm_score = 0.0;
     if (!lm_scores.symbols(i).empty()) {
       char32 utf8_code;
       ASSERT_TRUE(DecodeSingleUnicodeChar(lm_scores.symbols(i), &utf8_code));
       // Offset converts from codepoint index for 'a' and 'b' to symbol idx.
       idx = static_cast<int>(utf8_code) - 96;
+      lm_score = model.SymLMScore(start_state, static_cast<int>(utf8_code));
+    } else {
+      // End-of-string (</S>) is, by convention, index 0.
+      lm_score = model.SymLMScore(start_state, /*utf8_code=*/0);
     }
     ASSERT_LT(idx, 3);
     ASSERT_GE(idx, 0);
     extracted_probs[idx] = lm_scores.probabilities(i);
+    ASSERT_NEAR(exp(-lm_score), extracted_probs[idx], kFloatDelta);
   }
   for (int i = 0; i < 3; ++i) {
     ASSERT_NEAR(extracted_probs[i], expected_probs[i], kFloatDelta);

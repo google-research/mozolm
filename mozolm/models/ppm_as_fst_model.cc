@@ -938,6 +938,25 @@ bool PpmAsFstModel::ExtractLMScores(int state, LMScores* response) {
   return state_cache.FillLMScores(*fst_->InputSymbols(), response);
 }
 
+double PpmAsFstModel::SymLMScore(int state, int utf8_sym) {
+  int sym_index = -1;
+  if (utf8_sym == 0) {
+    sym_index = 0;
+  } else {
+    const std::string sym = EncodeUnicodeChar(utf8_sym);
+    sym_index = fst_->InputSymbols()->Find(sym);
+  }
+  if (sym_index >= 0) {
+    const auto score_status = GetNegLogProb(state, sym_index);
+    if (score_status.ok()) {
+      return score_status.value();
+    }
+  }
+  // If symbol is not in vocabulary, or negative log probability retrieval
+  // fails, score returned is probability zero (infinite cost).
+  return StdArc::Weight::Zero().Value();
+}
+
 bool PpmAsFstModel::UpdateLMCounts(int32 state,
                                    const std::vector<int>& utf8_syms,
                                    int64 count) {

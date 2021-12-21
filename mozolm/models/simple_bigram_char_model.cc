@@ -14,6 +14,7 @@
 
 #include "mozolm/models/simple_bigram_char_model.h"
 
+#include <cmath>
 #include <fstream>
 
 #include "google/protobuf/stubs/logging.h"
@@ -139,37 +140,30 @@ absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
   return absl::OkStatus();
 }
 
+bool SimpleBigramCharModel::ValidState(int state) const {
+  return state < static_cast<int>(utf8_indices_.size()) && state >= 0;
+}
+
+bool SimpleBigramCharModel::ValidSym(int utf8_sym) const {
+  return utf8_sym < static_cast<int>(vocab_indices_.size()) && utf8_sym >= 0;
+}
+
 int SimpleBigramCharModel::StateSym(int state) {
-  return state < static_cast<int>(utf8_indices_.size()) &&
-      state >= 0 ? utf8_indices_[state] : -1;
+  return ValidState(state) ? utf8_indices_[state] : -1;
 }
 
 int SimpleBigramCharModel::SymState(int utf8_sym) {
-  return utf8_sym < static_cast<int>(vocab_indices_.size()) && utf8_sym >= 0
-             ? vocab_indices_[utf8_sym]
-             : -1;
+  return ValidSym(utf8_sym) ? vocab_indices_[utf8_sym] : -1;
 }
 
 int SimpleBigramCharModel::NextState(int state, int utf8_sym) {
   return SymState(utf8_sym);
 }
 
-double SimpleBigramCharModel::LabelCostInState(int state, int label) {
-  absl::ReaderMutexLock nl(&normalizer_lock_);
-  absl::ReaderMutexLock cl(&counts_lock_);
-  double prob = 0.0;
-  int next_state = NextState(state, label);
-  if (next_state >= 0) {
-    prob = static_cast<double>(bigram_counts_[state][next_state]) /
-           utf8_normalizer_[state];
-  }
-  return -log(prob);
-}
-
 bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
   absl::ReaderMutexLock nl(&normalizer_lock_);
   absl::ReaderMutexLock cl(&counts_lock_);
-  if (state < 0 || state >= static_cast<int>(utf8_indices_.size())) {
+  if (!ValidState(state)) {
     // Invalid state, switching to start state, by convention state 0.
     state = 0;
   }
@@ -182,6 +176,22 @@ bool SimpleBigramCharModel::ExtractLMScores(int state, LMScores* response) {
   return true;
 }
 
+double SimpleBigramCharModel::SymLMScore(int state, int utf8_sym) {
+  if (!ValidState(state)) {
+    // Invalid state, switching to start state, by convention state 0.
+    state = 0;
+  }
+  int sym_state = NextState(state, utf8_sym);
+  double prob = 0.0;
+  if (ValidState(state) && ValidState(sym_state)) {
+    absl::ReaderMutexLock nl(&normalizer_lock_);
+    absl::ReaderMutexLock cl(&counts_lock_);
+    prob = static_cast<double>(bigram_counts_[state][sym_state]) /
+           utf8_normalizer_[state];
+  }
+  return -std::log(prob);
+}
+
 bool SimpleBigramCharModel::UpdateLMCounts(int state,
                                            const std::vector<int>& utf8_syms,
                                            int64 count) {
@@ -191,7 +201,7 @@ bool SimpleBigramCharModel::UpdateLMCounts(int state,
     // Returns true, nothing to update.
     return true;
   }
-  if (state < 0 || state >= static_cast<int>(utf8_indices_.size())) {
+  if (!ValidState(state)) {
     // Invalid state, switching to start state, by convention state 0.
     state = 0;
   }
