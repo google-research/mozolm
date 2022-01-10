@@ -476,12 +476,17 @@ TEST(PpmAsFstOtherTest, CheckVocabularyOnly) {
   ASSERT_TRUE(model.UpdateLMCounts(
       start_state, {98}, 1));  // updates "b" count.
 
-  // Retrieve new estimates.
+  // Retrieve new estimates.  Adding a single 'a' and single 'b' count at the
+  // start state, makes the unigram counts 2 each for a and b and 1 for </S>.
+  // Using the PPM formula:
+  // P(a | <S>) = P(b | <S>) = (1 - 0.75 + (0.5 + 2 * 0.75) * 0.4) / 2.5 = 0.42;
+  // and P(</S> | <S>) = (0.5 + 2 * 0.75) * 0.2 / 2.5 =  0.16.
+
   ASSERT_TRUE(model.ExtractLMScores(start_state, &scores));
   ASSERT_EQ(3, scores.probabilities_size());
-  EXPECT_NEAR(0.2, scores.probabilities(0), kFloatDelta);
-  EXPECT_NEAR(0.4, scores.probabilities(1), kFloatDelta);
-  EXPECT_NEAR(0.4, scores.probabilities(2), kFloatDelta);
+  EXPECT_NEAR(0.16, scores.probabilities(0), kFloatDelta);
+  EXPECT_NEAR(0.42, scores.probabilities(1), kFloatDelta);
+  EXPECT_NEAR(0.42, scores.probabilities(2), kFloatDelta);
 }
 
 }  // namespace

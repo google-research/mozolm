@@ -501,7 +501,6 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     if (storage.model_file().empty()) {
       // We've initialized solely from the vocabulary.
       ArcSort(fst_.get(), ILabelCompare<StdArc>());
-      RETURN_IF_ERROR(AddPriorCounts());
     }
     GOOGLE_LOG(INFO) << "Added " << syms_->NumSymbols() << " symbols to vocabulary";
   }

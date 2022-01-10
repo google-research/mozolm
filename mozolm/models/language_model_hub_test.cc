@@ -105,13 +105,18 @@ TEST_F(VocabOnlySingleModelTest, NonUniformProbs) {
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiA}, 1));
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiB}, 1));
 
-  // Get new estimates.
+  // Get new estimates.  Adding a two 'a' and one 'b' count at the
+  // start state, makes the unigram counts 2 each for a and b and 1 for </S>.
+  // Using the PPM formula:
+  // P(a | <S>) = (2 - 0.75 + (0.5 + 2 * 0.75) * 0.4) / 3.5 = 0.585714;
+  // P(b | <S>) = (1 - 0.75 + (0.5 + 2 * 0.75) * 0.4) / 3.5 = 0.3;
+  // and P(</S> | <S>) = (0.5 + 2 * 0.75) * 0.2 / 3.5 =  0.114285.
   LMScores scores;
   ASSERT_TRUE(hub_->ExtractLMScores(start_state_, &scores));
   ASSERT_EQ(3, scores.probabilities_size());
-  EXPECT_NEAR(scores.probabilities(0), 0.142857, kEpsilon);  // </S>
-  EXPECT_NEAR(scores.probabilities(1), 0.571429, kEpsilon);  // "a"
-  EXPECT_NEAR(scores.probabilities(2), 0.285714, kEpsilon);  // "b"
+  EXPECT_NEAR(scores.probabilities(0), 0.114285, kEpsilon);  // </S>
+  EXPECT_NEAR(scores.probabilities(1), 0.585714, kEpsilon);  // "a"
+  EXPECT_NEAR(scores.probabilities(2), 0.3, kEpsilon);  // "b"
 }
 
 TEST_F(VocabOnlySingleModelTest, UpdateByNonSingletonCount) {
@@ -121,13 +126,13 @@ TEST_F(VocabOnlySingleModelTest, UpdateByNonSingletonCount) {
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiA}, 2));
   EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, {kAsciiB}, 1));
 
-  // Get new estimates.
+  // Get new estimates.  See formulas above.
   LMScores scores;
   ASSERT_TRUE(hub_->ExtractLMScores(start_state_, &scores));
   ASSERT_EQ(3, scores.probabilities_size());
-  EXPECT_NEAR(scores.probabilities(0), 0.142857, kEpsilon);  // </S>
-  EXPECT_NEAR(scores.probabilities(1), 0.571429, kEpsilon);  // "a"
-  EXPECT_NEAR(scores.probabilities(2), 0.285714, kEpsilon);  // "b"
+  EXPECT_NEAR(scores.probabilities(0), 0.114285, kEpsilon);  // </S>
+  EXPECT_NEAR(scores.probabilities(1), 0.585714, kEpsilon);  // "a"
+  EXPECT_NEAR(scores.probabilities(2), 0.3, kEpsilon);       // "b"
 }
 
 TEST_F(VocabOnlySingleModelTest, CheckNextStateAndStateSymbol) {
@@ -162,17 +167,21 @@ TEST_F(VocabOnlySingleModelTest, NonUniformProbsForSequenceWithNextState) {
   int curr_state = start_state_;
   for (auto sym : symbols) {
     curr_state = hub_->NextState(curr_state, sym);
-    EXPECT_GE(start_state_, 0);
+    EXPECT_GE(curr_state, 0);
   }
-  EXPECT_TRUE(hub_->UpdateLMCounts(start_state_, symbols, 1));
+  EXPECT_TRUE(hub_->UpdateLMCounts(curr_state, symbols, 1));
 
-  // Fetch the scores from the last state.
+  // Get new estimates.  Because the model was 'empty' when first traversing new
+  // states, the final destination of curr_state is the unigram state. The
+  // unigram counts update twice for 'a' and once for 'b', so the unigram counts
+  // are 3, 2, 1 for a, b, </S> respectively. Thus, relative frequency estimate
+  // gives probabilities of 1/2, 1/3 and 1/6 respectively.
   LMScores scores;
   ASSERT_TRUE(hub_->ExtractLMScores(curr_state, &scores));
   ASSERT_EQ(3, scores.probabilities_size());
-  EXPECT_NEAR(scores.probabilities(0), 0.222222, kEpsilon);  // </S>
-  EXPECT_NEAR(scores.probabilities(1), 0.444444, kEpsilon);  // "a"
-  EXPECT_NEAR(scores.probabilities(2), 0.333333, kEpsilon);  // "b"
+  EXPECT_NEAR(scores.probabilities(0), 1.0 / 6.0, kEpsilon);  // </S>
+  EXPECT_NEAR(scores.probabilities(1), 1.0 / 2.0, kEpsilon);  // "a"
+  EXPECT_NEAR(scores.probabilities(2), 1.0 / 3.0, kEpsilon);  // "b"
 }
 
 }  // namespace
