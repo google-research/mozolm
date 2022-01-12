@@ -57,6 +57,13 @@ class LanguageModel {
     return false;  // Requires a derived class to complete.
   }
 
+  // Tries to write the Fst representation if it exists in the derived class.
+  virtual absl::Status WriteFst(const std::string &ofile) const {
+    // Requires a derived class to complete.
+    return absl::UnimplementedError(
+        "No FST writing defined for this derived class");
+  }
+
   // Returns the negative log probability of the utf8_sym at the state.
   virtual double SymLMScore(int state, int utf8_sym) {
     return -log(0.0);  // Requires a derived class to complete.
