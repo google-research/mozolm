@@ -46,12 +46,12 @@ nisaba_public_repositories()
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
-grpc_version = "1.39.1"
+grpc_version = "1.43.0"
 
 http_archive(
     name = "com_github_grpc_grpc",
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "024118069912358e60722a2b7e507e9c3b51eeaeee06e2dd9d95d9c16f6639ec",
+    sha256 = "9647220c699cea4dafa92ec0917c25c7812be51a18143af047e20f3fb05adddc",
     strip_prefix = "grpc-%s" % grpc_version,
 )
 
@@ -76,12 +76,12 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 # ------------------------------------
 # See https://github.com/grpc/grpc-java
 
-java_grpc_version = "1.40.0"
+java_grpc_version = "1.43.2"
 
 http_archive(
     name = "com_github_grpc_grpc_java",
     url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.tar.gz" % java_grpc_version,
-    sha256 = "bb35847c18c8bdf392f618396feb50f6473a3b4150a199d555715fd3260a9ab8",
+    sha256 = "6c39c5feecda4f1ccafe88d8928d9a0f2a686d9a9a9c03888a2e5ac92f7ee34a",
     strip_prefix = "grpc-java-%s" % java_grpc_version,
 )
 
