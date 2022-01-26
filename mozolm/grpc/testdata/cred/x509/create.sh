@@ -13,6 +13,9 @@
 # limitations under the License.
 
 #!/bin/bash
+#
+# Note: This script generates certificates and keys for testing *only*. Not to
+# be used in production.
 
 # Create the server CA certs.
 openssl req -x509                                     \
