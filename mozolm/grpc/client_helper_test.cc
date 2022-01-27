@@ -152,9 +152,9 @@ TEST_P(ClientHelperTest, CheckRandGen) {
   std::string result;
   for (int i = 0; i < kNumIterations; ++i) {
     EXPECT_OK(client.RandGen(context, &result));
-    EXPECT_FALSE(result.empty());
     context += result;
   }
+  EXPECT_FALSE(context.empty());
 }
 
 TEST_P(ClientHelperTest, CheckCalcBitsPerCharacter) {

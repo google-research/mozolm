@@ -22,6 +22,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "absl/memory/memory.h"
+#include "absl/random/bit_gen_ref.h"
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -44,21 +45,21 @@ constexpr int kNumCodepoints = 143859;   // Total possible Unicode codepoints.
 constexpr float kMixEpsilon = 0.00000001;  // Amount to weight uniform prob.
 
 // Returns random probability threshold between 0 and 1.
-double GetUniformThreshold() {
-  absl::BitGen gen;
-  return absl::Uniform(gen, 0, 100000) / static_cast<double>(100000);
+double GetUniformThreshold(absl::BitGenRef bit_gen) {
+  return absl::Uniform(bit_gen, 0.0, 1.0);
 }
 
 // Uses random number to choose position according to returned distribution.
 int GetRandomPosition(
-    const std::vector<std::pair<double, std::string>>& prob_idx_pair_vector) {
-  const double thresh = GetUniformThreshold();
+    const std::vector<std::pair<double, std::string>>& prob_idx_pair_vector,
+    absl::BitGenRef bit_gen) {
+  const double thresh = GetUniformThreshold(bit_gen);
   double total_prob = 0.0;
   int pos = 0;
   while (total_prob < thresh &&
-         pos < static_cast<int64>(prob_idx_pair_vector.size())) {
+         pos < static_cast<int>(prob_idx_pair_vector.size())) {
     total_prob +=
-        static_cast<double>(prob_idx_pair_vector[pos++].first);
+      static_cast<double>(prob_idx_pair_vector[pos++].first);
   }
   if (pos > 0) --pos;
   return pos;
@@ -189,9 +190,10 @@ absl::Status ClientHelper::RandGen(const std::string& context_string,
   RETURN_IF_ERROR(GetLMScores(/*context_string=*/"", state, &normalization,
                               &prob_idx_pair_vector));
   bool success = true;
+  absl::BitGen bit_gen;
   do {
     if (success) {
-      const int pos = GetRandomPosition(prob_idx_pair_vector);
+      const int pos = GetRandomPosition(prob_idx_pair_vector, bit_gen);
       if (pos < 0 || pos >= prob_idx_pair_vector.size()) {
         return absl::InternalError(absl::StrCat("Invalid position: ", pos));
       }

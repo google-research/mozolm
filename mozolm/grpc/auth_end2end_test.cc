@@ -40,6 +40,7 @@ const char kModelsTestDir[] =
 const char kCharFstModelFilename[] = "gutenberg_en_char_ngram_o2_kn.fst";
 const char kUdsEndpointName[] = "auth_end2end_test.sock";
 constexpr double kClientTimeoutSec = 1.0;
+constexpr int kNumRequests = 5;
 
 // The test fixtures are currently parametrized by the socket type (UDS/TCP).
 class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
@@ -75,10 +76,13 @@ class AuthEnd2EndTest : public ::testing::TestWithParam<bool>  {
     ClientHelper client;
     RETURN_IF_ERROR(client.Init(current_config));
 
-    // Send one random generation request.
-    std::string result;
-    RETURN_IF_ERROR(client.RandGen(/* context_string= */"", &result));
-    EXPECT_FALSE(result.empty());
+    // Send several random generation requests.
+    std::string result, total_response;
+    for (int i = 0; i < kNumRequests; ++i) {
+      RETURN_IF_ERROR(client.RandGen(/* context_string= */"", &result));
+      total_response += result;
+    }
+    EXPECT_FALSE(total_response.empty());
     return absl::OkStatus();
   }
 
