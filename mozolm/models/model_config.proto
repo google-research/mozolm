@@ -48,7 +48,7 @@ message ModelConfig {
   double weight = 3;
 }
 
-// Next available ID: 6
+// Next available ID: 7
 message ModelHubConfig {
   // Models to be used by LanguageModelHub.
   repeated ModelConfig model_config = 1;
@@ -73,4 +73,7 @@ message ModelHubConfig {
   // Maximum number of ensemble states to maintain. If unset or set to less than
   // 10, default value will be used.
   int32 maximim_maintained_states = 5;
+
+  // Length of history for calculating Bayesian interpolation weights.
+  int32 bayesian_history_length = 6;
 }

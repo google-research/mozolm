@@ -76,6 +76,7 @@ void ExtractMixture(
 
 absl::Status LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
   mixture_weights_.clear();
+  bayesian_history_length_ = 0;
   switch (config.mixture_type()) {
     case ModelHubConfig::NONE:
       // Only uses results from first model.
@@ -89,15 +90,14 @@ absl::Status LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
       } else {
         double normalization;
         mixture_weights_.resize(config.model_config_size());
+        bayesian_history_length_ =
+            std::max(0, config.bayesian_history_length());
         for (auto idx = 0; idx < config.model_config_size(); ++idx) {
           // Stores negative log mixing weights for each model.
           mixture_weights_[idx] = config.model_config(idx).weight();
-          if (idx == 0) {
-            normalization = mixture_weights_[idx];
-          } else {
-            normalization =
-                ngram::NegLogSum(normalization, mixture_weights_[idx]);
-          }
+          normalization = (idx == 0) ? mixture_weights_[idx]
+                                     : ngram::NegLogSum(normalization,
+                                                        mixture_weights_[idx]);
         }
         for (auto idx = 0; idx < mixture_weights_.size(); ++idx) {
           // Scale the mixture weights by a constant to sum to 1.
@@ -113,7 +113,7 @@ absl::Status LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
   hub_states_.push_back(std::unique_ptr<LanguageModelHubState>());
   const std::vector<int> dummy_states(language_models_.size());
   hub_states_[0] = std::unique_ptr<LanguageModelHubState>(
-      new LanguageModelHubState(dummy_states, -1, 0));
+      new LanguageModelHubState(dummy_states, -1, 0, bayesian_history_length_));
   RETURN_IF_ERROR(InitializeStartHubState());
 
   if (config.maximim_maintained_states() < 10) {
@@ -136,9 +136,10 @@ absl::Status LanguageModelHub::UpdateHubState(
     int idx, const std::vector<int>& model_states, int prev_state,
     int state_sym) {
   std::vector<int> old_next_states;
-  ASSIGN_OR_RETURN(old_next_states,
-                   hub_states_[idx]->UpdateHubState(LanguageModelHubState(
-                       model_states, prev_state, state_sym)));
+  ASSIGN_OR_RETURN(
+      old_next_states,
+      hub_states_[idx]->UpdateHubState(LanguageModelHubState(
+          model_states, prev_state, state_sym, bayesian_history_length_)));
   for (auto next_state : old_next_states) {
     // Removes prev_state_ values that refer to old, overwritten hub state.
     hub_states_[next_state]->ResetPrevState();
@@ -168,11 +169,13 @@ absl::StatusOr<int> LanguageModelHub::AssignNewHubState(
   } else {
     idx = hub_states_.size();
     hub_states_.push_back(std::unique_ptr<LanguageModelHubState>());
-    hub_states_[idx] = std::unique_ptr<LanguageModelHubState>(
-        new LanguageModelHubState(model_states, prev_state, state_sym));
+    hub_states_[idx] =
+        std::unique_ptr<LanguageModelHubState>(new LanguageModelHubState(
+            model_states, prev_state, state_sym, bayesian_history_length_));
   }
   last_created_hub_state_ = idx;
   hub_states_[prev_state]->AddNextState(state_sym, idx);
+  UpdateBayesianHistory(idx);  // Updates Bayesian probabilities for new state.
   return idx;
 }
 
@@ -216,6 +219,37 @@ int LanguageModelHub::ContextState(const std::string& context, int init_state) {
   return this_state;
 }
 
+std::vector<double> LanguageModelHub::GetBayesianMixtureWeights(
+    int state) const {
+  if (bayesian_history_length_ <= 0 || state < 0 ||
+      state >= hub_states_.size()) {
+    return mixture_weights_;
+  }
+  std::vector<double> mixture_weights = mixture_weights_;
+  const std::vector<double> bayesian_history_probs_sum =
+      hub_states_[state]->bayesian_history_probs_sum();
+  double normalization;
+  for (auto idx = 0; idx < mixture_weights.size(); ++idx) {
+    mixture_weights[idx] += bayesian_history_probs_sum[idx];
+    normalization = (idx == 0)
+                        ? mixture_weights[idx]
+                        : ngram::NegLogSum(normalization, mixture_weights[idx]);
+  }
+  for (auto idx = 0; idx < mixture_weights.size(); ++idx) {
+    mixture_weights[idx] -= normalization;
+  }
+  return mixture_weights;
+}
+
+std::vector<double> LanguageModelHub::GetMixtureWeights(int state,
+                                                        bool result) const {
+  if (!result || bayesian_history_length_ <= 0 || state < 0 ||
+      state >= hub_states_.size()) {
+    return mixture_weights_;
+  }
+  return GetBayesianMixtureWeights(state);
+}
+
 bool LanguageModelHub::ExtractLMScores(int state, LMScores* response) {
   bool result = state >= 0 && state < hub_states_.size();
   int idx = 0;
@@ -225,14 +259,15 @@ bool LanguageModelHub::ExtractLMScores(int state, LMScores* response) {
         hub_states_[state]->model_state(idx), response);
   }
   absl::flat_hash_map<std::string, double> mixed_values;
-  double mixed_normalization = 0;
-  while (result && idx < mixture_weights_.size()) {
+  double mixed_normalization = 0.0;
+  const auto mixture_weights = GetMixtureWeights(state, result);
+  while (result && idx < mixture_weights.size()) {
     LMScores this_response;
     result = language_models_[idx]->ExtractLMScores(
         hub_states_[state]->model_state(idx), &this_response);
     if (result) {
       mixed_normalization +=
-          impl::MixResults(this_response, mixture_weights_[idx], &mixed_values);
+          impl::MixResults(this_response, mixture_weights[idx], &mixed_values);
     }
     ++idx;
   }
@@ -242,10 +277,42 @@ bool LanguageModelHub::ExtractLMScores(int state, LMScores* response) {
   return result;
 }
 
+void LanguageModelHub::UpdateBayesianHistory(int32 state) {
+  if (state >= 0 && bayesian_history_length_ > 0) {
+    const int prev_state = hub_states_[state]->prev_state();
+    if (prev_state >= 0) {
+      std::vector<double> lm_probs(language_models_.size());
+      for (int idx = 0; idx < language_models_.size(); ++idx) {
+        lm_probs[idx] = language_models_[idx]->SymLMScore(
+            hub_states_[prev_state]->model_state(idx),
+            hub_states_[state]->state_sym());
+      }
+      hub_states_[state]->UpdateBayesianHistory(
+          lm_probs, hub_states_[prev_state]->bayesian_history_probs());
+    }
+  }
+}
+
 bool LanguageModelHub::UpdateLMCounts(int32 state,
                                       const std::vector<int>& utf8_syms,
                                       int64 count) {
   bool result = state >= 0 && state < hub_states_.size();
+  // Ensures hub states exist for all continuations;
+  int next_state = state;
+  for (auto utf8_sym : utf8_syms) {
+    next_state = NextState(next_state, utf8_sym);
+  }
+  if (bayesian_history_length_ > 0) {
+    // Updates Bayesian history at next states before updating counts.
+    int this_state = state;
+    for (auto utf8_sym : utf8_syms) {
+      const auto next_states = hub_states_[this_state]->next_states();
+      for (auto ns : next_states) {
+        UpdateBayesianHistory(ns.second);
+      }
+      this_state = NextState(this_state, utf8_sym);
+    }
+  }
   int idx = 0;
   while (result && idx < mixture_weights_.size()) {
     result = language_models_[idx]->UpdateLMCounts(
@@ -298,6 +365,23 @@ bool LanguageModelHubState::VerifyOrCorrectModelStates(
   return true;
 }
 
+void LanguageModelHubState::UpdateBayesianHistory(
+    const std::vector<double>& lm_probs,
+    const std::vector<std::vector<double>>& prev_probs) {
+  for (int idx = 0; idx < lm_probs.size(); ++idx) {
+    // Adds latest probability to history probs.
+    bayesian_history_probs_[idx].back() = lm_probs[idx];
+    bayesian_history_probs_sum_[idx] = lm_probs[idx];
+
+    // History probs are shared with prev_state for all but hidx = 0.
+    for (int hidx = 1; hidx < prev_probs[idx].size(); ++hidx) {
+      bayesian_history_probs_[idx][hidx - 1] = prev_probs[idx][hidx];
+      bayesian_history_probs_sum_[idx] +=
+          bayesian_history_probs_[idx][hidx - 1];
+    }
+  }
+}
+
 absl::StatusOr<std::vector<int>> LanguageModelHubState::UpdateHubState(
     const LanguageModelHubState& hub_state) {
   if (model_states_.size() != hub_state.ModelStateSize()) {
@@ -314,7 +398,18 @@ absl::StatusOr<std::vector<int>> LanguageModelHubState::UpdateHubState(
   }
   prev_state_ = hub_state.prev_state();
   state_sym_ = hub_state.state_sym();
+  bayesian_history_probs_ = hub_state.bayesian_history_probs();
+  bayesian_history_probs_sum_ = hub_state.bayesian_history_probs_sum();
   return std::move(old_next_states);
+}
+
+void LanguageModelHubState::InitBayesianHistory(int bayesian_history_length) {
+  bayesian_history_probs_.resize(model_states_.size());
+  for (int idx = 0; idx < model_states_.size(); ++idx) {
+    // Initializes history negative log probabilities to zeros.
+    bayesian_history_probs_[idx].resize(bayesian_history_length);
+  }
+  bayesian_history_probs_sum_.resize(model_states_.size());
 }
 
 }  // namespace models

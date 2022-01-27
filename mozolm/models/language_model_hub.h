@@ -34,18 +34,33 @@ class LanguageModelHubState {
  public:
   LanguageModelHubState() = default;
 
-  // Initializes given a vector of states, default values used for start state.
+  // Initializes given a vector of states, default values used for start state,
+  // plus allocates vectors for Bayesian mixtures if needed.
   explicit LanguageModelHubState(const std::vector<int>& model_states,
-                                 int prev_state = -1, int state_sym = 0)
+                                 int prev_state = -1, int state_sym = 0,
+                                 int bayesian_history_length = 0)
       : model_states_(model_states),
         prev_state_(prev_state),
-        state_sym_(state_sym) {}
+        state_sym_(state_sym) {
+    if (bayesian_history_length > 0) {
+      InitBayesianHistory(bayesian_history_length);
+    }
+  }
 
   ~LanguageModelHubState() = default;
 
   int ModelStateSize() const { return model_states_.size(); }
   int state_sym() const { return state_sym_; }
   int prev_state() const { return prev_state_; }
+  absl::flat_hash_map<int, int> next_states() const {
+    return next_states_;
+  }
+  std::vector<std::vector<double>> bayesian_history_probs() const {
+    return bayesian_history_probs_;
+  }
+  std::vector<double> bayesian_history_probs_sum() const {
+    return bayesian_history_probs_sum_;
+  }
 
   // Returns existing next state for symbol if exists; -1 otherwise.
   int next_state(int utf8_sym) const {
@@ -72,18 +87,32 @@ class LanguageModelHubState {
   bool VerifyOrCorrectModelStates(int prev_state, int utf8_sym,
                                   const std::vector<int>& model_states);
 
+  // Updates the Bayesian history probabilities at the state.
+  void UpdateBayesianHistory(
+      const std::vector<double>& lm_probs,
+      const std::vector<std::vector<double>>& prev_probs);
+
   // Resets previous state when previous state has been overwritten.
   void ResetPrevState() {
     prev_state_ = -1;
   }
 
  private:
+  // Initializes Bayesian history probabilities if needed.
+  void InitBayesianHistory(int bayesian_history_length);
+
   std::vector<int> model_states_;  // Stores state IDs from component models.
   std::vector<std::string>
       model_state_prefixes_;  // Stores word prefixes at state in models.
   int prev_state_;            // Previous state in the model hub.
   absl::flat_hash_map<int, int> next_states_;  // Set of next states.
   int state_sym_;             // Last symbol leading to this state.
+
+  // Holds the (negative log) probabilities of recent symbols for calculating
+  // Bayesian interpolation model mixing parameters. Empty if not using Bayesian
+  // methods.
+  std::vector<std::vector<double>> bayesian_history_probs_;
+  std::vector<double> bayesian_history_probs_sum_;  // Holds pre-summed value.
 };
 
 // TODO: Initialize with a desired target alphabet.
@@ -130,6 +159,40 @@ class LanguageModelHub {
   // Initializes already allocated start hub state with start states.
   absl::Status InitializeStartHubState();
 
+  // Updates probabilities from each model to allow Bayesian interpolation.
+  void UpdateBayesianHistory(int32 state);
+
+  // Bayesian interpolation methods are based on a generalization of methods
+  // shown in Allauzen and Riley (2011) "Bayesian language model interpolation
+  // for mobile speech input." Given K models, each k \in K having a normalized
+  // prior weight w_k such that \sum_{k \in K} w_k = 1.0, then
+  // P(w | h) = \sum_{k \in K} m_k(h) p_k(w | h), where p_k(w | h) is the
+  // probability of w given h in model k, and m_k(h) is the mixture weight for
+  // history h, calculated as:
+  // m_k(h) = w_k p_k(h) / ( sum_{l \in K} w_l p_l(h) ).  In this version, the
+  // length of the history considered when calculating p(h | k) is
+  // parameterized, so that we consider only the previous j symbols regardless
+  // of the order of the model, where j is the bayesian_history_length parameter
+  // in the ModelHubConfig proto. If that parameter is set to less than one,
+  // then standard interpolation is used, i.e., just based on the prior weight
+  // w_k. At character c_i, let the previous history be denoted h_i = c_0...
+  // c_{i-1}. Then, if bayesian_history_length = j > 0:
+  // m_k(h_i) = w_k p_k(c_{i-1} | h_{i-1}) ... p_k(c_{i-j} | h_{i-j}) / Z, where
+  // Z is the appropriate normalization across all models.
+  // One special note about the use of this with dynamic models. This method
+  // provides more weight to models that have assigned higher probability to the
+  // symbols in the history. For this reason, the history probabilities used to
+  // calculate the mixture should be based on probabilities before a dynamic
+  // model's counts are updated for the current instance. Otherwise, it will
+  // inflate the probabilities that the model has been providing for the history
+  // and over-rely on that model for the next estimate.  For this reason, the
+  // Bayesian histories are updated prior to model counts being updated.
+  std::vector<double> GetBayesianMixtureWeights(int state) const;
+
+  // Calculates normalized mixture weights.  If anything other than Bayesian
+  // methods, no special calculation required.
+  std::vector<double> GetMixtureWeights(int state, bool result) const;
+
   // Verifies model states after updating counts, and corrects if they differ.
   bool VerifyOrCorrectModelStates(int32 state,
                                   const std::vector<int>& utf8_syms);
@@ -139,6 +202,9 @@ class LanguageModelHub {
   int last_created_hub_state_;  // Tracks which hub states recently created.
   int max_hub_states_;          // Maximum number of hub states to allow.
   std::vector<double> mixture_weights_;  // Weight for each model in mixture.
+
+  int bayesian_history_length_;  // Length of history for Bayesian mixing.
+
   std::vector<std::unique_ptr<LanguageModel>> language_models_;
 };
 
