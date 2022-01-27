@@ -60,7 +60,7 @@ class NGramFstModel : public LanguageModel {
   std::unique_ptr<const fst::StdVectorFst> fst_;
 
   // N-Gram model helper wrapping the FST above.
-  std::unique_ptr<const ngram::NGramModel<ngram::StdArc>> model_;
+  std::unique_ptr<const ngram::NGramModel<fst::StdArc>> model_;
 
   // Label for the unknown symbol, if any.
   fst::StdArc::Label oov_label_ = fst::kNoSymbol;
