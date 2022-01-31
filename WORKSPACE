@@ -13,13 +13,14 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # import `rules_python` import the latest official release. Without it, it
 # seems to be impossible to import `io_bazel_rules_docker` below successfully.
 
-rules_python_version = "0.3.0"
+rules_python_version = "0.6.0"
 
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/%s/rules_python-%s.tar.gz" % (
-        rules_python_version, rules_python_version),
-    sha256 = "934c9ceb552e84577b0faf1e5a2f0450314985b4d8712b2b70717dc679fdc01b",
+    url = "https://github.com/bazelbuild/rules_python/archive/%s.tar.gz" % (
+        rules_python_version),
+    strip_prefix = "rules_python-%s" % rules_python_version,
+    sha256 = "a30abdfc7126d497a7698c29c46ea9901c6392d6ed315171a6df5ce433aa4502",
 )
 
 # ----------------------------------------------
@@ -169,14 +170,14 @@ grpc_java_repositories()
 #   https://github.com/rules-proto-grpc/rules_proto_grpc
 #   https://rules-proto-grpc.aliddell.com/en/latest/lang/js.html
 
-proto_grpc_version = "3.1.1"
+proto_grpc_version = "4.1.1"
 
 http_archive(
     name = "rules_proto_grpc",
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/refs/tags/%s.tar.gz" % (
         proto_grpc_version)],
     strip_prefix = "rules_proto_grpc-%s" % proto_grpc_version,
-    sha256 = "7954abbb6898830cd10ac9714fbcacf092299fda00ed2baf781172f545120419",
+    sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
 )
 
 load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains")
@@ -202,11 +203,11 @@ yarn_install(
 #   https://github.com/bazelbuild/rules_docker
 # -------------------------------------------------------------------------
 
-docker_version = "0.18.0"
+docker_version = "0.23.0"
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "5d31ad261b9582515ff52126bf53b954526547a3e26f6c25a9d64c48a31e45ac",
+    sha256 = "85ffff62a4c22a74dbd98d05da6cf40f497344b3dbf1e1ab0a37ab2a1a6ca014",
     strip_prefix = "rules_docker-%s" % docker_version,
     urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v%s/rules_docker-v%s.tar.gz" % (
         docker_version, docker_version)],
