@@ -21,6 +21,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/status_macros.h"
 
@@ -29,7 +30,7 @@ namespace models {
 namespace {
 
 absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
-    const std::string& in_vocab) {
+    absl::string_view in_vocab) {
   int32 last_idx = -1;
   std::ifstream infile(in_vocab);
   if (!infile.is_open()) {
@@ -55,7 +56,7 @@ absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
   return utf8_indices;
 }
 
-absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
+absl::Status ReadCountMatrix(absl::string_view in_counts, int rows,
                              std::vector<double>* utf8_normalizer,
                              std::vector<std::vector<int64>>* bigram_matrix) {
   int idx = 0;

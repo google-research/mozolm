@@ -23,6 +23,7 @@
 #include "fst/symbol-table.h"
 #include "ngram/ngram-model.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/string_view.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
 #include "nisaba/port/utf8_util.h"
@@ -54,7 +55,7 @@ double SafeNegLogDiff(double cost1, double cost2) {
 }
 
 // Returns the character at index idx in the unicode string.
-std::string GetNextChar(const std::string& sym, int idx) {
+std::string GetNextChar(absl::string_view sym, int idx) {
   const std::vector<std::string> syms = StrSplitByChar(sym);
   if (idx < 0 || syms.size() <= idx) {
     // No symbol at that index for the input string, returns whitespace.

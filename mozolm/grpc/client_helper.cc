@@ -27,6 +27,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/notification.h"
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
@@ -70,7 +71,7 @@ int GetRandomPosition(
 // find match, since this will on average be efficient.
 int FindStringIndex(
     const std::vector<std::pair<double, std::string>>& prob_idx_pair_vector,
-    const std::string& utf8_sym) {
+    absl::string_view utf8_sym) {
   for (int idx = 0; idx < prob_idx_pair_vector.size(); ++idx) {
     if (utf8_sym == prob_idx_pair_vector[idx].second) {
       return idx;
