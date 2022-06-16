@@ -89,7 +89,10 @@ cc_binary(
     features = ["fully_static_link"],
     linkstatic = True,
     visibility = ["//visibility:public"],
-    deps = [":server_async_main-lib"],
+    deps = [
+        ":server_async_main-lib",
+        "//third_party/grte:static_libs",
+    ],
 )
 
 cc_test(
@@ -226,7 +229,10 @@ cc_binary(
     features = ["fully_static_link"],
     linkstatic = True,
     visibility = ["//visibility:public"],
-    deps = [":client_async_main-lib"],
+    deps = [
+        ":client_async_main-lib",
+        "//third_party/grte:static_libs",
+    ],
 )
 
 cc_library(
