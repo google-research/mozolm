@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "google/protobuf/stubs/logging.h"
 #include "fst/fst.h"
@@ -122,7 +123,7 @@ absl::Status NGramWordFstModel::EstablishLexicographicOrdering() {
   if (idx != symbols.size()) {
     return absl::InternalError("Symbol table for model is not dense");
   }
-  ngram_implicit_states_ = absl::make_unique<NGramImplicitStates>(
+  ngram_implicit_states_ = std::make_unique<NGramImplicitStates>(
       fst(), first_char_begin_index_, first_char_ends_.back());
 
   // Creates an implicit state for out-of-vocabulary words, which then

@@ -14,6 +14,8 @@
 
 #include "mozolm/grpc/client_async_impl.h"
 
+#include <memory>
+
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "include/grpcpp/client_context.h"
@@ -50,7 +52,7 @@ absl::Status WaitAndCheck(::grpc::CompletionQueue *cq, int expected_tag) {
 
 std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_sec) {
   std::unique_ptr<::grpc::ClientContext> context =
-      absl::make_unique<::grpc::ClientContext>();
+      std::make_unique<::grpc::ClientContext>();
   context->set_deadline(gpr_time_add(
       gpr_now(GPR_CLOCK_REALTIME),
       gpr_time_from_millis(static_cast<int64>(1000.0 * timeout_sec),

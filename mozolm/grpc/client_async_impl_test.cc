@@ -65,7 +65,7 @@ class ClientAsyncImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
     stub_ = new MockMozoLMServiceStub();
-    client_ = absl::make_unique<ClientAsyncImpl>(
+    client_ = std::make_unique<ClientAsyncImpl>(
         std::unique_ptr<MockMozoLMServiceStub>(stub_));
   }
 
@@ -86,16 +86,16 @@ TEST_F(ClientAsyncImplTest, CheckGetNextStateUnaryAsync) {
   int tag = 1;
   std::unique_ptr<::grpc::Alarm> alarm;
   auto reader =
-      absl::make_unique<LocalMockClientAsyncResponseReader<NextState>>();
+      std::make_unique<LocalMockClientAsyncResponseReader<NextState>>();
   EXPECT_CALL(*stub_, AsyncGetNextStateRaw(_, EqualsProto(request), _))
     .WillOnce(
         DoAll(
             Invoke([&tag, &alarm](Unused, Unused, ::grpc::CompletionQueue *cq) {
               // This is a work-around to make caller's completion queue
               // `Next()` call succeed.
-              alarm = absl::make_unique<::grpc::Alarm>(
-                  cq, gpr_now(GPR_CLOCK_MONOTONIC), reinterpret_cast<void *>(
-                      &tag));
+              alarm = std::make_unique<::grpc::Alarm>(
+                  cq, gpr_now(GPR_CLOCK_MONOTONIC),
+                  reinterpret_cast<void *>(&tag));
             }),
             Return(reader.get())));
 

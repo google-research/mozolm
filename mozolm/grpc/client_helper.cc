@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -293,7 +294,7 @@ absl::Status ClientHelper::Init(const ClientConfig& config) {
   channel_ = ::grpc::CreateCustomChannel(config.server().address_uri(), creds,
                                          channel_args);
   completion_client_ =
-      absl::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
+      std::make_unique<ClientAsyncImpl>(MozoLMService::NewStub(channel_));
   timeout_sec_ = config.timeout_sec();
   return absl::OkStatus();
 }

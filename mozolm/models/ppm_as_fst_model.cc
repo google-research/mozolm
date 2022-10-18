@@ -15,6 +15,7 @@
 #include "mozolm/models/ppm_as_fst_model.h"
 
 #include <cmath>
+#include <memory>
 
 #include "google/protobuf/stubs/logging.h"
 #include "fst/arcsort.h"
@@ -458,18 +459,18 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
                                               storage.model_file()));
     }
     const auto syms = *fst_->InputSymbols();
-    syms_ = absl::make_unique<SymbolTable>(syms);
+    syms_ = std::make_unique<SymbolTable>(syms);
   } else {
     // Train PPM from given text file if non-empty, empty FST otherwise.
     if (max_order_ <= 0) {
       return absl::InternalError("max_order_ must be at least 1.");
     }
-    fst_ = absl::make_unique<StdVectorFst>();
-    syms_ = absl::make_unique<SymbolTable>();
+    fst_ = std::make_unique<StdVectorFst>();
+    syms_ = std::make_unique<SymbolTable>();
     syms_->AddSymbol("<epsilon>");
     fst_->SetInputSymbols(syms_.get());
     fst_->SetOutputSymbols(syms_.get());
-    ngram_counter_ = absl::make_unique<ngram::NGramCounter<Log64Weight>>(
+    ngram_counter_ = std::make_unique<ngram::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
     if (!storage.model_file().empty()) {
       GOOGLE_LOG(INFO) << "Initializing from training data ...";

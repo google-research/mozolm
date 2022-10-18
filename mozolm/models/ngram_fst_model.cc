@@ -14,6 +14,8 @@
 
 #include "mozolm/models/ngram_fst_model.h"
 
+#include <memory>
+
 #include "google/protobuf/stubs/logging.h"
 #include "fst/fst.h"
 #include "fst/matcher.h"
@@ -62,7 +64,7 @@ absl::Status NGramFstModel::Read(const ModelStorage &storage) {
   }
   oov_label_ = input_symbols->Find(kUnknownSymbol);
   fst_ = std::move(fst);
-  model_ = absl::make_unique<const ngram::NGramModel<StdArc>>(*fst_);
+  model_ = std::make_unique<const ngram::NGramModel<StdArc>>(*fst_);
   return CheckModel();
 }
 

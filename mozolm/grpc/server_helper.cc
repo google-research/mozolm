@@ -14,6 +14,8 @@
 
 #include "mozolm/grpc/server_helper.h"
 
+#include <memory>
+
 #include "google/protobuf/stubs/logging.h"
 #include "absl/memory/memory.h"
 #include "absl/synchronization/notification.h"
@@ -90,7 +92,7 @@ absl::Status ServerHelper::Init(const ServerConfig& config) {
       config);
 
   // Initialize and start the server.
-  server_ = absl::make_unique<ServerAsyncImpl>(std::move(model_status.value()));
+  server_ = std::make_unique<ServerAsyncImpl>(std::move(model_status.value()));
   return server_->BuildAndStart(config.address_uri(), creds,
                                 config.async_pool_size());
 }
@@ -98,8 +100,8 @@ absl::Status ServerHelper::Init(const ServerConfig& config) {
 absl::Status ServerHelper::Run(bool wait_till_terminated) {
   if (!server_) return absl::InternalError("Server not initialized");
   absl::Notification cq_ready;  // Completion queue ready to process requests.
-  server_thread_ = absl::make_unique<std::thread>(&ProcessRequests,
-                                                  server_.get(), &cq_ready);
+  server_thread_ =
+      std::make_unique<std::thread>(&ProcessRequests, server_.get(), &cq_ready);
   cq_ready.WaitForNotification();
   if (wait_till_terminated) {
     server_thread_->join();
