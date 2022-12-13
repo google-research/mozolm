@@ -24,7 +24,7 @@ jobs:
       with:
         access_token: ${{ github.token }}
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Free up some space in an image
       run: |
