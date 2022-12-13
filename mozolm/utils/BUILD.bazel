@@ -22,6 +22,7 @@ cc_library(
     name = "ngram_fst_relabel-lib",
     srcs = ["ngram_fst_relabel.cc"],
     hdrs = ["ngram_fst_relabel.h"],
+    linkstatic = True,
     deps = [
         "//mozolm/stubs:integral_types",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -39,6 +40,7 @@ cc_library(
 cc_test(
     name = "ngram_fst_relabel_test",
     srcs = ["ngram_fst_relabel_test.cc"],
+    linkstatic = True,
     deps = [
         ":ngram_fst_relabel-lib",
         "@com_github_protobuf_matchers//protobuf-matchers",
@@ -54,6 +56,7 @@ cc_binary(
     name = "ngram_fst_relabel",
     srcs = ["ngram_fst_relabel_main.cc"],
     visibility = ["//visibility:public"],
+    linkstatic = True,
     deps = [
         ":ngram_fst_relabel-lib",
         "//mozolm/stubs:integral_types",

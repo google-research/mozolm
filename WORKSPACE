@@ -13,14 +13,11 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # import `rules_python` import the latest official release. Without it, it
 # seems to be impossible to import `io_bazel_rules_docker` below successfully.
 
-rules_python_version = "0.6.0"
-
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/archive/%s.tar.gz" % (
-        rules_python_version),
-    strip_prefix = "rules_python-%s" % rules_python_version,
-    sha256 = "a30abdfc7126d497a7698c29c46ea9901c6392d6ed315171a6df5ce433aa4502",
+    sha256 = "b593d13bb43c94ce94b483c2858e53a9b811f6f10e1e0eedc61073bd90e58d9c",
+    strip_prefix = "rules_python-0.12.0",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.12.0.tar.gz",
 )
 
 # ----------------------------------------------
@@ -107,12 +104,12 @@ grpc_extra_deps()
 # OpenFst: See
 #   http://www.openfst.org/twiki/pub/FST/FstDownload/README
 # -------------------------------------------------------------------------
-openfst_version = "1.8.2-rc1"
+openfst_version = "1.8.2-rc2"
 
 http_archive(
     name = "org_openfst",
     urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
-    sha256 = "2b655782033257c7e51e6057a005e1000af858a98a8ef06502f74d9fc55ca276",
+    sha256 = "770af029f3cd7ae02fe400a6cb12def5592ac1a822908ebe4efc85ee4539a748",
     strip_prefix = "openfst-%s" % openfst_version,
 )
 
@@ -147,8 +144,10 @@ android_workspace()
 #   https://github.com/grpc/grpc-java/blob/master/examples/WORKSPACE
 # ------------------------------------------------------------------------------
 
-load("@com_github_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS")
-load("@com_github_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
+load("@com_github_grpc_grpc_java//:repositories.bzl",
+     "IO_GRPC_GRPC_JAVA_ARTIFACTS",
+     "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS",
+     "grpc_java_repositories")
 
 maven_install(
     artifacts = IO_GRPC_GRPC_JAVA_ARTIFACTS,
@@ -160,7 +159,6 @@ maven_install(
 load("@maven//:compat.bzl", "compat_repositories")
 compat_repositories()
 
-load("@com_github_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 grpc_java_repositories()
 
 # ------------------------------------

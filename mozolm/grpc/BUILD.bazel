@@ -45,6 +45,7 @@ cc_library(
     name = "server_async_impl",
     srcs = ["server_async_impl.cc"],
     hdrs = ["server_async_impl.h"],
+    linkstatic = True,
     deps = [
         ":service_cc_grpc_proto",
         ":service_cc_proto",
@@ -64,6 +65,7 @@ cc_library(
 cc_library(
     name = "server_async_main-lib",
     srcs = ["server_async_main.cc"],
+    linkstatic = True,
     deps = [
         ":server_config_cc_proto",
         ":server_helper",
@@ -80,6 +82,7 @@ cc_library(
 
 cc_binary(
     name = "server_async",
+    linkstatic = True,
     deps = [":server_async_main-lib"],
 )
 
@@ -98,6 +101,7 @@ cc_test(
     name = "server_async_impl_test",
     size = "small",
     srcs = ["server_async_impl_test.cc"],
+    linkstatic = True,
     deps = [
         ":server_async_impl",
         ":service_cc_grpc_proto",
@@ -118,6 +122,7 @@ cc_library(
     name = "server_helper",
     srcs = ["server_helper.cc"],
     hdrs = ["server_helper.h"],
+    linkstatic = True,
     deps = [
         ":server_async_impl",
         ":server_config_cc_proto",
@@ -136,6 +141,7 @@ cc_test(
     name = "server_helper_test",
     srcs = ["server_helper_test.cc"],
     data = ["//mozolm/grpc/testdata/cred/x509:x509_data"],
+    linkstatic = True,
     deps = [
         ":auth_test_utils",
         ":server_helper",
@@ -170,6 +176,7 @@ cc_library(
     name = "client_async_impl",
     srcs = ["client_async_impl.cc"],
     hdrs = ["client_async_impl.h"],
+    linkstatic = True,
     deps = [
         ":service_cc_grpc_proto",
         "//mozolm/models:language_model",
@@ -187,6 +194,7 @@ cc_library(
 cc_test(
     name = "client_async_impl_test",
     srcs = ["client_async_impl_test.cc"],
+    linkstatic = True,
     deps = [
         ":client_async_impl",
         ":service_cc_grpc_proto",
@@ -202,6 +210,7 @@ cc_test(
 cc_library(
     name = "client_async_main-lib",
     srcs = ["client_async_main.cc"],
+    linkstatic = True,
     deps = [
         ":client_config_cc_proto",
         ":client_helper",
@@ -219,6 +228,7 @@ cc_library(
 
 cc_binary(
     name = "client_async",
+    linkstatic = True,
     deps = [":client_async_main-lib"],
 )
 
@@ -237,6 +247,7 @@ cc_library(
     name = "client_helper",
     srcs = ["client_helper.cc"],
     hdrs = ["client_helper.h"],
+    linkstatic = True,
     deps = [
         ":client_async_impl",
         ":client_config_cc_proto",
@@ -265,6 +276,7 @@ cc_test(
         "//mozolm/models/testdata:ngram_fst_data",
         "//mozolm/models/testdata:ppm_as_fst_data",
     ],
+    linkstatic = True,
     deps = [
         ":client_helper",
         ":server_config_cc_proto",
@@ -338,6 +350,7 @@ cc_library(
     testonly = 1,
     srcs = ["auth_test_utils.cc"],
     hdrs = ["auth_test_utils.h"],
+    linkstatic = True,
     deps = [
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/container:flat_hash_map",
@@ -355,6 +368,7 @@ cc_test(
         "//mozolm/grpc/testdata/cred/x509:x509_data",
         "//mozolm/models/testdata:ngram_fst_data",
     ],
+    linkstatic = True,
     deps = [
         ":auth_test_utils",
         ":client_helper",
