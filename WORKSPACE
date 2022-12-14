@@ -15,9 +15,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_python",
-    sha256 = "b593d13bb43c94ce94b483c2858e53a9b811f6f10e1e0eedc61073bd90e58d9c",
-    strip_prefix = "rules_python-0.12.0",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.12.0.tar.gz",
+    sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
+    strip_prefix = "rules_python-0.16.1",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
 )
 
 # ----------------------------------------------
@@ -44,12 +44,12 @@ nisaba_public_repositories()
 # ------------------------------------
 # See https://github.com/grpc/grpc/blob/master/src/cpp/README.md#make
 
-grpc_version = "1.43.0"
+grpc_version = "1.45.0"
 
 http_archive(
     name = "com_github_grpc_grpc",
     urls = ["https://github.com/grpc/grpc/archive/v%s.tar.gz" % grpc_version],
-    sha256 = "9647220c699cea4dafa92ec0917c25c7812be51a18143af047e20f3fb05adddc",
+    sha256 = "ec19657a677d49af59aa806ec299c070c882986c9fcc022b1c22c2a3caf01bcd",
     strip_prefix = "grpc-%s" % grpc_version,
 )
 
@@ -58,13 +58,13 @@ http_archive(
 # --------------------------------------------------------
 # See https://github.com/bazelbuild/rules_jvm_external
 
-rules_jvm_version = "4.1"
+rules_jvm_version = "4.5"
 
 http_archive(
     name = "rules_jvm_external",
     url = "https://github.com/bazelbuild/rules_jvm_external/archive/refs/tags/%s.tar.gz" % rules_jvm_version,
     strip_prefix = "rules_jvm_external-%s" % rules_jvm_version,
-    sha256 = "995ea6b5f41e14e1a17088b727dcff342b2c6534104e73d6f06f1ae0422c2308",
+    sha256 = "6e9f2b94ecb6aa7e7ec4a0fbf882b226ff5257581163e88bf70ae521555ad271",
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -74,12 +74,12 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 # ------------------------------------
 # See https://github.com/grpc/grpc-java
 
-java_grpc_version = "1.43.2"
+java_grpc_version = "1.51.0"
 
 http_archive(
     name = "com_github_grpc_grpc_java",
     url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.tar.gz" % java_grpc_version,
-    sha256 = "6c39c5feecda4f1ccafe88d8928d9a0f2a686d9a9a9c03888a2e5ac92f7ee34a",
+    sha256 = "3762fd9a1045aa83d9a967840da142a1558565b76b470860282a1126e162799b",
     strip_prefix = "grpc-java-%s" % java_grpc_version,
 )
 
@@ -167,24 +167,39 @@ grpc_java_repositories()
 # See:
 #   https://github.com/rules-proto-grpc/rules_proto_grpc
 #   https://rules-proto-grpc.aliddell.com/en/latest/lang/js.html
+#
+# See the example:
+#   https://github.com/rules-proto-grpc/rules_proto_grpc/blob/master/example/js/js_grpc_node_library/WORKSPACE
 
-proto_grpc_version = "4.1.1"
+proto_grpc_version = "4.3.0"
 
 http_archive(
     name = "rules_proto_grpc",
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/refs/tags/%s.tar.gz" % (
         proto_grpc_version)],
     strip_prefix = "rules_proto_grpc-%s" % proto_grpc_version,
-    sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
+    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
 )
 
-load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains")
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
 
 rules_proto_grpc_toolchains()
+
+rules_proto_grpc_repos()
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+
+rules_proto_toolchains()
 
 load("@rules_proto_grpc//js:repositories.bzl", rules_proto_grpc_js_repos = "js_repos")
 
 rules_proto_grpc_js_repos()
+
+load("@build_bazel_rules_nodejs//:repositories.bzl", "build_bazel_rules_nodejs_dependencies")
+
+build_bazel_rules_nodejs_dependencies()
 
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
@@ -201,14 +216,14 @@ yarn_install(
 #   https://github.com/bazelbuild/rules_docker
 # -------------------------------------------------------------------------
 
-docker_version = "0.23.0"
+docker_version = "0.25.0"
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "85ffff62a4c22a74dbd98d05da6cf40f497344b3dbf1e1ab0a37ab2a1a6ca014",
-    strip_prefix = "rules_docker-%s" % docker_version,
+    sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
     urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v%s/rules_docker-v%s.tar.gz" % (
-        docker_version, docker_version)],
+        docker_version, docker_version)
+    ],
 )
 
 load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
