@@ -171,14 +171,14 @@ grpc_java_repositories()
 # See the example:
 #   https://github.com/rules-proto-grpc/rules_proto_grpc/blob/master/example/js/js_grpc_node_library/WORKSPACE
 
-proto_grpc_version = "4.3.0"
+proto_grpc_version = "4.2.0"
 
 http_archive(
     name = "rules_proto_grpc",
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/refs/tags/%s.tar.gz" % (
         proto_grpc_version)],
     strip_prefix = "rules_proto_grpc-%s" % proto_grpc_version,
-    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
+    sha256 = "bbe4db93499f5c9414926e46f9e35016999a4e9f6e3522482d3760dc61011070",
 )
 
 load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
