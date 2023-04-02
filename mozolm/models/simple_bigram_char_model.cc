@@ -28,15 +28,15 @@ namespace mozolm {
 namespace models {
 namespace {
 
-absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
+absl::StatusOr<std::vector<int32_t>> ReadVocabSymbols(
     const std::string& in_vocab) {
-  int32 last_idx = -1;
+  int32_t last_idx = -1;
   std::ifstream infile(in_vocab);
   if (!infile.is_open()) {
     return absl::NotFoundError(absl::StrCat("File not found: ", in_vocab));
   }
   std::string str;
-  std::vector<int32> utf8_indices;
+  std::vector<int32_t> utf8_indices;
   while (std::getline(infile, str)) {
     if (str.empty()) return absl::InternalError("Empty line");
     const std::vector<std::string> str_fields =
@@ -44,7 +44,7 @@ absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
     if (str_fields.size() != 1) {
       return absl::InternalError("Expects one column per vocab entry");
     }
-    const int32 utf8_sym = std::stoi(str_fields[0]);
+    const int32_t utf8_sym = std::stoi(str_fields[0]);
     if (utf8_sym <= last_idx) {
       return absl::InternalError("Assumes sorted unique numeric vocab");
     }
@@ -57,7 +57,7 @@ absl::StatusOr<std::vector<int32>> ReadVocabSymbols(
 
 absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
                              std::vector<double>* utf8_normalizer,
-                             std::vector<std::vector<int64>>* bigram_matrix) {
+                             std::vector<std::vector<int64_t>>* bigram_matrix) {
   int idx = 0;
   std::ifstream infile(in_counts);
   if (!infile.is_open()) {
@@ -72,9 +72,9 @@ absl::Status ReadCountMatrix(const std::string& in_counts, int rows,
       return absl::InternalError(absl::StrCat(
           "Expects ", rows, " columns per vocab entry"));
     }
-    std::vector<int64> bigram_counts(rows, 1);
+    std::vector<int64_t> bigram_counts(rows, 1);
     for (size_t i = 0; i < str_fields.size(); i++) {
-      int64 count = std::stol(str_fields[i]);
+      int64_t count = std::stol(str_fields[i]);
       if (count > 1) {
         // Counts less than one default to one, hence not updated.
         bigram_counts[i] = count;
@@ -111,7 +111,7 @@ absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
     GOOGLE_LOG(WARNING) << "No vocabulary and counts files specified.";
     utf8_indices_.push_back(0);   // Index 0 is <S> and </S> by convention.
     utf8_indices_.push_back(32);  // Whitespace.
-    for (int32 sym = 97; sym <= 122; sym++) {
+    for (int32_t sym = 97; sym <= 122; sym++) {
       utf8_indices_.push_back(sym);
     }
   }
@@ -121,7 +121,7 @@ absl::Status SimpleBigramCharModel::Read(const ModelStorage &storage) {
     }
     for (size_t i = 0; i < utf8_indices_.size(); i++) {
       utf8_normalizer_[i] = utf8_indices_.size();
-      bigram_counts_.push_back(std::vector<int64>(utf8_indices_.size(), 1));
+      bigram_counts_.push_back(std::vector<int64_t>(utf8_indices_.size(), 1));
     }
   }
   vocab_indices_.resize(utf8_indices_.back() + 1, -1);
@@ -194,7 +194,7 @@ double SimpleBigramCharModel::SymLMScore(int state, int utf8_sym) {
 
 bool SimpleBigramCharModel::UpdateLMCounts(int state,
                                            const std::vector<int>& utf8_syms,
-                                           int64 count) {
+                                           int64_t count) {
   absl::WriterMutexLock nl(&normalizer_lock_);
   absl::WriterMutexLock cl(&counts_lock_);
   if (count <= 0) {

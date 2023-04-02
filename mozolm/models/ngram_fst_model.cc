@@ -68,9 +68,9 @@ absl::Status NGramFstModel::Read(const ModelStorage &storage) {
   return CheckModel();
 }
 
-bool NGramFstModel::UpdateLMCounts(int32 state,
-                                       const std::vector<int> &utf8_syms,
-                                       int64 count) {
+bool NGramFstModel::UpdateLMCounts(int32_t state,
+                                   const std::vector<int> &utf8_syms,
+                                   int64_t count) {
   // Updating counts on read-only model is not supported.
   return true;  // Treat as a no-op.
 }

@@ -277,7 +277,7 @@ bool LanguageModelHub::ExtractLMScores(int state, LMScores* response) {
   return result;
 }
 
-void LanguageModelHub::UpdateBayesianHistory(int32 state) {
+void LanguageModelHub::UpdateBayesianHistory(int32_t state) {
   if (state >= 0 && bayesian_history_length_ > 0) {
     const int prev_state = hub_states_[state]->prev_state();
     if (prev_state >= 0) {
@@ -293,9 +293,9 @@ void LanguageModelHub::UpdateBayesianHistory(int32 state) {
   }
 }
 
-bool LanguageModelHub::UpdateLMCounts(int32 state,
+bool LanguageModelHub::UpdateLMCounts(int32_t state,
                                       const std::vector<int>& utf8_syms,
-                                      int64 count) {
+                                      int64_t count) {
   bool result = state >= 0 && state < hub_states_.size();
   // Ensures hub states exist for all continuations;
   int next_state = state;
@@ -326,7 +326,7 @@ bool LanguageModelHub::UpdateLMCounts(int32 state,
 }
 
 bool LanguageModelHub::VerifyOrCorrectModelStates(
-    int32 state, const std::vector<int>& utf8_syms) {
+    int32_t state, const std::vector<int>& utf8_syms) {
   for (int utf8_sym : utf8_syms) {
     // Checks for next state; if there, verifies (and updates if needed) model
     // state information.

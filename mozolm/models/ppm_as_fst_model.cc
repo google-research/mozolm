@@ -361,7 +361,7 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
   bool syms_added = false;
   for (SymbolTableIterator syms_iter(*syms_); !syms_iter.Done();
        syms_iter.Next()) {
-    const int64 sym = syms_iter.Value();
+    const int64_t sym = syms_iter.Value();
     if (sym > 0) {
       if (!has_unigram.contains(sym)) {
         // Adds unigram looping arc for possible characters without unigram.
@@ -957,9 +957,9 @@ double PpmAsFstModel::SymLMScore(int state, int utf8_sym) {
   return StdArc::Weight::Zero().Value();
 }
 
-bool PpmAsFstModel::UpdateLMCounts(int32 state,
+bool PpmAsFstModel::UpdateLMCounts(int32_t state,
                                    const std::vector<int>& utf8_syms,
-                                   int64 count) {
+                                   int64_t count) {
   // TODO: needs Mutex locks for model updating.
   if (static_model_ || count <= 0) {
     // Returns true, nothing to update.
