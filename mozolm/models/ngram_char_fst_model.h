@@ -20,7 +20,6 @@
 #include <memory>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "fst/vector-fst.h"
 #include "absl/status/status.h"
 #include "mozolm/models/ngram_fst_model.h"

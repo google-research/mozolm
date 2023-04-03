@@ -18,7 +18,6 @@
 
 #include <memory>
 
-#include "mozolm/stubs/integral_types.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
@@ -113,7 +112,7 @@ TEST_F(ClientAsyncImplTest, CheckGetNextStateUnaryAsync) {
              Return()));
 
   // Verify the response.
-  int64 next_state;
+  int64_t next_state;
   EXPECT_OK(client_->GetNextState(request.context(), request.state(),
                                   kDefaultTimeoutSec, &next_state));
   EXPECT_EQ(0, next_state);

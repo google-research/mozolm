@@ -22,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "fst/vector-fst.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"

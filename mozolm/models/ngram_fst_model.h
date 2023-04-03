@@ -20,7 +20,6 @@
 #include <memory>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "fst/vector-fst.h"
 #include "ngram/ngram-model.h"
 #include "absl/status/status.h"
@@ -39,8 +38,8 @@ class NGramFstModel : public LanguageModel {
 
   // Updates the count for the utf8_syms at the current state. Since this is a
   // read-only model, the updates are treated as no-op.
-  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
-                      int64 count) override;
+  bool UpdateLMCounts(int state, const std::vector<int>& utf8_syms,
+                      int64_t count) override;
 
   // Returns underlying FST, which must be initialized.
   const fst::StdVectorFst &fst() const { return *fst_; }

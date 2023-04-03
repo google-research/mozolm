@@ -20,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
 #include "mozolm/grpc/service.grpc.pb.h"
 
@@ -42,12 +41,12 @@ class ClientAsyncImpl {
 
   // Seeks the next model state given the initial state and context string.
   absl::Status GetNextState(const std::string& context_str, int initial_state,
-                            double timeout_sec, int64* next_state);
+                            double timeout_sec, int64_t* next_state);
 
   // Updates counts and retrieves probabilities from destination state.
   absl::Status UpdateCountGetDestStateScore(
       const std::string& context_str, int initial_state, double timeout_sec,
-      int32 count, int64* next_state, double* normalization,
+      int count, int64_t* next_state, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
  private:
@@ -56,7 +55,7 @@ class ClientAsyncImpl {
   // Updates counts and retrieves probabilities from destination state.
   absl::Status UpdateCountGetDestStateScore(
       const std::vector<int>& context_str, int initial_state,
-      double timeout_sec, int32 count, double* normalization,
+      double timeout_sec, int count, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   std::unique_ptr<MozoLMService::StubInterface> stub_;  // Owned elsewhere.

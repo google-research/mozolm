@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "mozolm/models/lm_scores.pb.h"
@@ -70,8 +69,8 @@ class LanguageModel {
   }
 
   // Updates the count for the utf8_syms at the current state.
-  virtual bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
-                              int64 count) {
+  virtual bool UpdateLMCounts(int state, const std::vector<int>& utf8_syms,
+                              int64_t count) {
     return false;  // Requires a derived class to complete.
   }
 
@@ -82,10 +81,10 @@ class LanguageModel {
   LanguageModel() : start_state_(0) {}
 
   // Allows derived classes to set the start state of the model.
-  void set_start_state(int32 state) { start_state_ = state; }
+  void set_start_state(int state) { start_state_ = state; }
 
  private:
-  int32 start_state_;
+  int start_state_;
 };
 
 // Given the protocol buffer containing the language model scores and the

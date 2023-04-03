@@ -148,10 +148,10 @@ absl::Status ClientHelper::GetLMScores(
   }
 }
 
-absl::StatusOr<int64> ClientHelper::GetNextState(
+absl::StatusOr<int64_t> ClientHelper::GetNextState(
     const std::string& context_string,
     int initial_state) {
-  int64 next_state;
+  int64_t next_state;
   GOOGLE_CHECK_NE(completion_client_, nullptr);
   const absl::Status status = completion_client_->GetNextState(
       context_string, initial_state, timeout_sec_, &next_state);
@@ -164,8 +164,8 @@ absl::StatusOr<int64> ClientHelper::GetNextState(
 }
 
 absl::Status ClientHelper::UpdateCountGetDestStateScore(
-    const std::string& context_string, int initial_state, int32 count,
-    int64* next_state, double* normalization,
+    const std::string& context_string, int initial_state, int count,
+    int64_t* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   if (completion_client_ == nullptr) {
     return absl::InternalError("Completion client not initialized");
@@ -184,7 +184,7 @@ absl::Status ClientHelper::RandGen(const std::string& context_string,
   // Advance state to configured initial state.
   const auto state_status = GetNextState(context_string, /*initial_state=*/-1);
   if (!state_status.ok()) return state_status.status();
-  int64 state = state_status.value();
+  int64_t state = state_status.value();
   std::string chosen;
   std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
   double normalization;
@@ -255,7 +255,7 @@ absl::Status ClientHelper::CalcBitsPerCharacter(const std::string& test_file,
     std::vector<std::string> input_chars = nisaba::utf8::StrSplitByChar(
         input_line);
     input_chars.push_back("");  // End-of-string character.
-    int64 state = 0;  // Will start at initial state of the model.
+    int64_t state = 0;  // Will start at initial state of the model.
     std::vector<std::pair<double, std::string>> prob_idx_pair_vector;
     RETURN_IF_ERROR(GetLMScores(/*context_string=*/"", state,
                                 &unused_normalization, &prob_idx_pair_vector));

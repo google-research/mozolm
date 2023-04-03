@@ -55,7 +55,7 @@ std::unique_ptr<::grpc::ClientContext> MakeClientContext(double timeout_sec) {
       std::make_unique<::grpc::ClientContext>();
   context->set_deadline(gpr_time_add(
       gpr_now(GPR_CLOCK_REALTIME),
-      gpr_time_from_millis(static_cast<int64>(1000.0 * timeout_sec),
+      gpr_time_from_millis(static_cast<int64_t>(1000.0 * timeout_sec),
                            GPR_TIMESPAN)));
   return context;
 }
@@ -99,7 +99,7 @@ absl::Status ClientAsyncImpl::GetLMScore(
 
 absl::Status ClientAsyncImpl::GetNextState(
     const std::string& context_str, int initial_state, double timeout_sec,
-    int64* next_state) {
+    int64_t* next_state) {
   // Sets up client context and the request.
   std::unique_ptr<::grpc::ClientContext> context = MakeClientContext(
       timeout_sec);
@@ -130,7 +130,7 @@ absl::Status ClientAsyncImpl::GetNextState(
 
 absl::Status ClientAsyncImpl::UpdateCountGetDestStateScore(
     const std::string& context_str, int initial_state, double timeout_sec,
-    int count, int64* next_state, double* normalization,
+    int count, int64_t* next_state, double* normalization,
     std::vector<std::pair<double, std::string>>* prob_idx_pair_vector) {
   RETURN_IF_ERROR(UpdateCountGetDestStateScore(
       nisaba::utf8::StrSplitByCharToUnicode(context_str), initial_state,

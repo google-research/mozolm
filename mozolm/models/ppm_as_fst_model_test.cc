@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "mozolm/stubs/integral_types.h"
 #include "fst/arcsort.h"
 #include "fst/isomorphic.h"
 #include "fst/symbol-table.h"

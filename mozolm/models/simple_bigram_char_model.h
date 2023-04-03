@@ -17,7 +17,6 @@
 
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "mozolm/models/language_model.h"
@@ -48,8 +47,8 @@ class SimpleBigramCharModel : public LanguageModel {
   double SymLMScore(int state, int utf8_sym) override;
 
   // Updates the counts for the utf8_syms at the current state.
-  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
-                      int64 count)
+  bool UpdateLMCounts(int state, const std::vector<int>& utf8_syms,
+                      int64_t count)
       ABSL_LOCKS_EXCLUDED(normalizer_lock_, counts_lock_) override;
 
   // Returns false since these models are always dynamic.
@@ -68,13 +67,14 @@ class SimpleBigramCharModel : public LanguageModel {
   // Provides the state associated with the symbol.
   int SymState(int utf8_sym);
 
-  std::vector<int32> utf8_indices_;   // utf8 symbols in vocabulary.
-  std::vector<int32> vocab_indices_;  // dimension is utf8 symbol, stores index.
+  std::vector<int> utf8_indices_;   // utf8 symbols in vocabulary.
+  std::vector<int> vocab_indices_;  // dimension is utf8 symbol, stores index.
   // stores normalization constant for each item in vocabulary.
   std::vector<double> utf8_normalizer_ ABSL_GUARDED_BY(normalizer_lock_);
   absl::Mutex normalizer_lock_;       // protects normalizer information.
   // Stores counts for each bigram in dense square matrix.
-  std::vector<std::vector<int64>> bigram_counts_ ABSL_GUARDED_BY(counts_lock_);
+  std::vector<std::vector<int64_t>> bigram_counts_
+      ABSL_GUARDED_BY(counts_lock_);
   absl::Mutex counts_lock_;  // protects count information.
 };
 

@@ -66,7 +66,6 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
 #include "ngram/ngram-count.h"
@@ -184,8 +183,8 @@ class PpmAsFstModel : public LanguageModel {
   bool ExtractLMScores(int state, LMScores* response) override;
 
   // Updates the counts for the utf8_syms at the current state.
-  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
-                      int64 count) override;
+  bool UpdateLMCounts(int state, const std::vector<int>& utf8_syms,
+                      int64_t count) override;
 
   // Returns value of static_model_ bool.
   bool IsStatic() const override { return static_model_; }

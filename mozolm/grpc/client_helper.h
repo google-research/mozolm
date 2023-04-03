@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "include/grpcpp/create_channel.h"
@@ -63,13 +62,13 @@ class ClientHelper {
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   // Requests next state from model and returns result.
-  absl::StatusOr<int64> GetNextState(const std::string& context_string,
-                                     int initial_state);
+  absl::StatusOr<int64_t> GetNextState(const std::string& context_string,
+                                       int initial_state);
 
   // Updates counts in model and returns destination state and prob/index pairs.
   absl::Status UpdateCountGetDestStateScore(
-      const std::string& context_string, int initial_state, int32 count,
-      int64* next_state, double* normalization,
+      const std::string& context_string, int initial_state, int count,
+      int64_t* next_state, double* normalization,
       std::vector<std::pair<double, std::string>>* prob_idx_pair_vector);
 
   // Timeout when waiting for server (specified in seconds).

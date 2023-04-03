@@ -50,8 +50,8 @@ Status ServerAsyncImpl::HandleRequest(ServerContext* context,
 Status ServerAsyncImpl::HandleRequest(ServerContext* context,
                                       const GetContextRequest* request,
                                       NextState* response) {
-  const int64 state = model_hub_->ContextState(request->context(),
-                                               request->state());
+  const int64_t state = model_hub_->ContextState(request->context(),
+                                                 request->state());
   response->set_next_state(state);
   return Status::OK;
 }

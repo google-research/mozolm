@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -144,8 +143,8 @@ class LanguageModelHub {
   bool ExtractLMScores(int state, LMScores* response);
 
   // Updates the count for the utf8_syms at the current state.
-  bool UpdateLMCounts(int32 state, const std::vector<int>& utf8_syms,
-                      int64 count);
+  bool UpdateLMCounts(int state, const std::vector<int>& utf8_syms,
+                      int64_t count);
 
  private:
   // Determines vector index for new state, creates state and returns index.
@@ -160,7 +159,7 @@ class LanguageModelHub {
   absl::Status InitializeStartHubState();
 
   // Updates probabilities from each model to allow Bayesian interpolation.
-  void UpdateBayesianHistory(int32 state);
+  void UpdateBayesianHistory(int state);
 
   // Bayesian interpolation methods are based on a generalization of methods
   // shown in Allauzen and Riley (2011) "Bayesian language model interpolation
@@ -194,8 +193,7 @@ class LanguageModelHub {
   std::vector<double> GetMixtureWeights(int state, bool result) const;
 
   // Verifies model states after updating counts, and corrects if they differ.
-  bool VerifyOrCorrectModelStates(int32 state,
-                                  const std::vector<int>& utf8_syms);
+  bool VerifyOrCorrectModelStates(int state, const std::vector<int>& utf8_syms);
 
   // States in the model hub, tracking states in all component models.
   std::vector<std::unique_ptr<LanguageModelHubState>> hub_states_;
