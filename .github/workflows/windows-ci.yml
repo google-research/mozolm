@@ -11,6 +11,7 @@ jobs:
   build-and-test-windows:
     name: Build and Test (Windows)
     runs-on: windows-latest
+
     steps:
     - name: Cancel Previous Runs
       uses: styfle/cancel-workflow-action@0.9.0
@@ -26,14 +27,20 @@ jobs:
       #   - For symlinking: https://www.joshkel.com/2018/01/18/symlinks-in-windows/
       run: |
         echo "BAZEL_CACHE_DIR=$env:USERPROFILE\_bazel_$env:USERNAME" >> $env:GITHUB_ENV
+        echo "BAZEL_SH=C:\msys64\usr\bin\bash.exe" >> $env:GITHUB_ENV
+        echo "PATH=C:\msys64\usr\bin:$env:PATH" >> $env:GITHUB_ENV
         echo "MSYS=winsymlinks:nativestrict" >> $env:GITHUB_ENV
-        echo "C:\msys64\usr\bin" >> $env:GITHUB_PATH
+        echo "MSYS_NO_PATHCONV=1" >> $env:GITHUB_ENV
+        echo "MSYS2_ARG_CONV_EXCL='*'" >> $env:GITHUB_ENV
+
+    - name: Inspect Environment Variables
+      run: env
 
     # TODO: Disabling the cache for now. Generated cache has broken
     # symlinks, which breaks the build.
     #
     #- name: Mount bazel cache
-    #  uses: actions/cache@v2
+    #  uses: actions/cache@v3
     #  with:
     #    path: ${{ env.BAZEL_CACHE_DIR}}
     #    key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE.bazel') }}

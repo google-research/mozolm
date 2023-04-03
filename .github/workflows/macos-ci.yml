@@ -29,7 +29,7 @@ jobs:
         echo "USER=${USER}" >> ${GITHUB_ENV}
 
     - name: Mount bazel cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # See https://docs.bazel.build/versions/master/output_directories.html
         path: /private/var/tmp/_bazel_${{ env.USER }}

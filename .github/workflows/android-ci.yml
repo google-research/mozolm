@@ -33,7 +33,7 @@ jobs:
           df -h
 
     - name: Mount bazel cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # See https://docs.bazel.build/versions/master/output_directories.html
         path: "~/.cache/bazel"
@@ -60,7 +60,7 @@ jobs:
 
     - name: Android NDK Cache
       id: ndk-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ env.ANDROID_HOME }}/ndk
         key: ndk-cache-${{ env.NDK_VERSION }}-v2

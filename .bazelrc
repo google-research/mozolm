@@ -40,6 +40,7 @@ build:macos --copt=-w
 build:windows --cxxopt=/std:c++17
 build:windows --host_cxxopt=/std:c++17
 build:windows --copt=/W0
+build:windows --host_copt=/W0
 
 # Generation of `runfiles` directories on Windows has to be explicitly enabled.
 # See https://github.com/bazelbuild/bazel/issues/8843.
@@ -82,6 +83,20 @@ build:windows --host_copt=-DNOGDI
 
 # Verbose failure logs when something goes wrong
 build:windows --verbose_failures
+
+# On Windows, `__cplusplus` is wrongly defined without this switch
+# See https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+build:windows --copt=/Zc:__cplusplus
+build:windows --host_copt=/Zc:__cplusplus
+
+# Windows has a relatively short command line limit.
+# See https://docs.bazel.build/versions/main/windows.html
+build:windows --features=compiler_param_file
+
+# MSVC (Windows): Standards-conformant preprocessor mode
+# See https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview
+build:windows --copt=/Zc:preprocessor
+build:windows --host_copt=/Zc:preprocessor
 
 # ------------------------------
 # Android configuration settings
