@@ -25,8 +25,9 @@ option java_multiple_files = true;
 // Next available ID: 4
 message LMScores {
   // Individual symbols for which counts are returned.
-  repeated string symbols = 1;
-
+  // Only included if `include_symbols` is true.
+  repeated string symbols = 1 [deprecated=true];
+  
   // Probabilities for each of the symbols.
   repeated double probabilities = 2;
 
@@ -34,4 +35,7 @@ message LMScores {
   // have some value when mixing models, for methods that, e.g., take into
   // account the number of observations when calculating mixing values.
   double normalization = 3;
+  
+  // Whether to include the `symbols` field in the response.
+  bool include_symbols = 4;
 }
