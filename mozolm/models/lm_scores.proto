@@ -26,7 +26,7 @@ option java_multiple_files = true;
 message LMScores {
   // Individual symbols for which counts are returned.
   // Only included if `include_symbols` is true.
-  repeated string symbols = 1 [deprecated=true];
+  repeated string symbols = 1;
   
   // Probabilities for each of the symbols.
   repeated double probabilities = 2;
