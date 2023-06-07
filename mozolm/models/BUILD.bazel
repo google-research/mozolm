@@ -16,7 +16,9 @@
 
 load("//bazel:js_build_defs.bzl", "jspb_proto_library")
 
-package(default_visibility = ["//mozolm:__subpackages__"])
+package(
+    default_visibility = ["//mozolm:__subpackages__"],
+)
 
 licenses(["notice"])
 
@@ -261,7 +263,7 @@ cc_test(
     name = "ngram_word_fst_model_test",
     size = "small",
     srcs = ["ngram_word_fst_model_test.cc"],
-    data = ["//third_party/models/mtu:fst_models"],
+    data = ["//extra/models/mtu:fst_models"],
     linkstatic = True,
     deps = [
         ":model_storage_cc_proto",
@@ -299,8 +301,8 @@ cc_test(
     name = "ngram_char_fst_model_test",
     srcs = ["ngram_char_fst_model_test.cc"],
     data = [
+        "//extra/models/mtu:fst_models",
         "//mozolm/models/testdata:ngram_fst_data",
-        "//third_party/models/mtu:fst_models",
     ],
     linkstatic = True,
     deps = [

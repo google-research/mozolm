@@ -76,11 +76,11 @@ def _android_autoconf_impl(repository_ctx):
 
     repository_ctx.template(
         "BUILD",
-        Label("//third_party/android:android_configure.BUILD.tpl"),
+        Label("//extra/android:android_configure.BUILD.tpl"),
     )
     repository_ctx.template(
         "android.bzl",
-        Label("//third_party/android:android.bzl.tpl"),
+        Label("//extra/android:android.bzl.tpl"),
         substitutions = {
             "MAYBE_ANDROID_SDK_REPOSITORY": sdk_rule,
             "MAYBE_ANDROID_NDK_REPOSITORY": ndk_rule,
@@ -97,6 +97,8 @@ android_configure = repository_rule(
         _ANDROID_SDK_HOME,
     ],
 )
+
+# buildifier: disable=no-effect
 """Writes Android SDK and NDK rules.
 
 Add the following to your WORKSPACE FILE:

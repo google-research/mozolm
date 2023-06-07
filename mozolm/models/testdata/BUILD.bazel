@@ -14,7 +14,9 @@
 
 # Test data for the models.
 
-package(default_visibility = ["//mozolm:__subpackages__"])
+package(
+    default_visibility = ["//mozolm:__subpackages__"],
+)
 
 licenses(["notice"])
 

@@ -334,7 +334,7 @@ TEST_F(NGramWordFstTest, ExtractLMScoresImplicitWordBoundary) {
 TEST(NGramWordFstStandaloneTest, ThirdPartyModelTest) {
   // Third-party model from Michigan Tech (MTU).
   constexpr char kThirdPartyModelDir[] =
-      "com_google_mozolm/third_party/models/mtu";
+      "com_google_mozolm/extra/models/mtu";
   constexpr char kThirdParty3GramModelName[] =
       "dasher_feb21_eng_word_5k_3gram.fst";
   ModelStorage model_storage;

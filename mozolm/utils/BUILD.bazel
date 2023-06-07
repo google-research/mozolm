@@ -14,7 +14,9 @@
 
 # Miscellaneous utility packages.
 
-package(default_visibility = ["//mozolm:__subpackages__"])
+package(
+    default_visibility = ["//mozolm:__subpackages__"],
+)
 
 licenses(["notice"])
 

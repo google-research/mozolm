@@ -18,9 +18,16 @@
 
 load("//mozolm/utils:ngram_utils.bzl", "ngram_convert_arpa_to_fst")
 
-package(default_visibility = ["//mozolm:__subpackages__"])
+package(
+    default_visibility = ["//mozolm:__subpackages__"],
+)
 
 licenses(["notice"])
+
+exports_files([
+    "lm_feb21_dasher_5k_tiny_3gram.arpa.gz",
+    "lm_feb21_dasher_char_4gram.arpa.gz",
+])
 
 # ------------------------------------------------------------------------------
 # Character language models for English.

@@ -20,7 +20,7 @@
 //
 // Example:
 // --------
-//   FST_MODEL_DIR=bazel-bin/third_party/models/mtu
+//   FST_MODEL_DIR=bazel-bin/third_party/mozolm/external/models/mtu
 //   bazel build -c opt mozolm/utils:ngram_fst_relabel
 //   bazel-bin/mozolm/utils/ngram_fst_relabel \
 //     --input_fst_file ${FST_MODEL_DIR}/dasher_eng_4gram_arpa.fst \

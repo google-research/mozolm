@@ -74,12 +74,12 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 # ------------------------------------
 # See https://github.com/grpc/grpc-java
 
-java_grpc_version = "1.51.0"
+java_grpc_version = "1.55.1"
 
 http_archive(
     name = "com_github_grpc_grpc_java",
     url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.tar.gz" % java_grpc_version,
-    sha256 = "3762fd9a1045aa83d9a967840da142a1558565b76b470860282a1126e162799b",
+    sha256 = "be779db38a72a0c693706c433133189538b04979eba1b728eaa21f4fd0f967d8",
     strip_prefix = "grpc-java-%s" % java_grpc_version,
 )
 
@@ -109,7 +109,7 @@ openfst_version = "1.8.2-rc2"
 http_archive(
     name = "org_openfst",
     urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
-    sha256 = "770af029f3cd7ae02fe400a6cb12def5592ac1a822908ebe4efc85ee4539a748",
+    sha256 = "382ae03ffeb643fbf765897fbbfae5cae7148a43f7aafafc48c27456fc0ecab5",
     strip_prefix = "openfst-%s" % openfst_version,
 )
 
@@ -132,7 +132,7 @@ http_archive(
 #   https://github.com/tensorflow/tensorflow/tree/master/third_party/android
 # -------------------------------------------------------------------------
 
-load("//third_party/android:android_configure.bzl", "android_configure")
+load("//extra/android:android_configure.bzl", "android_configure")
 android_configure(name = "local_config_android")
 
 load("@local_config_android//:android.bzl", "android_workspace")

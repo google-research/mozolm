@@ -49,7 +49,7 @@ constexpr char kModelName[] = "gutenberg_en_char_ngram_o4_wb.fst";
 
 // Third-party model from Michigan Tech (MTU).
 constexpr char kThirdPartyModelDir[] =
-    "com_google_mozolm/third_party/models/mtu";
+    "com_google_mozolm/extra/models/mtu";
 constexpr char kThirdParty4GramModelName[] = "dasher_feb21_eng_char_4gram.fst";
 
 constexpr char kSampleText[] = R"(
