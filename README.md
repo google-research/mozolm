@@ -35,6 +35,7 @@ If you use this software in a publication, please cite the accompanying
     address = "Dublin, Ireland",
     publisher = "Association for Computational Linguistics",
     url = "https://aclanthology.org/2022.slpat-1.1",
+    doi = "10.18653/v1/2022.slpat-1.1",
     pages = "1--16",
 }
 ```
