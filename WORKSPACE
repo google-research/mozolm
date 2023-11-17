@@ -15,10 +15,14 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_python",
-    sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
-    strip_prefix = "rules_python-0.16.1",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
+    sha256 = "5868e73107a8e85d8f323806e60cad7283f34b32163ea6ff1020cf27abef6036",
+    strip_prefix = "rules_python-0.25.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.25.0/rules_python-0.25.0.tar.gz",
 )
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
 
 # ----------------------------------------------
 # Nisaba: Script processing library from Google:
@@ -104,12 +108,12 @@ grpc_extra_deps()
 # OpenFst: See
 #   http://www.openfst.org/twiki/pub/FST/FstDownload/README
 # -------------------------------------------------------------------------
-openfst_version = "1.8.2-rc2"
+openfst_version = "1.8.2-rc2-absl"
 
 http_archive(
     name = "org_openfst",
     urls = ["https://github.com/agutkin/finite_state/raw/main/openfst-%s.tar.gz" % openfst_version],
-    sha256 = "382ae03ffeb643fbf765897fbbfae5cae7148a43f7aafafc48c27456fc0ecab5",
+    sha256 = "8cca20b528d0fcc31c0c8a1a44596fc57bea6b807b8f46c63c99a93eedb0550d",
     strip_prefix = "openfst-%s" % openfst_version,
 )
 
@@ -215,6 +219,9 @@ yarn_install(
 # Bazel container image rules:
 #   https://github.com/bazelbuild/rules_docker
 # -------------------------------------------------------------------------
+# TODO: the `rules_docker` project has now been archived and
+# it is highly likely that the docker-related tools under `release` will not
+# compile or work anymore.
 
 docker_version = "0.25.0"
 
