@@ -136,8 +136,7 @@ absl::Status CheckProperties(const StdVectorFst &fst) {
 }  // namespace
 
 absl::Status RelabelWithCodepoints(
-    const std::vector<std::string> &keep_symbols_vec,
-    fst::StdVectorFst *fst) {
+    const std::vector<std::string> &keep_symbols_vec, fst::StdVectorFst *fst) {
   RETURN_IF_ERROR(CheckProperties(*fst));
   GOOGLE_LOG(INFO) << "Building input/output mappings and relabeling ...";
   const absl::flat_hash_set<std::string> keep_symbols(keep_symbols_vec.begin(),
