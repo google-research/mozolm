@@ -45,8 +45,8 @@ class NGramImplicitStates {
  public:
   NGramImplicitStates() = default;
 
-  NGramImplicitStates(const fst::StdVectorFst& fst,
-                      int first_char_begin_index, int first_char_end_index);
+  NGramImplicitStates(const fst::StdVectorFst& fst, int first_char_begin_index,
+                      int first_char_end_index);
 
   // Returns the state if already exists, creates it otherwise.
   absl::StatusOr<int> GetState(int model_state, int prefix_length,

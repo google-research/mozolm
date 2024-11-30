@@ -257,9 +257,9 @@ class PpmAsFstModel : public LanguageModel {
   // Fills in cache vectors of negative log probabilities and destination states
   // for each item in the vocabulary, matching indices with the symbol table. By
   // convention, index 0 is for final cost.
-  absl::Status UpdateCacheAtNonEmptyState(
-      fst::StdArc::StateId s, fst::StdArc::StateId backoff_state,
-      const PpmStateCache& backoff_cache);
+  absl::Status UpdateCacheAtNonEmptyState(fst::StdArc::StateId s,
+                                          fst::StdArc::StateId backoff_state,
+                                          const PpmStateCache& backoff_cache);
 
   // Checks if lower order state caches have updated more recently.
   bool LowerOrderCacheUpdated(fst::StdArc::StateId s) const;
@@ -277,16 +277,14 @@ class PpmAsFstModel : public LanguageModel {
   absl::StatusOr<int> AddNewState(fst::StdArc::StateId backoff_dest_state);
 
   // Returns origin state of arc with symbol from state s.
-  absl::StatusOr<int> GetArcOriginState(fst::StdArc::StateId s,
-                                        int sym_index);
+  absl::StatusOr<int> GetArcOriginState(fst::StdArc::StateId s, int sym_index);
 
   // Returns destination state of arc with symbol from state s.
   absl::StatusOr<int> GetDestinationState(fst::StdArc::StateId s,
                                           int sym_index);
 
   // Returns probability of symbol leaving the current state.
-  absl::StatusOr<double> GetNegLogProb(fst::StdArc::StateId s,
-                                       int sym_index);
+  absl::StatusOr<double> GetNegLogProb(fst::StdArc::StateId s, int sym_index);
 
   // Returns normalization value at the current state.
   absl::StatusOr<double> GetNormalization(fst::StdArc::StateId s);
@@ -303,13 +301,12 @@ class PpmAsFstModel : public LanguageModel {
 
   // Updates model with an observation of the sym_index at curr_state.
   absl::StatusOr<fst::StdArc::StateId> UpdateModel(
-      fst::StdArc::StateId curr_state,
-      fst::StdArc::StateId highest_found_state, int sym_index);
+      fst::StdArc::StateId curr_state, fst::StdArc::StateId highest_found_state,
+      int sym_index);
 
   // Converts input string into linear FST at the character level, replacing
   // characters not in possible_characters_ set (if non-empty) with kOovSymbol.
-  absl::StatusOr<fst::StdVectorFst> String2Fst(
-      const std::string& input_string);
+  absl::StatusOr<fst::StdVectorFst> String2Fst(const std::string& input_string);
 
   // Adds a single unigram count to every character.
   absl::Status AddPriorCounts();
