@@ -22,20 +22,20 @@
 #include "absl/memory/memory.h"
 #include "nisaba/port/utf8_util.h"
 
-using fst::MATCH_INPUT;
-using fst::Matcher;
-using fst::StdArc;
-using fst::StdVectorFst;
-using fst::Times;
+using nlp_fst::MATCH_INPUT;
+using nlp_fst::Matcher;
+using nlp_fst::StdArc;
+using nlp_fst::StdVectorFst;
+using nlp_fst::Times;
 
 namespace mozolm {
 namespace models {
 
-fst::StdArc::Label NGramCharFstModel::SymLabel(int utf8_sym) const {
+nlp_fst::StdArc::Label NGramCharFstModel::SymLabel(int utf8_sym) const {
   if (utf8_sym == 0) return utf8_sym;
   const std::string u_char = nisaba::utf8::EncodeUnicodeChar(utf8_sym);
-  fst::StdArc::Label label = fst_->InputSymbols()->Find(u_char);
-  if (label == fst::kNoSymbol) {
+  nlp_fst::StdArc::Label label = fst_->InputSymbols()->Find(u_char);
+  if (label == nlp_fst::kNoSymbol) {
     label = oov_label_;
   }
   return label;

@@ -49,7 +49,7 @@ ABSL_FLAG(std::string, output_fst_file, "",
 ABSL_FLAG(std::vector<std::string>, keep_symbols, {},
           "List of symbols in the symbol table that are not relabeled.");
 
-using fst::StdVectorFst;
+using nlp_fst::StdVectorFst;
 
 namespace mozolm {
 namespace {
@@ -60,7 +60,7 @@ absl::Status RelabelAndSave(const std::string &input_file,
                             const std::string &output_file) {
   // Load.
   GOOGLE_LOG(INFO) << "Reading FST from " << input_file << " ...";
-  std::unique_ptr<fst::StdVectorFst> fst;
+  std::unique_ptr<nlp_fst::StdVectorFst> fst;
   fst.reset(StdVectorFst::Read(input_file));
   if (!fst) {
     return absl::NotFoundError(absl::StrCat("Failed to read FST from ",

@@ -39,14 +39,14 @@ using nisaba::file::ReadLines;
 using nisaba::utf8::EncodeUnicodeChar;
 using nisaba::utf8::StrSplitByChar;
 
-using fst::ArcIterator;
-using fst::ILabelCompare;
-using fst::Log64Weight;
-using fst::MutableArcIterator;
-using fst::StdArc;
-using fst::StdVectorFst;
-using fst::SymbolTable;
-using fst::SymbolTableIterator;
+using nlp_fst::ArcIterator;
+using nlp_fst::ILabelCompare;
+using nlp_fst::Log64Weight;
+using nlp_fst::MutableArcIterator;
+using nlp_fst::StdArc;
+using nlp_fst::StdVectorFst;
+using nlp_fst::SymbolTable;
+using nlp_fst::SymbolTableIterator;
 
 namespace impl {
 namespace {

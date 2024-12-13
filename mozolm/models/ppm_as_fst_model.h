@@ -147,7 +147,7 @@ class PpmStateCache {
   }
 
   // Fills in LMScores proto from values in cached state.
-  bool FillLMScores(const fst::SymbolTable& syms, LMScores* response) const;
+  bool FillLMScores(const nlp_fst::SymbolTable& syms, LMScores* response) const;
 
  private:
   int state_;                           // Index of state being cached.
@@ -171,7 +171,7 @@ class PpmAsFstModel : public LanguageModel {
   absl::Status WriteFst(const std::string& ofile) const override;
 
   // Returns fst_.
-  const fst::StdVectorFst GetFst() const { return *fst_; }
+  const nlp_fst::StdVectorFst GetFst() const { return *fst_; }
 
   // Provides the state reached from state following utf8_sym.
   int NextState(int state, int utf8_sym) override;
@@ -223,8 +223,8 @@ class PpmAsFstModel : public LanguageModel {
   absl::Status CalculateStateOrders(bool save_state_orders);
 
   // Determines whether new state needs to be created for arc.
-  absl::StatusOr<bool> NeedsNewState(fst::StdArc::StateId curr_state,
-                                     fst::StdArc::StateId next_state) const;
+  absl::StatusOr<bool> NeedsNewState(nlp_fst::StdArc::StateId curr_state,
+                                     nlp_fst::StdArc::StateId next_state) const;
 
   // Adds extra characters to unigram of model if provided.
   absl::Status AddExtraCharacters(const std::string& input_string);
@@ -233,23 +233,23 @@ class PpmAsFstModel : public LanguageModel {
   // for each item in the vocabulary, matching indices with the symbol table. By
   // convention, index 0 is for final cost.  Checks for empty states and ensures
   // backoff states are cached.
-  absl::Status UpdateCacheAtState(fst::StdArc::StateId s);
+  absl::Status UpdateCacheAtState(nlp_fst::StdArc::StateId s);
 
   // Initializes negative log probabilities for cache based on backoff.
-  std::vector<double> InitCacheProbs(fst::StdArc::StateId s,
-                                     fst::StdArc::StateId backoff_state,
+  std::vector<double> InitCacheProbs(nlp_fst::StdArc::StateId s,
+                                     nlp_fst::StdArc::StateId backoff_state,
                                      const PpmStateCache& backoff_cache,
                                      double denominator) const;
 
   // Initializes the origin and destination states for cache based on backoff.
-  std::vector<int> InitCacheStates(fst::StdArc::StateId s,
-                                   fst::StdArc::StateId backoff_state,
+  std::vector<int> InitCacheStates(nlp_fst::StdArc::StateId s,
+                                   nlp_fst::StdArc::StateId backoff_state,
                                    const PpmStateCache& backoff_cache,
                                    bool arc_origin) const;
 
   // Fills in values for states and probs vectors from state for cache.
   absl::Status UpdateCacheStatesAndProbs(
-      fst::StdArc::StateId s, fst::StdArc::StateId backoff_state,
+      nlp_fst::StdArc::StateId s, nlp_fst::StdArc::StateId backoff_state,
       double denominator, std::vector<int>* arc_origin_states,
       std::vector<int>* destination_states,
       std::vector<double>* neg_log_probabilities);
@@ -258,57 +258,57 @@ class PpmAsFstModel : public LanguageModel {
   // for each item in the vocabulary, matching indices with the symbol table. By
   // convention, index 0 is for final cost.
   absl::Status UpdateCacheAtNonEmptyState(
-      fst::StdArc::StateId s, fst::StdArc::StateId backoff_state,
+      nlp_fst::StdArc::StateId s, nlp_fst::StdArc::StateId backoff_state,
       const PpmStateCache& backoff_cache);
 
   // Checks if lower order state caches have updated more recently.
-  bool LowerOrderCacheUpdated(fst::StdArc::StateId s) const;
+  bool LowerOrderCacheUpdated(nlp_fst::StdArc::StateId s) const;
 
   // Ensures cache exists for state, creates it if not.
-  absl::StatusOr<PpmStateCache> EnsureCacheAtState(fst::StdArc::StateId s);
+  absl::StatusOr<PpmStateCache> EnsureCacheAtState(nlp_fst::StdArc::StateId s);
 
   // Finds cache entry with oldest last access, for replacement.
   int FindOldestLastAccessedCache() const;
 
   // Establishes cache index, after performing garbage collection if needed.
-  absl::Status GetNewCacheIndex(fst::StdArc::StateId s);
+  absl::Status GetNewCacheIndex(nlp_fst::StdArc::StateId s);
 
   // Adds new state to all required data structures and returns index.
-  absl::StatusOr<int> AddNewState(fst::StdArc::StateId backoff_dest_state);
+  absl::StatusOr<int> AddNewState(nlp_fst::StdArc::StateId backoff_dest_state);
 
   // Returns origin state of arc with symbol from state s.
-  absl::StatusOr<int> GetArcOriginState(fst::StdArc::StateId s,
+  absl::StatusOr<int> GetArcOriginState(nlp_fst::StdArc::StateId s,
                                         int sym_index);
 
   // Returns destination state of arc with symbol from state s.
-  absl::StatusOr<int> GetDestinationState(fst::StdArc::StateId s,
+  absl::StatusOr<int> GetDestinationState(nlp_fst::StdArc::StateId s,
                                           int sym_index);
 
   // Returns probability of symbol leaving the current state.
-  absl::StatusOr<double> GetNegLogProb(fst::StdArc::StateId s,
+  absl::StatusOr<double> GetNegLogProb(nlp_fst::StdArc::StateId s,
                                        int sym_index);
 
   // Returns normalization value at the current state.
-  absl::StatusOr<double> GetNormalization(fst::StdArc::StateId s);
+  absl::StatusOr<double> GetNormalization(nlp_fst::StdArc::StateId s);
 
   // Updates model at highest found state for given symbol.
-  absl::Status UpdateHighestFoundState(fst::StdArc::StateId curr_state,
+  absl::Status UpdateHighestFoundState(nlp_fst::StdArc::StateId curr_state,
                                        int sym_index);
 
   // Updates model at state where given symbol is not found.
-  absl::Status UpdateNotFoundState(fst::StdArc::StateId curr_state,
-                                   fst::StdArc::StateId highest_found_state,
-                                   fst::StdArc::StateId backoff_state,
+  absl::Status UpdateNotFoundState(nlp_fst::StdArc::StateId curr_state,
+                                   nlp_fst::StdArc::StateId highest_found_state,
+                                   nlp_fst::StdArc::StateId backoff_state,
                                    int sym_index);
 
   // Updates model with an observation of the sym_index at curr_state.
-  absl::StatusOr<fst::StdArc::StateId> UpdateModel(
-      fst::StdArc::StateId curr_state,
-      fst::StdArc::StateId highest_found_state, int sym_index);
+  absl::StatusOr<nlp_fst::StdArc::StateId> UpdateModel(
+      nlp_fst::StdArc::StateId curr_state,
+      nlp_fst::StdArc::StateId highest_found_state, int sym_index);
 
   // Converts input string into linear FST at the character level, replacing
   // characters not in possible_characters_ set (if non-empty) with kOovSymbol.
-  absl::StatusOr<fst::StdVectorFst> String2Fst(
+  absl::StatusOr<nlp_fst::StdVectorFst> String2Fst(
       const std::string& input_string);
 
   // Adds a single unigram count to every character.
@@ -319,10 +319,10 @@ class PpmAsFstModel : public LanguageModel {
   double beta_;        // Beta hyper-parameter for PPM.
   bool static_model_;  // Whether to use the model as static or dynamic.
   std::vector<int> state_orders_;  // Stores the order of each state.
-  std::unique_ptr<fst::StdVectorFst> fst_;  // Model (counts) stored in FST.
+  std::unique_ptr<nlp_fst::StdVectorFst> fst_;  // Model (counts) stored in FST.
   // For counting character n-grams if training from text file.
-  std::unique_ptr<ngram::NGramCounter<fst::Log64Weight>> ngram_counter_;
-  std::unique_ptr<fst::SymbolTable> syms_;  // Character symbols.
+  std::unique_ptr<ngram::NGramCounter<nlp_fst::Log64Weight>> ngram_counter_;
+  std::unique_ptr<nlp_fst::SymbolTable> syms_;  // Character symbols.
 
   // For caching probabilities and destination states for quick access.
   int max_cache_size_;  // Limit on caching for garbage collection.

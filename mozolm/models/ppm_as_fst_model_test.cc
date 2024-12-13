@@ -44,12 +44,12 @@ constexpr char kVocabFileName[] = "vocab.txt";
 
 using ::nisaba::file::WriteTempTextFile;
 using ::nisaba::utf8::DecodeSingleUnicodeChar;
-using ::fst::ArcSort;
-using ::fst::ILabelCompare;
-using ::fst::Isomorphic;
-using ::fst::StdArc;
-using ::fst::StdVectorFst;
-using ::fst::SymbolTable;
+using ::nlp_fst::ArcSort;
+using ::nlp_fst::ILabelCompare;
+using ::nlp_fst::Isomorphic;
+using ::nlp_fst::StdArc;
+using ::nlp_fst::StdVectorFst;
+using ::nlp_fst::SymbolTable;
 using ::testing::DoubleEq;
 using ::testing::Each;
 

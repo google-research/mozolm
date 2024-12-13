@@ -29,13 +29,13 @@
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
 
-using fst::ArcIterator;
-using fst::FstCompiler;
-using fst::StateIterator;
-using fst::StdArc;
-using fst::StdVectorFst;
-using fst::SymbolTable;
-using fst::kError;
+using nlp_fst::ArcIterator;
+using nlp_fst::FstCompiler;
+using nlp_fst::StateIterator;
+using nlp_fst::StdArc;
+using nlp_fst::StdVectorFst;
+using nlp_fst::SymbolTable;
+using nlp_fst::kError;
 
 namespace mozolm {
 namespace {

@@ -35,7 +35,7 @@
 #include "nisaba/port/test_utils.h"
 
 using nisaba::testing::TestFilePath;
-using fst::StdArc;
+using nlp_fst::StdArc;
 
 namespace mozolm {
 namespace models {

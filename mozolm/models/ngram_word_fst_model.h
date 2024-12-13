@@ -45,7 +45,7 @@ class NGramImplicitStates {
  public:
   NGramImplicitStates() = default;
 
-  NGramImplicitStates(const fst::StdVectorFst& fst,
+  NGramImplicitStates(const nlp_fst::StdVectorFst& fst,
                       int first_char_begin_index, int first_char_end_index);
 
   // Returns the state if already exists, creates it otherwise.
@@ -168,7 +168,7 @@ class NGramWordFstModel : public NGramFstModel {
   int FindOldestLastAccessedCache() const;
 
   // Returns new cache index for given state.
-  absl::Status GetNewCacheIndex(fst::StdArc::StateId s,
+  absl::Status GetNewCacheIndex(nlp_fst::StdArc::StateId s,
                                 const std::vector<double>& weights);
 
   // Returns cache index if it exists, creates new cache entry otherwise.

@@ -29,7 +29,7 @@ namespace mozolm {
 // tables to use the corresponding Unicode codepoints as the labels. The list
 // of symbols to ignore when relabeling is given by `keep_symbols`.
 absl::Status RelabelWithCodepoints(const std::vector<std::string> &keep_symbols,
-                                   fst::StdVectorFst *fst);
+                                   nlp_fst::StdVectorFst *fst);
 
 }  // namespace mozolm
 
