@@ -51,9 +51,8 @@ class NGramFstModel : public LanguageModel {
 
   // Returns the next state reached by arc labeled with label from state s.
   // If the label is out-of-vocabulary, it will return the unigram state.
-  fst::StdArc::StateId NextModelState(
-      fst::StdArc::StateId current_state,
-      fst::StdArc::Label label) const;
+  fst::StdArc::StateId NextModelState(fst::StdArc::StateId current_state,
+                                      fst::StdArc::Label label) const;
 
   // Language model represented by vector FST.
   std::unique_ptr<const fst::StdVectorFst> fst_;
@@ -66,8 +65,7 @@ class NGramFstModel : public LanguageModel {
 
   // Checks the current state and sets it to the unigram state if less than
   // zero.
-  fst::StdArc::StateId CheckCurrentState(
-      fst::StdArc::StateId state) const;
+  fst::StdArc::StateId CheckCurrentState(fst::StdArc::StateId state) const;
 
  private:
   // Performs model sanity check.

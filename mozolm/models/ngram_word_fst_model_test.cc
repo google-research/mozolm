@@ -34,12 +34,12 @@
 #include "nisaba/port/test_utils.h"
 #include "nisaba/port/utf8_util.h"
 
-using ::nisaba::testing::TestFilePath;
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
 using ::fst::StdArc;
 using ::fst::StdVectorFst;
 using ::fst::SymbolTable;
+using ::nisaba::testing::TestFilePath;
 
 namespace mozolm {
 namespace models {

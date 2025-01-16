@@ -31,11 +31,11 @@
 
 using fst::ArcIterator;
 using fst::FstCompiler;
+using fst::kError;
 using fst::StateIterator;
 using fst::StdArc;
 using fst::StdVectorFst;
 using fst::SymbolTable;
-using fst::kError;
 
 namespace mozolm {
 namespace {
