@@ -42,14 +42,14 @@ namespace {
 constexpr float kFloatDelta = 0.00001;  // Delta for float comparisons.
 constexpr char kVocabFileName[] = "vocab.txt";
 
-using ::nisaba::file::WriteTempTextFile;
-using ::nisaba::utf8::DecodeSingleUnicodeChar;
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;
 using ::fst::Isomorphic;
 using ::fst::StdArc;
 using ::fst::StdVectorFst;
 using ::fst::SymbolTable;
+using ::nisaba::file::WriteTempTextFile;
+using ::nisaba::utf8::DecodeSingleUnicodeChar;
 using ::testing::DoubleEq;
 using ::testing::Each;
 
