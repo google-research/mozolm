@@ -30,18 +30,18 @@
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/status_macros.h"
 
-using nlp_fst::kAcceptor;
-using nlp_fst::kError;
-using nlp_fst::kIDeterministic;
-using nlp_fst::kILabelSorted;
+using fst::kAcceptor;
+using fst::kError;
+using fst::kIDeterministic;
+using fst::kILabelSorted;
 
-using nlp_fst::ArcSort;
-using nlp_fst::Relabel;
-using nlp_fst::RelabelSymbolTable;
-using nlp_fst::StdArc;
-using nlp_fst::StdILabelCompare;
-using nlp_fst::StdVectorFst;
-using nlp_fst::SymbolTable;
+using fst::ArcSort;
+using fst::Relabel;
+using fst::RelabelSymbolTable;
+using fst::StdArc;
+using fst::StdILabelCompare;
+using fst::StdVectorFst;
+using fst::SymbolTable;
 
 namespace mozolm {
 namespace {
@@ -136,8 +136,7 @@ absl::Status CheckProperties(const StdVectorFst &fst) {
 }  // namespace
 
 absl::Status RelabelWithCodepoints(
-    const std::vector<std::string> &keep_symbols_vec,
-    nlp_fst::StdVectorFst *fst) {
+    const std::vector<std::string> &keep_symbols_vec, fst::StdVectorFst *fst) {
   RETURN_IF_ERROR(CheckProperties(*fst));
   GOOGLE_LOG(INFO) << "Building input/output mappings and relabeling ...";
   const absl::flat_hash_set<std::string> keep_symbols(keep_symbols_vec.begin(),

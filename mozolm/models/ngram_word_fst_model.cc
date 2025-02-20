@@ -34,13 +34,13 @@ using nisaba::utf8::EncodeUnicodeChar;
 using nisaba::utf8::StrSplitByChar;
 
 using absl::StatusOr;
-using nlp_fst::ArcIterator;
-using nlp_fst::MATCH_INPUT;
-using nlp_fst::Matcher;
-using nlp_fst::StdArc;
-using nlp_fst::StdVectorFst;
-using nlp_fst::SymbolTable;
-using nlp_fst::Times;
+using fst::ArcIterator;
+using fst::MATCH_INPUT;
+using fst::Matcher;
+using fst::StdArc;
+using fst::StdVectorFst;
+using fst::SymbolTable;
+using fst::Times;
 
 namespace mozolm {
 namespace models {

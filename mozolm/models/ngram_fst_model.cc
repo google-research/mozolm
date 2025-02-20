@@ -23,11 +23,11 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 
-using nlp_fst::MATCH_INPUT;
-using nlp_fst::Matcher;
-using nlp_fst::StdArc;
-using nlp_fst::StdVectorFst;
-using nlp_fst::SymbolTable;
+using fst::MATCH_INPUT;
+using fst::Matcher;
+using fst::StdArc;
+using fst::StdVectorFst;
+using fst::SymbolTable;
 
 namespace mozolm {
 namespace models {
@@ -43,7 +43,7 @@ absl::Status NGramFstModel::Read(const ModelStorage &storage) {
     return absl::InvalidArgumentError("Model file not specified");
   }
   GOOGLE_LOG(INFO) << "Initializing from " << storage.model_file() << " ...";
-  std::unique_ptr<nlp_fst::StdVectorFst> fst;
+  std::unique_ptr<fst::StdVectorFst> fst;
   fst.reset(StdVectorFst::Read(storage.model_file()));
   if (!fst) {
     return absl::NotFoundError(absl::StrCat("Failed to read FST from ",

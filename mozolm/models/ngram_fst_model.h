@@ -42,32 +42,30 @@ class NGramFstModel : public LanguageModel {
                       int64_t count) override;
 
   // Returns underlying FST, which must be initialized.
-  const nlp_fst::StdVectorFst &fst() const { return *fst_; }
+  const fst::StdVectorFst &fst() const { return *fst_; }
 
-  nlp_fst::StdArc::Label oov_label() const { return oov_label_; }
+  fst::StdArc::Label oov_label() const { return oov_label_; }
 
  protected:
   NGramFstModel() = default;
 
   // Returns the next state reached by arc labeled with label from state s.
   // If the label is out-of-vocabulary, it will return the unigram state.
-  nlp_fst::StdArc::StateId NextModelState(
-      nlp_fst::StdArc::StateId current_state,
-      nlp_fst::StdArc::Label label) const;
+  fst::StdArc::StateId NextModelState(fst::StdArc::StateId current_state,
+                                      fst::StdArc::Label label) const;
 
   // Language model represented by vector FST.
-  std::unique_ptr<const nlp_fst::StdVectorFst> fst_;
+  std::unique_ptr<const fst::StdVectorFst> fst_;
 
   // N-Gram model helper wrapping the FST above.
-  std::unique_ptr<const ngram::NGramModel<nlp_fst::StdArc>> model_;
+  std::unique_ptr<const ngram::NGramModel<fst::StdArc>> model_;
 
   // Label for the unknown symbol, if any.
-  nlp_fst::StdArc::Label oov_label_ = nlp_fst::kNoSymbol;
+  fst::StdArc::Label oov_label_ = fst::kNoSymbol;
 
   // Checks the current state and sets it to the unigram state if less than
   // zero.
-  nlp_fst::StdArc::StateId CheckCurrentState(
-      nlp_fst::StdArc::StateId state) const;
+  fst::StdArc::StateId CheckCurrentState(fst::StdArc::StateId state) const;
 
  private:
   // Performs model sanity check.

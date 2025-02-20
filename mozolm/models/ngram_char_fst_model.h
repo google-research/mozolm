@@ -44,15 +44,14 @@ class NGramCharFstModel : public NGramFstModel {
  protected:
   // Computes negative log probability for observing the supplied label in a
   // given state.
-  nlp_fst::StdArc::Weight LabelCostInState(nlp_fst::StdArc::StateId state,
-                                           nlp_fst::StdArc::Label label) const;
+  fst::StdArc::Weight LabelCostInState(fst::StdArc::StateId state,
+                                       fst::StdArc::Label label) const;
 
  private:
-  nlp_fst::StdArc::Label SymLabel(int utf8_sym) const;
+  fst::StdArc::Label SymLabel(int utf8_sym) const;
 
   // Returns negative log probability of the end-of-string at the given state.
-  nlp_fst::StdArc::Weight FinalCostInState(
-      nlp_fst::StdArc::StateId state) const;
+  fst::StdArc::Weight FinalCostInState(fst::StdArc::StateId state) const;
 };
 
 }  // namespace models

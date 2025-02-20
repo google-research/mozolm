@@ -34,8 +34,8 @@
 #include "nisaba/port/utf8_util.h"
 #include "nisaba/port/test_utils.h"
 
+using fst::StdArc;
 using nisaba::testing::TestFilePath;
-using nlp_fst::StdArc;
 
 namespace mozolm {
 namespace models {
