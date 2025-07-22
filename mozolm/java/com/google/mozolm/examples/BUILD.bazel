@@ -17,7 +17,6 @@
 load("@rules_java//java:defs.bzl", "java_binary")
 
 package(
-    default_visibility = ["//mozolm:__subpackages__"],
 )
 
 licenses(["notice"])
