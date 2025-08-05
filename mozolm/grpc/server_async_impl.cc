@@ -240,7 +240,6 @@ absl::Status ServerAsyncImpl::BuildAndStart(
   // TODO: Complete.
   if (async_pool_size > 0) {
     async_pool_ = std::make_unique<nisaba::ThreadPool>(async_pool_size);
-    async_pool_->StartWorkers();
   } else {
     async_pool_ = nullptr;
   }
