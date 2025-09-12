@@ -80,14 +80,14 @@ void ServerAsyncImpl::DriveCQ() {
 }
 
 bool ServerAsyncImpl::IncrementRpcPending() {
-  absl::MutexLock lock(&shutdown_lock_);
+  absl::MutexLock lock(shutdown_lock_);
   if (server_shutdown_) return false;
   ++rpcs_pending_;
   return true;
 }
 
 bool ServerAsyncImpl::DecrementRpcPending() {
-  absl::MutexLock lock(&shutdown_lock_);
+  absl::MutexLock lock(shutdown_lock_);
   rpcs_pending_--;
   if (rpcs_pending_ == 0) {
     // If count is zero, then server is shutdown (because new RPCs are requested
@@ -231,7 +231,7 @@ absl::Status ServerAsyncImpl::BuildAndStart(
     const std::string& address_uri,
     std::shared_ptr<::grpc::ServerCredentials> creds,
     int async_pool_size) {
-  absl::MutexLock lock(&shutdown_lock_);
+  absl::MutexLock lock(shutdown_lock_);
   if (server_shutdown_) {
     return absl::InternalError("Cannot initialize in the middle of shutdown");
   }
@@ -280,7 +280,7 @@ void ServerAsyncImpl::Shutdown() {
   GOOGLE_LOG(INFO) << "Shutting down ...";
   ::grpc::Server* server;
   {
-    absl::MutexLock lock(&shutdown_lock_);
+    absl::MutexLock lock(shutdown_lock_);
     server_shutdown_ = true;
     // Get the server_ variable that is protected by a lock and capture it
     // in a local since we can't hold the lock while performing a Shutdown
