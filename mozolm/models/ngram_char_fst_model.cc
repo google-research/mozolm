@@ -17,8 +17,8 @@
 #include <cmath>
 
 #include "google/protobuf/stubs/logging.h"
-#include "fst/fst.h"
-#include "fst/matcher.h"
+#include "nlp/fst/lib/fst.h"
+#include "nlp/fst/lib/matcher.h"
 #include "absl/memory/memory.h"
 #include "nisaba/port/utf8_util.h"
 

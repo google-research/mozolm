@@ -231,12 +231,12 @@ cc_library(
         ":language_model",
         ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//nlp/fst/lib",
+        "//nlp/fst/lib:symbol-table",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
-        "@org_openfst//:fst",
-        "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
@@ -251,6 +251,8 @@ cc_library(
         ":ngram_fst_model",
         ":ngram_word_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//nlp/fst/lib",
+        "//nlp/fst/lib:symbol-table",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
@@ -258,8 +260,6 @@ cc_library(
         "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
         "@com_google_protobuf//:protobuf",
-        "@org_openfst//:fst",
-        "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
@@ -275,14 +275,14 @@ cc_test(
         ":model_test_utils",
         ":ngram_word_fst_model",
         "//mozolm/stubs:integral_types",
+        "//nlp/fst/lib",
+        "//nlp/fst/lib:symbol-table",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_googletest//:gtest_main",
         "@com_google_nisaba//nisaba/port:file_util",
         "@com_google_nisaba//nisaba/port:status-matchers",
         "@com_google_nisaba//nisaba/port:test_utils",
         "@com_google_nisaba//nisaba/port:utf8_util",
-        "@org_openfst//:fst",
-        "@org_openfst//:symbol-table",
     ],
 )
 
@@ -294,11 +294,11 @@ cc_library(
     deps = [
         ":ngram_fst_model",
         "//mozolm/stubs:integral_types",
+        "//nlp/fst/lib",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_nisaba//nisaba/port:utf8_util",
         "@com_google_protobuf//:protobuf",
-        "@org_openfst//:fst",
     ],
 )
 
@@ -314,6 +314,7 @@ cc_test(
         ":model_storage_cc_proto",
         ":model_test_utils",
         ":ngram_char_fst_model",
+        "//nlp/fst/lib",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/strings",
@@ -321,7 +322,6 @@ cc_test(
         "@com_google_nisaba//nisaba/port:status-matchers",
         "@com_google_nisaba//nisaba/port:test_utils",
         "@com_google_nisaba//nisaba/port:utf8_util",
-        "@org_openfst//:fst",
     ],
 )
 
@@ -335,6 +335,8 @@ cc_library(
         ":model_storage_cc_proto",
         ":ppm_as_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//nlp/fst/lib",
+        "//nlp/fst/lib:symbol-table",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status:statusor",
@@ -344,8 +346,6 @@ cc_library(
         "@com_google_nisaba//nisaba/port:timer",
         "@com_google_nisaba//nisaba/port:utf8_util",
         "@com_google_protobuf//:protobuf",
-        "@org_openfst//:fst",
-        "@org_openfst//:symbol-table",
         "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
@@ -359,14 +359,14 @@ cc_test(
         ":model_storage_cc_proto",
         ":ppm_as_fst_model",
         "//mozolm/stubs:integral_types",
+        "//nlp/fst/lib",
+        "//nlp/fst/lib:symbol-table",
         "@com_github_protobuf_matchers//protobuf-matchers",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_nisaba//nisaba/port:file_util",
         "@com_google_nisaba//nisaba/port:status-matchers",
         "@com_google_nisaba//nisaba/port:utf8_util",
-        "@org_openfst//:fst",
-        "@org_openfst//:symbol-table",
     ],
 )
 

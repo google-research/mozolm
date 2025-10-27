@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "fst/vector-fst.h"
+#include "nlp/fst/lib/vector-fst.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"

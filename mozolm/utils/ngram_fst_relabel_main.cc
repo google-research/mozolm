@@ -32,7 +32,7 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "fst/vector-fst.h"
+#include "nlp/fst/lib/vector-fst.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/status/status.h"

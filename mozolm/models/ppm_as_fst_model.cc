@@ -18,9 +18,9 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
-#include "fst/arcsort.h"
-#include "fst/symbol-table.h"
-#include "fst/vector-fst.h"
+#include "nlp/fst/lib/arcsort.h"
+#include "nlp/fst/lib/symbol-table.h"
+#include "nlp/fst/lib/vector-fst.h"
 #include "ngram/ngram-count.h"
 #include "ngram/ngram-model.h"
 #include "absl/container/flat_hash_set.h"

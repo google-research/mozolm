@@ -66,8 +66,8 @@
 #include <string>
 #include <vector>
 
-#include "fst/symbol-table.h"
-#include "fst/vector-fst.h"
+#include "nlp/fst/lib/symbol-table.h"
+#include "nlp/fst/lib/vector-fst.h"
 #include "ngram/ngram-count.h"
 #include "absl/status/statusor.h"
 #include "mozolm/models/language_model.h"

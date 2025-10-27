@@ -17,9 +17,9 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
-#include "fst/fst.h"
-#include "fst/matcher.h"
-#include "fst/symbol-table.h"
+#include "nlp/fst/lib/fst.h"
+#include "nlp/fst/lib/matcher.h"
+#include "nlp/fst/lib/symbol-table.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 

@@ -20,7 +20,7 @@
 #include <memory>
 #include <vector>
 
-#include "fst/vector-fst.h"
+#include "nlp/fst/lib/vector-fst.h"
 #include "absl/status/status.h"
 #include "mozolm/models/ngram_fst_model.h"
 

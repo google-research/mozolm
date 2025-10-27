@@ -20,10 +20,10 @@
 #include <set>
 #include <sstream>
 
-#include "fst/fst.h"
-#include "fst/symbol-table.h"
-#include "fst/vector-fst.h"
-#include "fst/script/compile-impl.h"
+#include "nlp/fst/lib/fst.h"
+#include "nlp/fst/lib/symbol-table.h"
+#include "nlp/fst/lib/vector-fst.h"
+#include "nlp/fst/script/compile-impl.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
