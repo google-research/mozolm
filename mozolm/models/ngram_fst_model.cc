@@ -17,11 +17,11 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
-#include "absl/memory/memory.h"
-#include "absl/strings/str_cat.h"
 
 using fst::MATCH_INPUT;
 using fst::Matcher;

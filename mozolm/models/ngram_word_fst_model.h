@@ -22,11 +22,11 @@
 #include <utility>
 #include <vector>
 
-#include "fst/vector-fst.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "mozolm/models/ngram_fst_model.h"
+#include "fst/vector-fst.h"
 
 namespace mozolm {
 namespace models {

@@ -20,8 +20,8 @@
 #include <string>
 #include <vector>
 
-#include "fst/vector-fst.h"
 #include "absl/status/status.h"
+#include "fst/vector-fst.h"
 
 namespace mozolm {
 

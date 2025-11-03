@@ -17,10 +17,10 @@
 #include <cmath>
 
 #include "google/protobuf/stubs/logging.h"
-#include "fst/fst.h"
-#include "fst/matcher.h"
 #include "absl/memory/memory.h"
 #include "nisaba/port/utf8_util.h"
+#include "fst/fst.h"
+#include "fst/matcher.h"
 
 using fst::MATCH_INPUT;
 using fst::Matcher;

@@ -22,10 +22,6 @@
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
-#include "fst/arcsort.h"
-#include "fst/isomorphic.h"
-#include "fst/symbol-table.h"
-#include "fst/vector-fst.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
@@ -34,6 +30,10 @@
 #include "mozolm/models/model_storage.pb.h"
 #include "nisaba/port/file_util.h"
 #include "nisaba/port/utf8_util.h"
+#include "fst/arcsort.h"
+#include "fst/isomorphic.h"
+#include "fst/symbol-table.h"
+#include "fst/vector-fst.h"
 
 namespace mozolm {
 namespace models {
