@@ -21,9 +21,6 @@
 #include <vector>
 
 #include "mozolm/stubs/integral_types.h"
-#include "fst/arcsort.h"
-#include "fst/symbol-table.h"
-#include "fst/vector-fst.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
@@ -33,6 +30,9 @@
 #include "nisaba/port/file_util.h"
 #include "nisaba/port/test_utils.h"
 #include "nisaba/port/utf8_util.h"
+#include "fst/arcsort.h"
+#include "fst/symbol-table.h"
+#include "fst/vector-fst.h"
 
 using ::fst::ArcSort;
 using ::fst::ILabelCompare;

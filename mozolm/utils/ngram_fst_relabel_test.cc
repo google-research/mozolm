@@ -20,14 +20,14 @@
 #include <set>
 #include <sstream>
 
-#include "fst/fst.h"
-#include "fst/symbol-table.h"
-#include "fst/vector-fst.h"
-#include "fst/script/compile-impl.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
 #include "gtest/gtest.h"
+#include "fst/fst.h"
+#include "fst/symbol-table.h"
+#include "fst/vector-fst.h"
+#include "fst/script/compile-impl.h"
 
 using fst::ArcIterator;
 using fst::FstCompiler;
