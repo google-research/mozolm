@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "nlp/fst/lib/vector-fst.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
@@ -31,8 +30,9 @@
 #include "absl/strings/str_join.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/model_test_utils.h"
-#include "nisaba/port/utf8_util.h"
 #include "nisaba/port/test_utils.h"
+#include "nisaba/port/utf8_util.h"
+#include "fst/vector-fst.h"
 
 using fst::StdArc;
 using nisaba::testing::TestFilePath;

@@ -32,12 +32,12 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "nlp/fst/lib/vector-fst.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "mozolm/utils/ngram_fst_relabel.h"
+#include "fst/vector-fst.h"
 #include "nisaba/port/status_macros.h"
 
 ABSL_FLAG(std::string, input_fst_file, "",

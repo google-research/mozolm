@@ -19,14 +19,14 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
-#include "nlp/fst/lib/fst.h"
-#include "nlp/fst/lib/matcher.h"
-#include "nlp/fst/lib/symbol-table.h"
 #include "ngram/ngram-model.h"
 #include "absl/memory/memory.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
 #include "nisaba/port/utf8_util.h"
+#include "fst/fst.h"
+#include "fst/matcher.h"
+#include "fst/symbol-table.h"
 #include "nisaba/port/status_macros.h"
 
 using nisaba::utf8::DecodeSingleUnicodeChar;
