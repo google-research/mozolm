@@ -323,6 +323,7 @@ cc_grpc_library(
 # TODO: Consider adding support for `lite` protobufs.
 java_proto_library(
     name = "service_java_proto",
+    has_services = True,  # b/241918504
     deps = [":service_proto"],
 )
 
