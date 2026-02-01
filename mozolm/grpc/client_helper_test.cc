@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
@@ -34,6 +33,7 @@
 #include "mozolm/models/ppm_as_fst_options.pb.h"
 #include "nisaba/port/file_util.h"
 #include "nisaba/port/test_utils.h"
+#include "third_party/protobuf/text_format.h"
 
 using nisaba::testing::TestFilePath;
 

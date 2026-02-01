@@ -36,7 +36,6 @@
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/text_format.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/status/status.h"
@@ -45,6 +44,7 @@
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "nisaba/port/file_util.h"
+#include "third_party/protobuf/text_format.h"
 #include "nisaba/port/status_macros.h"
 
 ABSL_FLAG(std::string, client_config, "",

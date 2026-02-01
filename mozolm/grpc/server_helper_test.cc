@@ -19,7 +19,6 @@
 #include <string_view>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
@@ -30,6 +29,7 @@
 #include "mozolm/models/model_config.pb.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "nisaba/port/file_util.h"
+#include "third_party/protobuf/text_format.h"
 
 namespace mozolm {
 namespace grpc {
