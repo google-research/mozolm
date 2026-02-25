@@ -1,4 +1,4 @@
-// Copyright 2025 MozoLM Authors.
+// Copyright 2026 MozoLM Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -117,12 +117,15 @@ class NGramWordFstTest : public ::testing::Test {
     // associated with the symbol. End-of-string probabilities are assigned as a
     // final cost.  Each option is assigned -logP cost, where here P=1/5.
 
-    fst.AddArc(unigram_state, StdArc(1, 1, -std::log(0.2), aa_state));  // aa 2
-    fst.AddArc(unigram_state, StdArc(2, 2, -std::log(0.2), ab_state));  // ab 2
-    fst.AddArc(unigram_state, StdArc(3, 3, -std::log(0.2), ba_state));  // ba 2
     fst.AddArc(unigram_state,
-               StdArc(4, 4, -std::log(0.2), bbb_state));  // bbb 2
-    fst.SetFinal(unigram_state, -std::log(0.2));          // </S>     2
+               StdArc(1, 1, StdArc::Weight(-std::log(0.2)), aa_state));  // aa 2
+    fst.AddArc(unigram_state,
+               StdArc(2, 2, StdArc::Weight(-std::log(0.2)), ab_state));  // ab 2
+    fst.AddArc(unigram_state,
+               StdArc(3, 3, StdArc::Weight(-std::log(0.2)), ba_state));  // ba 2
+    fst.AddArc(unigram_state, StdArc(4, 4, StdArc::Weight(-std::log(0.2)),
+                                     bbb_state));                 // bbb 2
+    fst.SetFinal(unigram_state, StdArc::Weight(-std::log(0.2)));  // </S>     2
 
     // For bigram states, we will use simple add-one smoothing, and backoff to
     // the unigram state.  The backoff weight is calculated in closed form to
@@ -133,30 +136,30 @@ class NGramWordFstTest : public ::testing::Test {
     // the other 4 options, meaning that each gets 1/12 of the probability mass.
     // The backoff arc value (labeled <epsilon> index 0) ensures that the
     // probabilities of those options are correct.
-    fst.AddArc(start_state,
-               StdArc(1, 1, -std::log(0.666667), start_aa_state));  // <S> aa 2
-    fst.AddArc(start_state, StdArc(0, 0, -std::log(5.0 / 12.0),
+    fst.AddArc(start_state, StdArc(1, 1, StdArc::Weight(-std::log(0.666667)),
+                                   start_aa_state));  // <S> aa 2
+    fst.AddArc(start_state, StdArc(0, 0, StdArc::Weight(-std::log(5.0 / 12.0)),
                                    unigram_state));  // backoff arc.
-    fst.AddArc(aa_state,
-               StdArc(2, 2, -std::log(0.333333), aa_ab_state));  // aa ab 1
-    fst.AddArc(aa_state,
-               StdArc(3, 3, -std::log(0.333333), aa_ba_state));  // aa ba 1
-    fst.AddArc(aa_state, StdArc(0, 0, -std::log(5.0 / 9.0),
+    fst.AddArc(aa_state, StdArc(2, 2, StdArc::Weight(-std::log(0.333333)),
+                                aa_ab_state));  // aa ab 1
+    fst.AddArc(aa_state, StdArc(3, 3, StdArc::Weight(-std::log(0.333333)),
+                                aa_ba_state));  // aa ba 1
+    fst.AddArc(aa_state, StdArc(0, 0, StdArc::Weight(-std::log(5.0 / 9.0)),
                                 unigram_state));  // backoff arc.
-    fst.AddArc(ab_state,
-               StdArc(3, 3, -std::log(0.333333), ab_ba_state));  // ab ba 1
-    fst.AddArc(ab_state,
-               StdArc(4, 4, -std::log(0.333333), ab_bbb_state));  // ab bbb   1
-    fst.AddArc(ab_state, StdArc(0, 0, -std::log(5.0 / 9.0),
+    fst.AddArc(ab_state, StdArc(3, 3, StdArc::Weight(-std::log(0.333333)),
+                                ab_ba_state));  // ab ba 1
+    fst.AddArc(ab_state, StdArc(4, 4, StdArc::Weight(-std::log(0.333333)),
+                                ab_bbb_state));  // ab bbb   1
+    fst.AddArc(ab_state, StdArc(0, 0, StdArc::Weight(-std::log(5.0 / 9.0)),
                                 unigram_state));  // backoff arc.
-    fst.AddArc(ba_state,
-               StdArc(2, 2, -std::log(0.333333), ba_ab_state));  // ba ab 1
-    fst.AddArc(ba_state,
-               StdArc(4, 4, -std::log(0.333333), ba_bbb_state));  // ba bbb   1
-    fst.AddArc(ba_state, StdArc(0, 0, -std::log(5.0 / 9.0),
+    fst.AddArc(ba_state, StdArc(2, 2, StdArc::Weight(-std::log(0.333333)),
+                                ba_ab_state));  // ba ab 1
+    fst.AddArc(ba_state, StdArc(4, 4, StdArc::Weight(-std::log(0.333333)),
+                                ba_bbb_state));  // ba bbb   1
+    fst.AddArc(ba_state, StdArc(0, 0, StdArc::Weight(-std::log(5.0 / 9.0)),
                                 unigram_state));  // backoff arc.
-    fst.SetFinal(bbb_state, -std::log(0.666667));  // bbb </S> 2
-    fst.AddArc(bbb_state, StdArc(0, 0, -std::log(5.0 / 12.0),
+    fst.SetFinal(bbb_state, StdArc::Weight(-std::log(0.666667)));  // bbb </S> 2
+    fst.AddArc(bbb_state, StdArc(0, 0, StdArc::Weight(-std::log(5.0 / 12.0)),
                                  unigram_state));  // backoff arc.
 
     // For trigram states, we also use add-one smoothing and this time backoff
@@ -166,33 +169,36 @@ class NGramWordFstTest : public ::testing::Test {
     // possibilities must fit within the remaining 1/3 probability mass and the
     // backoff cost scales appropriately.  In fact, for that state they do, so
     // no scaling is required, i.e., backoff cost is 0.0.
+    fst.AddArc(start_aa_state, StdArc(2, 2, StdArc::Weight(-std::log(0.333333)),
+                                      aa_ab_state));  // <S> aa ab 1
+    fst.AddArc(start_aa_state, StdArc(3, 3, StdArc::Weight(-std::log(0.333333)),
+                                      aa_ba_state));  // <S> aa ba 1
     fst.AddArc(start_aa_state,
-               StdArc(2, 2, -std::log(0.333333), aa_ab_state));  // <S> aa ab 1
-    fst.AddArc(start_aa_state,
-               StdArc(3, 3, -std::log(0.333333), aa_ba_state));  // <S> aa ba 1
-    fst.AddArc(start_aa_state, StdArc(0, 0, 0.0, aa_state));     // backoff arc.
-    fst.AddArc(aa_ab_state,
-               StdArc(3, 3, -std::log(0.5), ab_ba_state));  // aa ab ba 1
-    fst.AddArc(aa_ab_state,
-               StdArc(0, 0, -std::log(0.75), ab_state));  // backoff arc.
-    fst.AddArc(aa_ba_state,
-               StdArc(2, 2, -std::log(0.5), ba_ab_state));  // aa ba ab 1
-    fst.AddArc(aa_ba_state,
-               StdArc(0, 0, -std::log(0.75), ba_state));  // backoff arc.
-    fst.AddArc(ab_ba_state,
-               StdArc(4, 4, -std::log(0.5), ba_bbb_state));  // ab ba bbb 1
-    fst.AddArc(ab_ba_state,
-               StdArc(0, 0, -std::log(0.75), ba_state));  // backoff arc.
-    fst.SetFinal(ab_bbb_state, -std::log(0.5));           // ab bbb </S>      1
-    fst.AddArc(ab_bbb_state,
-               StdArc(0, 0, -std::log(1.5), bbb_state));  // backoff arc.
-    fst.AddArc(ba_ab_state,
-               StdArc(4, 4, -std::log(0.5), ab_bbb_state));  // ba ab bbb 1
-    fst.AddArc(ba_ab_state,
-               StdArc(0, 0, -std::log(0.75), ab_state));  // backoff arc.
-    fst.SetFinal(ba_bbb_state, -std::log(0.5));           // ba bbb </S>      1
-    fst.AddArc(ba_bbb_state,
-               StdArc(0, 0, -std::log(1.5), bbb_state));  // backoff arc.
+               StdArc(0, 0, StdArc::Weight(0.0), aa_state));  // backoff arc.
+    fst.AddArc(aa_ab_state, StdArc(3, 3, StdArc::Weight(-std::log(0.5)),
+                                   ab_ba_state));  // aa ab ba 1
+    fst.AddArc(aa_ab_state, StdArc(0, 0, StdArc::Weight(-std::log(0.75)),
+                                   ab_state));  // backoff arc.
+    fst.AddArc(aa_ba_state, StdArc(2, 2, StdArc::Weight(-std::log(0.5)),
+                                   ba_ab_state));  // aa ba ab 1
+    fst.AddArc(aa_ba_state, StdArc(0, 0, StdArc::Weight(-std::log(0.75)),
+                                   ba_state));  // backoff arc.
+    fst.AddArc(ab_ba_state, StdArc(4, 4, StdArc::Weight(-std::log(0.5)),
+                                   ba_bbb_state));  // ab ba bbb 1
+    fst.AddArc(ab_ba_state, StdArc(0, 0, StdArc::Weight(-std::log(0.75)),
+                                   ba_state));  // backoff arc.
+    fst.SetFinal(ab_bbb_state,
+                 StdArc::Weight(-std::log(0.5)));  // ab bbb </S>      1
+    fst.AddArc(ab_bbb_state, StdArc(0, 0, StdArc::Weight(-std::log(1.5)),
+                                    bbb_state));  // backoff arc.
+    fst.AddArc(ba_ab_state, StdArc(4, 4, StdArc::Weight(-std::log(0.5)),
+                                   ab_bbb_state));  // ba ab bbb 1
+    fst.AddArc(ba_ab_state, StdArc(0, 0, StdArc::Weight(-std::log(0.75)),
+                                   ab_state));  // backoff arc.
+    fst.SetFinal(ba_bbb_state,
+                 StdArc::Weight(-std::log(0.5)));  // ba bbb </S>      1
+    fst.AddArc(ba_bbb_state, StdArc(0, 0, StdArc::Weight(-std::log(1.5)),
+                                    bbb_state));  // backoff arc.
 
     ArcSort(&fst, ILabelCompare<StdArc>());
     fst.SetInputSymbols(&syms);

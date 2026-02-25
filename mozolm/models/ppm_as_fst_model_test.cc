@@ -1,4 +1,4 @@
-// Copyright 2025 MozoLM Authors.
+// Copyright 2026 MozoLM Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -104,28 +104,43 @@ class PpmAsFstTest : public ::testing::Test {
     // suffix state -- proper suffix if not ascending.  Also add epsilon backoff
     // arcs to backoff states with -log sum of counts on that arc.  N-grams with
     // </S> go to final cost rather than arcs.
-    fst.AddArc(aa_state, StdArc(2, 2, -std::log(2.0), ab_state));  // a a b 2
-    fst.AddArc(aa_state, StdArc(0, 0, -std::log(2.0), a_state));
-    fst.AddArc(ab_state, StdArc(1, 1, -std::log(2.0), ba_state));     // a b a 2
-    fst.SetFinal(ab_state, -std::log(2.0));  // a b </S>  2
-    fst.AddArc(ab_state, StdArc(0, 0, -std::log(4.0), b_state));
-    fst.AddArc(ba_state, StdArc(1, 1, -std::log(1.0), aa_state));     // b a a 1
-    fst.AddArc(ba_state, StdArc(2, 2, -std::log(1.0), ab_state));     // b a b 1
-    fst.AddArc(ba_state, StdArc(0, 0, -std::log(2.0), a_state));
-    fst.AddArc(start_state, StdArc(1, 1, -std::log(2.0), sa_state));  // <S> a 2
-    fst.AddArc(start_state, StdArc(0, 0, -std::log(2.0), unigram_state));
-    fst.AddArc(sa_state, StdArc(1, 1, -std::log(1.0), aa_state));  // <S> a a 1
-    fst.AddArc(sa_state, StdArc(2, 2, -std::log(1.0), ab_state));  // <S> a b 1
-    fst.AddArc(sa_state, StdArc(0, 0, -std::log(2.0), a_state));
-    fst.AddArc(a_state, StdArc(1, 1, -std::log(2.0), aa_state));  // a a     2
-    fst.AddArc(a_state, StdArc(2, 2, -std::log(3.0), ab_state));  // a b     3
-    fst.AddArc(a_state, StdArc(0, 0, -std::log(5.0), unigram_state));
-    fst.AddArc(b_state, StdArc(1, 1, -std::log(1.0), ba_state));  // b a     1
-    fst.SetFinal(b_state, -std::log(1.0));                        // b </S>  1
-    fst.AddArc(b_state, StdArc(0, 0, -std::log(2.0), unigram_state));
-    fst.AddArc(unigram_state, StdArc(1, 1, -std::log(4.0), a_state));  // a 4
-    fst.AddArc(unigram_state, StdArc(2, 2, -std::log(2.0), b_state));  // b 2
-    fst.SetFinal(unigram_state, -std::log(2.0));  // </S>    2
+    fst.AddArc(aa_state, StdArc(2, 2, StdArc::Weight(-std::log(2.0)),
+                                ab_state));  // a a b 2
+    fst.AddArc(aa_state, StdArc(0, 0, StdArc::Weight(-std::log(2.0)), a_state));
+    fst.AddArc(ab_state, StdArc(1, 1, StdArc::Weight(-std::log(2.0)),
+                                ba_state));                  // a b a 2
+    fst.SetFinal(ab_state, StdArc::Weight(-std::log(2.0)));  // a b </S>  2
+    fst.AddArc(ab_state, StdArc(0, 0, StdArc::Weight(-std::log(4.0)), b_state));
+    fst.AddArc(ba_state, StdArc(1, 1, StdArc::Weight(-std::log(1.0)),
+                                aa_state));  // b a a 1
+    fst.AddArc(ba_state, StdArc(2, 2, StdArc::Weight(-std::log(1.0)),
+                                ab_state));  // b a b 1
+    fst.AddArc(ba_state, StdArc(0, 0, StdArc::Weight(-std::log(2.0)), a_state));
+    fst.AddArc(start_state, StdArc(1, 1, StdArc::Weight(-std::log(2.0)),
+                                   sa_state));  // <S> a 2
+    fst.AddArc(start_state,
+               StdArc(0, 0, StdArc::Weight(-std::log(2.0)), unigram_state));
+    fst.AddArc(sa_state, StdArc(1, 1, StdArc::Weight(-std::log(1.0)),
+                                aa_state));  // <S> a a 1
+    fst.AddArc(sa_state, StdArc(2, 2, StdArc::Weight(-std::log(1.0)),
+                                ab_state));  // <S> a b 1
+    fst.AddArc(sa_state, StdArc(0, 0, StdArc::Weight(-std::log(2.0)), a_state));
+    fst.AddArc(a_state, StdArc(1, 1, StdArc::Weight(-std::log(2.0)),
+                               aa_state));  // a a     2
+    fst.AddArc(a_state, StdArc(2, 2, StdArc::Weight(-std::log(3.0)),
+                               ab_state));  // a b     3
+    fst.AddArc(a_state,
+               StdArc(0, 0, StdArc::Weight(-std::log(5.0)), unigram_state));
+    fst.AddArc(b_state, StdArc(1, 1, StdArc::Weight(-std::log(1.0)),
+                               ba_state));                  // b a     1
+    fst.SetFinal(b_state, StdArc::Weight(-std::log(1.0)));  // b </S>  1
+    fst.AddArc(b_state,
+               StdArc(0, 0, StdArc::Weight(-std::log(2.0)), unigram_state));
+    fst.AddArc(unigram_state,
+               StdArc(1, 1, StdArc::Weight(-std::log(4.0)), a_state));  // a 4
+    fst.AddArc(unigram_state,
+               StdArc(2, 2, StdArc::Weight(-std::log(2.0)), b_state));  // b 2
+    fst.SetFinal(unigram_state, StdArc::Weight(-std::log(2.0)));  // </S>    2
     ArcSort(&fst, ILabelCompare<StdArc>());
     fst.SetInputSymbols(&syms);
     fst.SetOutputSymbols(&syms);

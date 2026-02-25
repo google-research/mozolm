@@ -1,4 +1,4 @@
-// Copyright 2025 MozoLM Authors.
+// Copyright 2026 MozoLM Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,8 +56,8 @@ void MakeEmpty(StdVectorFst *fst) {
   const int start_state = fst->AddState();
   const int unigram_state = fst->AddState();
   fst->SetStart(start_state);
-  fst->SetFinal(unigram_state, 0.0);
-  fst->AddArc(start_state, StdArc(0, 0, 0.0, unigram_state));
+  fst->SetFinal(unigram_state, StdArc::Weight(0.0));
+  fst->AddArc(start_state, StdArc(0, 0, StdArc::Weight(0.0), unigram_state));
 }
 
 // Returns the backoff state for the current state if exists, otherwise -1.
@@ -117,14 +117,14 @@ absl::StatusOr<double> AggregateAndLogCounts(StdArc::StateId s,
         return absl::InternalError("Arc weight <= 0.0.");
       }
       sum_counts += arc.weight.Value();
-      arc.weight = -std::log(arc.weight.Value());
+      arc.weight = StdArc::Weight(-std::log(arc.weight.Value()));
       arc_iterator.SetValue(arc);
     }
   }
   if (fst->Final(s) != StdArc::Weight::Zero()) {
     // Also includes final count if final state, and converts to -log.
     sum_counts += fst->Final(s).Value();
-    fst->SetFinal(s, -std::log(fst->Final(s).Value()));
+    fst->SetFinal(s, StdArc::Weight(-std::log(fst->Final(s).Value())));
   }
   return sum_counts;
 }
@@ -143,7 +143,7 @@ absl::Status FinalizeLowerOrderCounts(const std::vector<bool>& backoff_states,
         if (sum_counts <= 0.0) {
           return absl::InternalError("Sum of counts <= 0.0.");
         }
-        arc.weight = -std::log(sum_counts);
+        arc.weight = StdArc::Weight(-std::log(sum_counts));
         arc_iterator.SetValue(arc);
       }
     }
@@ -160,12 +160,12 @@ void ZeroOutLowerOrderCounts(const std::vector<bool>& backoff_states,
       for (MutableArcIterator<StdVectorFst> arc_iterator(fst, s);
            !arc_iterator.Done(); arc_iterator.Next()) {
         StdArc arc = arc_iterator.Value();
-        arc.weight = 0.0;
+        arc.weight = StdArc::Weight(0.0);
         arc_iterator.SetValue(arc);
       }
       if (fst->Final(s) != StdArc::Weight::Zero()) {
         // Only sets to zero if state is a final state.
-        fst->SetFinal(s, 0.0);
+        fst->SetFinal(s, StdArc::Weight(0.0));
       }
     }
   }
@@ -182,13 +182,14 @@ void IncrementLowerOrderCounts(StdVectorFst* fst) {
         StdArc arc = arc_iterator.Value();
         if (arc.ilabel > 0 && arc_labels.contains(arc.ilabel)) {
           // Increments non-epsilon arc weights by one.
-          arc.weight = arc.weight.Value() + 1.0;
+          arc.weight = StdArc::Weight(arc.weight.Value() + 1.0);
           arc_iterator.SetValue(arc);
         }
       }
       if (fst->Final(s) != StdArc::Weight::Zero()) {
         // Also increments final cost (corresponding to </S>), if final state.
-        fst->SetFinal(backoff_state, fst->Final(backoff_state).Value() + 1.0);
+        fst->SetFinal(backoff_state,
+                      StdArc::Weight(fst->Final(backoff_state).Value() + 1.0));
       }
     }
   }
@@ -229,7 +230,7 @@ int IncrementBackoffArcReturnBackoffState(StdVectorFst* fst,
   if (arc.ilabel == 0) {
     backoff_state = arc.nextstate;
     if (increment_count) {
-      arc.weight = ngram::NegLogSum(arc.weight.Value(), 0.0);
+      arc.weight = StdArc::Weight(ngram::NegLogSum(arc.weight.Value(), 0.0));
       arc_iterator.SetValue(arc);
     }
   }
@@ -298,7 +299,8 @@ absl::Status PpmAsFstModel::AddExtraCharacters(
       fst_->MutableOutputSymbols()->AddSymbol(sym);
       syms_->AddSymbol(sym);
       const int idx = fst_->InputSymbols()->Find(sym);
-      fst_->AddArc(unigram_state, StdArc(idx, idx, 0.0, unigram_state));
+      fst_->AddArc(unigram_state,
+                   StdArc(idx, idx, StdArc::Weight(0.0), unigram_state));
     }
   }
   return absl::OkStatus();
@@ -353,11 +355,12 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
        !arc_iterator.Done(); arc_iterator.Next()) {
     StdArc arc = arc_iterator.Value();
     has_unigram.insert(arc.ilabel);
-    arc.weight = ngram::NegLogSum(arc.weight.Value(), 0.0);  // Adds 1 count.
+    arc.weight = StdArc::Weight(
+        ngram::NegLogSum(arc.weight.Value(), 0.0));  // Adds 1 count.
     arc_iterator.SetValue(arc);
   }
-  fst_->SetFinal(unigram_state,
-                ngram::NegLogSum(fst_->Final(unigram_state).Value(), 0.0));
+  fst_->SetFinal(unigram_state, StdArc::Weight(ngram::NegLogSum(
+                                    fst_->Final(unigram_state).Value(), 0.0)));
   bool syms_added = false;
   for (SymbolTableIterator syms_iter(*syms_); !syms_iter.Done();
        syms_iter.Next()) {
@@ -365,7 +368,8 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
     if (sym > 0) {
       if (!has_unigram.contains(sym)) {
         // Adds unigram looping arc for possible characters without unigram.
-        fst_->AddArc(unigram_state, StdArc(sym, sym, 0.0, unigram_state));
+        fst_->AddArc(unigram_state,
+                     StdArc(sym, sym, StdArc::Weight(0.0), unigram_state));
         if (!syms_added) syms_added = true;
       }
     }
@@ -406,10 +410,10 @@ absl::StatusOr<StdVectorFst> PpmAsFstModel::String2Fst(
   }
   for (const auto& sym : syms_vector_status.value()) {
     int next_state = fst.AddState();
-    fst.AddArc(curr_state, StdArc(sym, sym, 0.0, next_state));
+    fst.AddArc(curr_state, StdArc(sym, sym, StdArc::Weight(0.0), next_state));
     curr_state = next_state;
   }
-  fst.SetFinal(curr_state, 0.0);
+  fst.SetFinal(curr_state, StdArc::Weight(0.0));
   return fst;
 }
 
@@ -817,7 +821,8 @@ absl::StatusOr<int> PpmAsFstModel::AddNewState(
       backoff_dest_state >= 0 ? state_orders_[backoff_dest_state] + 1 : 0);
   cache_index_.push_back(-1);
   if (backoff_dest_state >= 0) {
-    fst_->AddArc(new_state_index, StdArc(0, 0, 0.0, backoff_dest_state));
+    fst_->AddArc(new_state_index,
+                 StdArc(0, 0, StdArc::Weight(0.0), backoff_dest_state));
   }
   return new_state_index;
 }
@@ -826,8 +831,8 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
                                                     int sym_index) {
   if (sym_index == 0) {
     // Adds one to final cost and sets destination state to start state.
-    fst_->SetFinal(curr_state,
-                  ngram::NegLogSum(fst_->Final(curr_state).Value(), 0.0));
+    fst_->SetFinal(curr_state, StdArc::Weight(ngram::NegLogSum(
+                                   fst_->Final(curr_state).Value(), 0.0)));
   } else {
     // Arc with sym_index found at current state.
     int new_next_state = -1;
@@ -848,7 +853,7 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
           new_next_state = state_orders_.size();
           arc.nextstate = new_next_state;
         }
-        arc.weight = ngram::NegLogSum(arc.weight.Value(), 0.0);
+        arc.weight = StdArc::Weight(ngram::NegLogSum(arc.weight.Value(), 0.0));
         arc_iterator.SetValue(arc);
         break;
       }
@@ -875,7 +880,7 @@ absl::Status PpmAsFstModel::UpdateNotFoundState(
   if (!update_status.ok()) return update_status.status();
   int backoff_dest_state = update_status.value();
   if (sym_index == 0) {
-    fst_->SetFinal(curr_state, 0.0);
+    fst_->SetFinal(curr_state, StdArc::Weight(0.0));
   } else {
     // No arc with sym_index found at current state.
     const auto needs_new_state_status = NeedsNewState(curr_state,
@@ -891,7 +896,8 @@ absl::Status PpmAsFstModel::UpdateNotFoundState(
       }
       dest_state = add_new_state_status.value();
     }
-    fst_->AddArc(curr_state, StdArc(sym_index, sym_index, 0.0, dest_state));
+    fst_->AddArc(curr_state,
+                 StdArc(sym_index, sym_index, StdArc::Weight(0.0), dest_state));
   }
   return absl::OkStatus();
 }
