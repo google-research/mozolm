@@ -17,7 +17,6 @@
 #include <memory>
 #include <utility>
 
-#include "mozolm/stubs/integral_types.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/statusor.h"

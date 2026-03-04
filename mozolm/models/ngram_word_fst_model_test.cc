@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 
-#include "mozolm/stubs/integral_types.h"
 #include "gmock/gmock.h"
 #include "nisaba/port/status-matchers.h"
 #include "protobuf-matchers/protocol-buffer-matchers.h"
