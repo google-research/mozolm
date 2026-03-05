@@ -173,7 +173,7 @@ class NGramWordFstTest : public ::testing::Test {
     fst.AddArc(start_aa_state, StdArc(3, 3, StdArc::Weight(-std::log(0.333333)),
                                       aa_ba_state));  // <S> aa ba 1
     fst.AddArc(start_aa_state,
-               StdArc(0, 0, StdArc::Weight(0.0), aa_state));  // backoff arc.
+               StdArc(0, 0, StdArc::Weight::One(), aa_state));  // backoff arc.
     fst.AddArc(aa_ab_state, StdArc(3, 3, StdArc::Weight(-std::log(0.5)),
                                    ab_ba_state));  // aa ab ba 1
     fst.AddArc(aa_ab_state, StdArc(0, 0, StdArc::Weight(-std::log(0.75)),

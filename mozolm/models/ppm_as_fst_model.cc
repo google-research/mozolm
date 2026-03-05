@@ -56,8 +56,8 @@ void MakeEmpty(StdVectorFst *fst) {
   const int start_state = fst->AddState();
   const int unigram_state = fst->AddState();
   fst->SetStart(start_state);
-  fst->SetFinal(unigram_state, StdArc::Weight(0.0));
-  fst->AddArc(start_state, StdArc(0, 0, StdArc::Weight(0.0), unigram_state));
+  fst->SetFinal(unigram_state, StdArc::Weight::One());
+  fst->AddArc(start_state, StdArc(0, 0, StdArc::Weight::One(), unigram_state));
 }
 
 // Returns the backoff state for the current state if exists, otherwise -1.
@@ -160,12 +160,12 @@ void ZeroOutLowerOrderCounts(const std::vector<bool>& backoff_states,
       for (MutableArcIterator<StdVectorFst> arc_iterator(fst, s);
            !arc_iterator.Done(); arc_iterator.Next()) {
         StdArc arc = arc_iterator.Value();
-        arc.weight = StdArc::Weight(0.0);
+        arc.weight = StdArc::Weight::One();
         arc_iterator.SetValue(arc);
       }
       if (fst->Final(s) != StdArc::Weight::Zero()) {
         // Only sets to zero if state is a final state.
-        fst->SetFinal(s, StdArc::Weight(0.0));
+        fst->SetFinal(s, StdArc::Weight::One());
       }
     }
   }
@@ -300,7 +300,7 @@ absl::Status PpmAsFstModel::AddExtraCharacters(
       syms_->AddSymbol(sym);
       const int idx = fst_->InputSymbols()->Find(sym);
       fst_->AddArc(unigram_state,
-                   StdArc(idx, idx, StdArc::Weight(0.0), unigram_state));
+                   StdArc(idx, idx, StdArc::Weight::One(), unigram_state));
     }
   }
   return absl::OkStatus();
@@ -369,7 +369,7 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
       if (!has_unigram.contains(sym)) {
         // Adds unigram looping arc for possible characters without unigram.
         fst_->AddArc(unigram_state,
-                     StdArc(sym, sym, StdArc::Weight(0.0), unigram_state));
+                     StdArc(sym, sym, StdArc::Weight::One(), unigram_state));
         if (!syms_added) syms_added = true;
       }
     }
@@ -410,10 +410,10 @@ absl::StatusOr<StdVectorFst> PpmAsFstModel::String2Fst(
   }
   for (const auto& sym : syms_vector_status.value()) {
     int next_state = fst.AddState();
-    fst.AddArc(curr_state, StdArc(sym, sym, StdArc::Weight(0.0), next_state));
+    fst.AddArc(curr_state, StdArc(sym, sym, StdArc::Weight::One(), next_state));
     curr_state = next_state;
   }
-  fst.SetFinal(curr_state, StdArc::Weight(0.0));
+  fst.SetFinal(curr_state, StdArc::Weight::One());
   return fst;
 }
 
@@ -822,7 +822,7 @@ absl::StatusOr<int> PpmAsFstModel::AddNewState(
   cache_index_.push_back(-1);
   if (backoff_dest_state >= 0) {
     fst_->AddArc(new_state_index,
-                 StdArc(0, 0, StdArc::Weight(0.0), backoff_dest_state));
+                 StdArc(0, 0, StdArc::Weight::One(), backoff_dest_state));
   }
   return new_state_index;
 }
@@ -880,7 +880,7 @@ absl::Status PpmAsFstModel::UpdateNotFoundState(
   if (!update_status.ok()) return update_status.status();
   int backoff_dest_state = update_status.value();
   if (sym_index == 0) {
-    fst_->SetFinal(curr_state, StdArc::Weight(0.0));
+    fst_->SetFinal(curr_state, StdArc::Weight::One());
   } else {
     // No arc with sym_index found at current state.
     const auto needs_new_state_status = NeedsNewState(curr_state,
@@ -896,8 +896,8 @@ absl::Status PpmAsFstModel::UpdateNotFoundState(
       }
       dest_state = add_new_state_status.value();
     }
-    fst_->AddArc(curr_state,
-                 StdArc(sym_index, sym_index, StdArc::Weight(0.0), dest_state));
+    fst_->AddArc(curr_state, StdArc(sym_index, sym_index, StdArc::Weight::One(),
+                                    dest_state));
   }
   return absl::OkStatus();
 }
