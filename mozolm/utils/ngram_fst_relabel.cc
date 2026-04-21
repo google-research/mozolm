@@ -145,8 +145,8 @@ absl::Status RelabelWithCodepoints(
   std::vector<std::pair<StdArc::Label, StdArc::Label>> mapping;
   ASSIGN_OR_RETURN(mapping, GetCodepointMapping(*symbols, keep_symbols));
 
-  std::unique_ptr<SymbolTable> symbols_relabel(RelabelSymbolTable(
-      symbols, mapping));
+  std::unique_ptr<SymbolTable> symbols_relabel(
+      RelabelSymbolTable<StdArc::Label>(symbols, mapping));
   fst->SetInputSymbols(symbols_relabel.get());
   fst->SetOutputSymbols(symbols_relabel.get());
 
