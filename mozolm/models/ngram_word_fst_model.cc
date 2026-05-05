@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
-#include "ngram/ngram-model.h"
 #include "absl/memory/memory.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
@@ -27,6 +26,7 @@
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
+#include "ngram/ngram-model.h"
 #include "nisaba/port/status_macros.h"
 
 using nisaba::utf8::DecodeSingleUnicodeChar;

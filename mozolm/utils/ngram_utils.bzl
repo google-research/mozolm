@@ -48,7 +48,7 @@ def ngram_convert_arpa_to_fst(
     )
 
     # Convert from ARPA to FST format.
-    converter_rule = "//third_party/opengrm/ngram:ngramread"
+    converter_rule = "@org_opengrm_ngram//:ngramread"
     original_output_name = output_name
     if relabel_to_codepoints:
         # This is going to be an intermediate target.
@@ -57,7 +57,7 @@ def ngram_convert_arpa_to_fst(
         name = output_name + "_fst",
         srcs = [":%s_uncompress" % name],
         outs = [output_name + ".fst"],
-        cmd = "$(location //third_party/opengrm/ngram:ngramread) --ARPA $< $@",
+        cmd = "$(location @org_opengrm_ngram//:ngramread) --ARPA $< $@",
         tools = [
             converter_rule,
         ],

@@ -20,11 +20,11 @@
 #include <memory>
 #include <vector>
 
-#include "ngram/ngram-model.h"
 #include "absl/status/status.h"
 #include "mozolm/models/language_model.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "fst/vector-fst.h"
+#include "ngram/ngram-model.h"
 
 namespace mozolm {
 namespace models {

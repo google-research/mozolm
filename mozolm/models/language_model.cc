@@ -16,9 +16,9 @@
 
 #include <algorithm>
 
-#include "ngram/ngram-model.h"
 #include "absl/strings/str_cat.h"
 #include "nisaba/port/utf8_util.h"
+#include "ngram/ngram-model.h"
 
 namespace mozolm {
 namespace models {

@@ -18,8 +18,6 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
-#include "ngram/ngram-count.h"
-#include "ngram/ngram-model.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
@@ -30,6 +28,8 @@
 #include "fst/arcsort.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
+#include "ngram/ngram-count.h"
+#include "ngram/ngram-model.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {

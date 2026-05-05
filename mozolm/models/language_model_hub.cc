@@ -18,8 +18,8 @@
 #include <cmath>
 
 #include "google/protobuf/stubs/logging.h"
-#include "ngram/ngram-model.h"
 #include "nisaba/port/utf8_util.h"
+#include "ngram/ngram-model.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {
