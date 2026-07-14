@@ -87,29 +87,27 @@ TEST_F(ClientAsyncImplTest, CheckGetNextStateUnaryAsync) {
   auto reader =
       std::make_unique<LocalMockClientAsyncResponseReader<NextState>>();
   EXPECT_CALL(*stub_, AsyncGetNextStateRaw(_, EqualsProto(request), _))
-    .WillOnce(
-        DoAll(
-            Invoke([&tag, &alarm](Unused, Unused, ::grpc::CompletionQueue *cq) {
-              // This is a work-around to make caller's completion queue
-              // `Next()` call succeed.
-              alarm = std::make_unique<::grpc::Alarm>(
-                  cq, gpr_now(GPR_CLOCK_MONOTONIC),
-                  reinterpret_cast<void *>(&tag));
-            }),
-            Return(reader.get())));
+      .WillOnce(DoAll(
+          [&tag, &alarm](Unused, Unused, ::grpc::CompletionQueue* cq) {
+            // This is a work-around to make caller's completion queue
+            // `Next()` call succeed.
+            alarm = std::make_unique<::grpc::Alarm>(
+                cq, gpr_now(GPR_CLOCK_MONOTONIC),
+                reinterpret_cast<void*>(&tag));
+          },
+          Return(reader.get())));
 
   NextState response;
   EXPECT_CALL(*reader, Finish)
-     .WillOnce(
-         DoAll(
-             Invoke([response, tag](NextState *result, ::grpc::Status *status,
-                                    void *tag_ptr) {
-               // This injects the actual response.
-               *result = response;
-               *status = ::grpc::Status::OK;
-               *static_cast<int *>(tag_ptr) = tag;
-             }),
-             Return()));
+      .WillOnce(DoAll(
+          [response, tag](NextState* result, ::grpc::Status* status,
+                          void* tag_ptr) {
+            // This injects the actual response.
+            *result = response;
+            *status = ::grpc::Status::OK;
+            *static_cast<int*>(tag_ptr) = tag;
+          },
+          Return()));
 
   // Verify the response.
   int64_t next_state;
