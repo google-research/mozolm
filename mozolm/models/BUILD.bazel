@@ -37,13 +37,13 @@ cc_library(
         ":lm_scores_cc_proto",
         ":model_config_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//third_party/opengrm/sfst",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
         "@com_google_protobuf//:protobuf",
-        "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
 
@@ -74,12 +74,12 @@ cc_library(
         ":lm_scores_cc_proto",
         ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//third_party/opengrm/sfst",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_nisaba//nisaba/port:utf8_util",
         "@com_google_protobuf//:protobuf",
-        "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
 
@@ -251,6 +251,7 @@ cc_library(
         ":ngram_fst_model",
         ":ngram_word_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//third_party/opengrm/sfst",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
@@ -260,7 +261,6 @@ cc_library(
         "@com_google_protobuf//:protobuf",
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
-        "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
 
@@ -334,6 +334,8 @@ cc_library(
         ":model_storage_cc_proto",
         ":ppm_as_fst_options_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//third_party/opengrm/sfst",
+        "//third_party/opengrm/sfst:ngram-count",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status:statusor",
@@ -345,7 +347,6 @@ cc_library(
         "@com_google_protobuf//:protobuf",
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
-        "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
 

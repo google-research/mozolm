@@ -26,7 +26,7 @@
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
-#include "ngram/ngram-model.h"
+#include "third_party/opengrm/sfst/sfst.h"
 #include "nisaba/port/status_macros.h"
 
 using nisaba::utf8::DecodeSingleUnicodeChar;
@@ -51,7 +51,7 @@ double SafeNegLogDiff(double cost1, double cost2) {
   if (cost1 >= cost2) {
     return StdArc::Weight::Zero().Value();
   }
-  return ngram::NegLogDiff(cost1, cost2);
+  return sfst::NegLogDiff(cost1, cost2);
 }
 
 // Returns the character at index idx in the unicode string.

@@ -72,7 +72,7 @@
 #include "mozolm/models/ppm_as_fst_options.pb.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
-#include "ngram/ngram-count.h"
+#include "third_party/opengrm/sfst/ngram-count.h"
 
 namespace mozolm {
 namespace models {
@@ -318,7 +318,7 @@ class PpmAsFstModel : public LanguageModel {
   std::vector<int> state_orders_;  // Stores the order of each state.
   std::unique_ptr<fst::StdVectorFst> fst_;  // Model (counts) stored in FST.
   // For counting character n-grams if training from text file.
-  std::unique_ptr<ngram::NGramCounter<fst::Log64Weight>> ngram_counter_;
+  std::unique_ptr<sfst::NGramCounter<fst::Log64Weight>> ngram_counter_;
   std::unique_ptr<fst::SymbolTable> syms_;  // Character symbols.
 
   // For caching probabilities and destination states for quick access.

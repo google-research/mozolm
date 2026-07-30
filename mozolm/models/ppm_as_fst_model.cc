@@ -28,8 +28,8 @@
 #include "fst/arcsort.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
-#include "ngram/ngram-count.h"
-#include "ngram/ngram-model.h"
+#include "third_party/opengrm/sfst/ngram-count.h"
+#include "third_party/opengrm/sfst/sfst.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {
@@ -230,7 +230,7 @@ int IncrementBackoffArcReturnBackoffState(StdVectorFst* fst,
   if (arc.ilabel == 0) {
     backoff_state = arc.nextstate;
     if (increment_count) {
-      arc.weight = StdArc::Weight(ngram::NegLogSum(arc.weight.Value(), 0.0));
+      arc.weight = StdArc::Weight(sfst::NegLogSum(arc.weight.Value(), 0.0));
       arc_iterator.SetValue(arc);
     }
   }
@@ -248,7 +248,7 @@ double GetTotalStateCount(const StdVectorFst& fst, StdArc::StateId s) {
       state_count = arc.weight.Value();
       return state_count;
     }
-    state_count = ngram::NegLogSum(state_count, arc.weight.Value());
+    state_count = sfst::NegLogSum(state_count, arc.weight.Value());
   }
   return state_count;
 }
@@ -271,8 +271,8 @@ absl::StatusOr<double> UpdateIndexProb(double count, double neg_log_beta,
     if (count >= neg_log_beta) {
       return absl::InternalError("Found a count less than \beta.");
     }
-    sym_prob = ngram::NegLogSum(
-        lower_order_prob, ngram::NegLogDiff(count, neg_log_beta) - denominator);
+    sym_prob = sfst::NegLogSum(
+        lower_order_prob, sfst::NegLogDiff(count, neg_log_beta) - denominator);
   }
   return sym_prob;
 }
@@ -356,10 +356,10 @@ absl::Status PpmAsFstModel::AddPriorCounts() {
     StdArc arc = arc_iterator.Value();
     has_unigram.insert(arc.ilabel);
     arc.weight = StdArc::Weight(
-        ngram::NegLogSum(arc.weight.Value(), 0.0));  // Adds 1 count.
+        sfst::NegLogSum(arc.weight.Value(), 0.0));  // Adds 1 count.
     arc_iterator.SetValue(arc);
   }
-  fst_->SetFinal(unigram_state, StdArc::Weight(ngram::NegLogSum(
+  fst_->SetFinal(unigram_state, StdArc::Weight(sfst::NegLogSum(
                                     fst_->Final(unigram_state).Value(), 0.0)));
   bool syms_added = false;
   for (SymbolTableIterator syms_iter(*syms_); !syms_iter.Done();
@@ -474,7 +474,7 @@ absl::Status PpmAsFstModel::Read(const ModelStorage& storage) {
     syms_->AddSymbol("<epsilon>");
     fst_->SetInputSymbols(syms_.get());
     fst_->SetOutputSymbols(syms_.get());
-    ngram_counter_ = std::make_unique<ngram::NGramCounter<Log64Weight>>(
+    ngram_counter_ = std::make_unique<sfst::NGramCounter<Log64Weight>>(
         /*order=*/max_order_);
     if (!storage.model_file().empty()) {
       GOOGLE_LOG(INFO) << "Initializing from training data ...";
@@ -598,7 +598,7 @@ std::vector<double> PpmAsFstModel::InitCacheProbs(
       --num_continuations;
     }
     const double gamma =
-        ngram::NegLogSum(-std::log(num_continuations) - std::log(beta_),
+        sfst::NegLogSum(-std::log(num_continuations) - std::log(beta_),
                          -std::log(alpha_)) - denominator;
     for (size_t i = 0; i < cache_probs.size(); ++i) {
       // Adds in gamma factor to backoff probabilities.
@@ -657,7 +657,7 @@ absl::Status PpmAsFstModel::UpdateCacheAtNonEmptyState(
   std::vector<int> destination_states =
       InitCacheStates(s, backoff_state, backoff_cache, /*arc_origin=*/false);
   const double denominator =
-      ngram::NegLogSum(impl::GetTotalStateCount(*fst_, s), -std::log(alpha_));
+      sfst::NegLogSum(impl::GetTotalStateCount(*fst_, s), -std::log(alpha_));
   std::vector<double> neg_log_probabilities =
       InitCacheProbs(s, backoff_state, backoff_cache, denominator);
   update_status = UpdateCacheStatesAndProbs(
@@ -831,7 +831,7 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
                                                     int sym_index) {
   if (sym_index == 0) {
     // Adds one to final cost and sets destination state to start state.
-    fst_->SetFinal(curr_state, StdArc::Weight(ngram::NegLogSum(
+    fst_->SetFinal(curr_state, StdArc::Weight(sfst::NegLogSum(
                                    fst_->Final(curr_state).Value(), 0.0)));
   } else {
     // Arc with sym_index found at current state.
@@ -853,7 +853,7 @@ absl::Status PpmAsFstModel::UpdateHighestFoundState(StdArc::StateId curr_state,
           new_next_state = state_orders_.size();
           arc.nextstate = new_next_state;
         }
-        arc.weight = StdArc::Weight(ngram::NegLogSum(arc.weight.Value(), 0.0));
+        arc.weight = StdArc::Weight(sfst::NegLogSum(arc.weight.Value(), 0.0));
         arc_iterator.SetValue(arc);
         break;
       }

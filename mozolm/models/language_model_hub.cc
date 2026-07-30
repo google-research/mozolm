@@ -19,7 +19,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "nisaba/port/utf8_util.h"
-#include "ngram/ngram-model.h"
+#include "third_party/opengrm/sfst/sfst.h"
 #include "nisaba/port/status_macros.h"
 
 namespace mozolm {
@@ -38,7 +38,7 @@ double MixResults(const LMScores& lm_scores, double mix_weight,
     const std::string key = lm_scores.symbols(i);
     double value = -std::log(lm_scores.probabilities(i)) + mix_weight;
     if (mixed_values->contains(key)) {
-      value = ngram::NegLogSum(value, mixed_values->find(key)->second);
+      value = sfst::NegLogSum(value, mixed_values->find(key)->second);
     }
     mixed_values->insert_or_assign(key, value);
   }
@@ -56,7 +56,7 @@ void ExtractMixture(
     if (idx == 0) {
       norm = mixed_value.second;
     } else {
-      norm = ngram::NegLogSum(norm, mixed_value.second);
+      norm = sfst::NegLogSum(norm, mixed_value.second);
     }
     values[idx++] = std::make_pair(mixed_value.first, mixed_value.second);
   }
@@ -96,7 +96,7 @@ absl::Status LanguageModelHub::InitializeModels(const ModelHubConfig& config) {
           // Stores negative log mixing weights for each model.
           mixture_weights_[idx] = config.model_config(idx).weight();
           normalization = (idx == 0) ? mixture_weights_[idx]
-                                     : ngram::NegLogSum(normalization,
+                                     : sfst::NegLogSum(normalization,
                                                         mixture_weights_[idx]);
         }
         for (auto idx = 0; idx < mixture_weights_.size(); ++idx) {
@@ -233,7 +233,7 @@ std::vector<double> LanguageModelHub::GetBayesianMixtureWeights(
     mixture_weights[idx] += bayesian_history_probs_sum[idx];
     normalization = (idx == 0)
                         ? mixture_weights[idx]
-                        : ngram::NegLogSum(normalization, mixture_weights[idx]);
+                        : sfst::NegLogSum(normalization, mixture_weights[idx]);
   }
   for (auto idx = 0; idx < mixture_weights.size(); ++idx) {
     mixture_weights[idx] -= normalization;

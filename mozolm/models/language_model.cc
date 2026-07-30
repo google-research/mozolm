@@ -18,7 +18,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "nisaba/port/utf8_util.h"
-#include "ngram/ngram-model.h"
+#include "third_party/opengrm/sfst/sfst.h"
 
 namespace mozolm {
 namespace models {
@@ -75,7 +75,7 @@ void SoftmaxRenormalize(std::vector<double> *neg_log_probs) {
   double kahan_factor = 0.0;
   for (int i = 1; i < neg_log_probs->size(); ++i) {
     tot_prob =
-        ngram::NegLogSum(tot_prob, (*neg_log_probs)[i], &kahan_factor);
+        sfst::NegLogSum(tot_prob, (*neg_log_probs)[i], &kahan_factor);
   }
   for (int i = 0; i < neg_log_probs->size(); ++i) {
     (*neg_log_probs)[i] -= tot_prob;
