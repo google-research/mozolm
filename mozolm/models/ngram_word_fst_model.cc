@@ -155,9 +155,9 @@ std::vector<double> NGramWordFstModel::FillWeightVector(int state) {
     }
   }
   StdArc::Weight backoff_weight;
-  const int backoff_state = model_->GetBackoff(state, &backoff_weight);
+  const StdArc::StateId backoff_state = GetBackoff(state, &backoff_weight);
   std::vector<double> backoff_weights;
-  if (backoff_state >= 0) {
+  if (backoff_state != fst::kNoStateId) {
     // Gets vector from backoff state.
     absl::Status status = EnsureCacheIndex(backoff_state);
     if (status == absl::OkStatus()) {
@@ -186,7 +186,7 @@ std::vector<double> NGramWordFstModel::FillWeightVector(int state) {
           impl::SafeNegLogDiff(backoff_weights[i], backoff_weights[i - 1]);
     }
     // Converts to cummulative weights for ease of later aggregation.
-    weights[i] = ngram::NegLogSum(weights[i], weights[i - 1], &kahan_value);
+    weights[i] = sfst::NegLogSum(weights[i], weights[i - 1], &kahan_value);
   }
   return weights;
 }
@@ -235,7 +235,7 @@ absl::Status NGramWordFstModel::Read(const ModelStorage &storage) {
   RETURN_IF_ERROR(NGramFstModel::Read(storage));
   RETURN_IF_ERROR(EstablishLexicographicOrdering());
   max_cache_size_ =
-      storage.ngram_word_fst_options().max_cache_size() > model_->HiOrder()
+      storage.ngram_word_fst_options().max_cache_size() > hi_order()
           ? storage.ngram_word_fst_options().max_cache_size()
           : kMaxNGramCache;
   cache_accessed_ = 0;
@@ -302,7 +302,7 @@ int NGramWordFstModel::NextCompleteState(int state, int model_state,
       return NextModelState(model_state, sym);
     }
   }
-  return model_->UnigramState();
+  return unigram_state();
 }
 
 int NGramWordFstModel::NextFirstLetterState(int state, int utf8_sym) {
@@ -318,7 +318,7 @@ int NGramWordFstModel::NextFirstLetterState(int state, int utf8_sym) {
       begin_index = first_char_ends_[i] + 1;
     }
   }
-  int next_state = model_->UnigramState();
+  StdArc::StateId next_state = unigram_state();
   if (end_index >= 0) {
     StatusOr<int> new_state =
         ngram_implicit_states_->GetState(state, 1, begin_index, end_index);
@@ -336,7 +336,7 @@ int NGramWordFstModel::NextState(int state, int utf8_sym) {
   }
   if (state == oov_state_ && utf8_sym == 32) {
     // TODO: introduce better method for detecting word boundary.
-    return model_->UnigramState();
+    return unigram_state();
   }
   int next_state = oov_state_;  // Default state if OOV or error.
   StatusOr<int> model_state = ngram_implicit_states_->model_state(state);
@@ -433,19 +433,21 @@ double NGramWordFstModel::GetBackedoffFinalCost(int state) {
     return StdArc::Weight::Zero().Value();
   }
   double cost = 0.0;
-  while (state >= 0) {
-    if (fst().Final(state) != StdArc::Weight::Zero()) {
-      cost += fst().Final(state).Value();
+  StdArc::StateId current_state = state;
+  while (current_state != fst::kNoStateId) {
+    if (fst().Final(current_state) != StdArc::Weight::Zero()) {
+      cost += fst().Final(current_state).Value();
       break;
     }
     StdArc::Weight backoff_weight;
-    const int backoff_state = model_->GetBackoff(state, &backoff_weight);
-    if (backoff_state < 0) {
+    const StdArc::StateId backoff_state =
+        GetBackoff(current_state, &backoff_weight);
+    if (backoff_state == fst::kNoStateId) {
       cost = StdArc::Weight::Zero().Value();
     } else {
       cost += backoff_weight.Value();
     }
-    state = backoff_state;
+    current_state = backoff_state;
   }
   return cost;
 }

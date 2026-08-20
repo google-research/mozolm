@@ -22,6 +22,9 @@
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
+#include "third_party/opengrm/sfst/backoff.h"
+#include "third_party/opengrm/sfst/canonical.h"
+#include "third_party/opengrm/sfst/normalize.h"
 
 using fst::MATCH_INPUT;
 using fst::Matcher;
@@ -35,6 +38,9 @@ namespace {
 
 // Label that maps to unknown symbols.
 const char kUnknownSymbol[] = "<unk>";
+
+// Failure/backoff transition label (phi arc label).
+constexpr fst::StdArc::Label kPhiLabel = 0;
 
 }  // namespace
 
@@ -64,7 +70,13 @@ absl::Status NGramFstModel::Read(const ModelStorage &storage) {
   }
   oov_label_ = input_symbols->Find(kUnknownSymbol);
   fst_ = std::move(fst);
-  model_ = std::make_unique<const ngram::NGramModel<StdArc>>(*fst_);
+  sfst::Backoff<StdArc> backoff(*fst_, kPhiLabel,
+                                /*require_backoff_complete=*/false);
+  hi_order_ = backoff.MaxOrder();
+  unigram_state_ = backoff.GetBackoffState(fst_->Start());
+  if (unigram_state_ == fst::kNoStateId) {
+    unigram_state_ = fst_->Start();
+  }
   return CheckModel();
 }
 
@@ -78,37 +90,55 @@ bool NGramFstModel::UpdateLMCounts(int32_t state,
 StdArc::StateId NGramFstModel::CheckCurrentState(
     StdArc::StateId state) const {
   StdArc::StateId current_state = state;
-  if (state < 0) {
-    current_state = model_->UnigramState();
-    if (current_state < 0) current_state = fst_->Start();
+  if (state == fst::kNoStateId) {
+    current_state = unigram_state_;
+    if (current_state == fst::kNoStateId) current_state = fst_->Start();
   }
   return current_state;
 }
 
 absl::Status NGramFstModel::CheckModel() const {
-  if (model_->Error()) {
-    return absl::InternalError("Model initialization failed");
-  } else if (!model_->CheckTopology()) {
+  if (!sfst::IsCanonical(*fst_, kPhiLabel)) {
     return absl::InternalError(
         "FST topology does not correspond to a valid language model");
-  } else if (!model_->CheckNormalization()) {
+  } else if (!sfst::IsNormalized(*fst_, kPhiLabel)) {
     return absl::InternalError("FST states are not fully normalized");
   }
   return absl::OkStatus();
 }
 
+StdArc::StateId NGramFstModel::GetBackoff(StdArc::StateId state,
+                                          StdArc::Weight* bo_cost) const {
+  if (state == fst::kNoStateId) {
+    if (bo_cost != nullptr) *bo_cost = StdArc::Weight::One();
+    return fst::kNoStateId;
+  }
+  Matcher<StdVectorFst> matcher(*fst_, MATCH_INPUT);
+  matcher.SetState(state);
+  if (matcher.Find(kPhiLabel)) {
+    for (; !matcher.Done(); matcher.Next()) {
+      const StdArc arc = matcher.Value();
+      if (arc.ilabel == fst::kNoLabel || arc.nextstate == state) continue;
+      if (bo_cost != nullptr) *bo_cost = arc.weight;
+      return arc.nextstate;
+    }
+  }
+  if (bo_cost != nullptr) *bo_cost = StdArc::Weight::One();
+  return fst::kNoStateId;
+}
+
 StdArc::StateId NGramFstModel::NextModelState(StdArc::StateId current_state,
                                               StdArc::Label label) const {
-  StdArc::StateId return_state = model_->UnigramState();  // Default.
-  while (current_state >= 0) {
-    Matcher<StdVectorFst> matcher(*fst_, MATCH_INPUT);
+  StdArc::StateId return_state = unigram_state_;  // Default.
+  Matcher<StdVectorFst> matcher(*fst_, MATCH_INPUT);
+  while (current_state != fst::kNoStateId) {
     matcher.SetState(current_state);
     if (matcher.Find(label)) {  // Arc found out of current state.
       const StdArc arc = matcher.Value();
       return_state = arc.nextstate;
-      current_state = -1;
+      break;
     } else {
-      current_state = model_->GetBackoff(current_state, /*bocost=*/nullptr);
+      current_state = GetBackoff(current_state, /*bo_cost=*/nullptr);
     }
   }
   return return_state;

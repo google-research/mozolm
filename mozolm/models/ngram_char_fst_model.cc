@@ -92,7 +92,7 @@ StdArc::Weight NGramCharFstModel::LabelCostInState(StdArc::StateId state,
       return cost;
     } else {
       StdArc::Weight bo_cost;
-      current_state = model_->GetBackoff(current_state, &bo_cost);
+      current_state = GetBackoff(current_state, &bo_cost);
       cost = Times(cost, bo_cost);
     }
   }
@@ -106,11 +106,13 @@ StdArc::Weight NGramCharFstModel::FinalCostInState(
   StdArc::Weight bo_cost = StdArc::Weight::One();
   while (current_state >= 0 && cost == StdArc::Weight::Zero()) {
     StdArc::Weight this_bo_cost;
-    current_state = model_->GetBackoff(current_state, &this_bo_cost);
+    current_state = GetBackoff(current_state, &this_bo_cost);
     bo_cost = Times(bo_cost, this_bo_cost);
-    cost = fst_->Final(current_state);
-    if (cost != StdArc::Weight::Zero()) {
-      cost = Times(cost, bo_cost);
+    if (current_state >= 0) {
+      cost = fst_->Final(current_state);
+      if (cost != StdArc::Weight::Zero()) {
+        cost = Times(cost, bo_cost);
+      }
     }
   }
   return cost;

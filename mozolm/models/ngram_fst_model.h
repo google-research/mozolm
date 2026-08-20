@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// N-gram model in OpenFst format served by OpenGrm NGram library.
+// N-gram model in OpenFst format served by OpenGrm SFst library.
 
 #ifndef MOZOLM_MOZOLM_MODELS_NGRAM_FST_MODEL_H_
 #define MOZOLM_MOZOLM_MODELS_NGRAM_FST_MODEL_H_
@@ -24,7 +24,6 @@
 #include "mozolm/models/language_model.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "fst/vector-fst.h"
-#include "ngram/ngram-model.h"
 
 namespace mozolm {
 namespace models {
@@ -46,6 +45,14 @@ class NGramFstModel : public LanguageModel {
 
   fst::StdArc::Label oov_label() const { return oov_label_; }
 
+  fst::StdArc::StateId unigram_state() const { return unigram_state_; }
+
+  int hi_order() const { return hi_order_; }
+
+  // Finds the backoff state for a given state st, and provides bocost if req'd.
+  fst::StdArc::StateId GetBackoff(fst::StdArc::StateId state,
+                                  fst::StdArc::Weight* bo_cost = nullptr) const;
+
  protected:
   NGramFstModel() = default;
 
@@ -57,8 +64,11 @@ class NGramFstModel : public LanguageModel {
   // Language model represented by vector FST.
   std::unique_ptr<const fst::StdVectorFst> fst_;
 
-  // N-Gram model helper wrapping the FST above.
-  std::unique_ptr<const ngram::NGramModel<fst::StdArc>> model_;
+  // Unigram state in the FST model.
+  fst::StdArc::StateId unigram_state_ = fst::kNoStateId;
+
+  // Highest order of the n-gram model.
+  int hi_order_ = 1;
 
   // Label for the unknown symbol, if any.
   fst::StdArc::Label oov_label_ = fst::kNoSymbol;

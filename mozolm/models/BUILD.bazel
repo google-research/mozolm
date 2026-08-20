@@ -231,13 +231,13 @@ cc_library(
         ":language_model",
         ":model_storage_cc_proto",
         "//mozolm/stubs:integral_types",
+        "//third_party/opengrm/sfst",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@org_openfst//:fst",
         "@org_openfst//:symbol-table",
-        "@org_opengrm_ngram//:opengrm-ngram-lib",
     ],
 )
 
