@@ -36,6 +36,9 @@ java_binary(
 java_binary(
     name = "SimpleClientExample",
     srcs = ["SimpleClientExample.java"],
+    javacopts = [
+        "-Xep:CompareToZero:OFF",
+    ],
     runtime_deps = ["@com_github_grpc_grpc_java//netty"],
     deps = [
         "//mozolm/grpc:service_java_grpc_proto",
