@@ -22,6 +22,7 @@
 #include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "nisaba/port/file_util.h"
 #include "nisaba/port/timer.h"
 #include "nisaba/port/utf8_util.h"
@@ -30,7 +31,6 @@
 #include "fst/vector-fst.h"
 #include "third_party/opengrm/sfst/ngram-count.h"
 #include "third_party/opengrm/sfst/sfst.h"
-#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace models {

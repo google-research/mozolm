@@ -18,9 +18,9 @@
 #include <cmath>
 
 #include "google/protobuf/stubs/logging.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "nisaba/port/utf8_util.h"
 #include "third_party/opengrm/sfst/sfst.h"
-#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace models {

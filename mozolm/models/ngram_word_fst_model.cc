@@ -20,6 +20,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "absl/memory/memory.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
 #include "nisaba/port/utf8_util.h"
@@ -27,7 +28,6 @@
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
 #include "third_party/opengrm/sfst/sfst.h"
-#include "nisaba/port/status_macros.h"
 
 using nisaba::utf8::DecodeSingleUnicodeChar;
 using nisaba::utf8::EncodeUnicodeChar;
