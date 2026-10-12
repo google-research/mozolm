@@ -20,7 +20,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "absl/memory/memory.h"
-#include "third_party/gloop/util/status/status_macros.h"
+#include "nisaba/port/status_macros.h"
 #include "mozolm/models/model_storage.pb.h"
 #include "mozolm/models/ngram_word_fst_options.pb.h"
 #include "nisaba/port/utf8_util.h"

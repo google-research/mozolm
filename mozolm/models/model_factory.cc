@@ -19,7 +19,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
-#include "third_party/gloop/util/status/status_macros.h"
+#include "nisaba/port/status_macros.h"
 #include "mozolm/models/ngram_char_fst_model.h"
 #include "mozolm/models/ngram_word_fst_model.h"
 #include "mozolm/models/ppm_as_fst_model.h"

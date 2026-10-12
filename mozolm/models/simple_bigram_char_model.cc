@@ -21,7 +21,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "third_party/gloop/util/status/status_macros.h"
+#include "nisaba/port/status_macros.h"
 #include "nisaba/port/utf8_util.h"
 
 namespace mozolm {
