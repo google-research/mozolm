@@ -22,12 +22,12 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "nisaba/port/status_macros.h"
 #include "nisaba/port/utf8_util.h"
 #include "fst/arcsort.h"
 #include "fst/fst.h"
 #include "fst/relabel.h"
 #include "fst/symbol-table.h"
-#include "nisaba/port/status_macros.h"
 
 using fst::kAcceptor;
 using fst::kError;
