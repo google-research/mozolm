@@ -18,13 +18,13 @@
 
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
+#include "nisaba/port/status_macros.h"
 #include "include/grpcpp/client_context.h"
 #include "include/grpcpp/completion_queue.h"
 #include "include/grpcpp/grpcpp.h"  // IWYU pragma: keep
 #include "include/grpcpp/support/async_stream.h"
 #include "mozolm/models/language_model.h"
 #include "nisaba/port/utf8_util.h"
-#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace grpc {

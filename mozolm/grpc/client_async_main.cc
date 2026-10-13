@@ -40,12 +40,12 @@
 #include "absl/flags/parse.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "nisaba/port/status_macros.h"
 #include "mozolm/grpc/client_config.pb.h"
 #include "mozolm/grpc/client_helper.h"
 #include "mozolm/grpc/server_config.pb.h"
 #include "nisaba/port/file_util.h"
 #include "third_party/protobuf/text_format.h"
-#include "nisaba/port/status_macros.h"
 
 ABSL_FLAG(std::string, client_config, "",
           "Contents of protocol buffer `mozolm.grpc.ClientConfig` in text "

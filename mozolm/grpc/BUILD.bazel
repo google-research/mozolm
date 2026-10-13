@@ -184,14 +184,12 @@ cc_library(
     deps = [
         ":service_cc_grpc_proto",
         "//mozolm/models:language_model",
-        "//mozolm/stubs:integral_types",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_nisaba//nisaba/port:status_macros",
         "@com_google_nisaba//nisaba/port:utf8_util",
-        "@com_google_protobuf//:protobuf",
     ],
 )
 

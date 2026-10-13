@@ -29,6 +29,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/synchronization/notification.h"
+#include "nisaba/port/status_macros.h"
 #include "include/grpcpp/create_channel.h"
 #include "include/grpcpp/grpcpp.h"
 #include "include/grpcpp/security/credentials.h"
@@ -36,7 +37,6 @@
 #include "mozolm/grpc/server_config.pb.h"
 #include "mozolm/grpc/server_helper.h"
 #include "nisaba/port/utf8_util.h"
-#include "nisaba/port/status_macros.h"
 
 namespace mozolm {
 namespace grpc {
