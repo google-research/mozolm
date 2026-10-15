@@ -29,8 +29,8 @@
 #include "fst/arcsort.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
-#include "third_party/opengrm/sfst/ngram-count.h"
-#include "third_party/opengrm/sfst/sfst.h"
+#include "opengrm/sfst/ngram-count.h"
+#include "opengrm/sfst/sfst.h"
 
 namespace mozolm {
 namespace models {

@@ -22,9 +22,9 @@
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
-#include "third_party/opengrm/sfst/backoff.h"
-#include "third_party/opengrm/sfst/canonical.h"
-#include "third_party/opengrm/sfst/normalize.h"
+#include "opengrm/sfst/backoff.h"
+#include "opengrm/sfst/canonical.h"
+#include "opengrm/sfst/normalize.h"
 
 using fst::MATCH_INPUT;
 using fst::Matcher;

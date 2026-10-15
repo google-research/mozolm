@@ -20,7 +20,7 @@
 #include "google/protobuf/stubs/logging.h"
 #include "nisaba/port/status_macros.h"
 #include "nisaba/port/utf8_util.h"
-#include "third_party/opengrm/sfst/sfst.h"
+#include "opengrm/sfst/sfst.h"
 
 namespace mozolm {
 namespace models {

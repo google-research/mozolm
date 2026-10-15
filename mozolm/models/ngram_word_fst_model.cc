@@ -27,7 +27,7 @@
 #include "fst/fst.h"
 #include "fst/matcher.h"
 #include "fst/symbol-table.h"
-#include "third_party/opengrm/sfst/sfst.h"
+#include "opengrm/sfst/sfst.h"
 
 using nisaba::utf8::DecodeSingleUnicodeChar;
 using nisaba::utf8::EncodeUnicodeChar;

@@ -72,7 +72,7 @@
 #include "mozolm/models/ppm_as_fst_options.pb.h"
 #include "fst/symbol-table.h"
 #include "fst/vector-fst.h"
-#include "third_party/opengrm/sfst/ngram-count.h"
+#include "opengrm/sfst/ngram-count.h"
 
 namespace mozolm {
 namespace models {

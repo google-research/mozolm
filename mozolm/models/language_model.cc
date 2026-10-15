@@ -18,7 +18,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "nisaba/port/utf8_util.h"
-#include "third_party/opengrm/sfst/sfst.h"
+#include "opengrm/sfst/sfst.h"
 
 namespace mozolm {
 namespace models {
