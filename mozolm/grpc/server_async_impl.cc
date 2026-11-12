@@ -14,13 +14,18 @@
 
 #include "mozolm/grpc/server_async_impl.h"
 
+#include <cstdint>
+#include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
 #include "absl/functional/bind_front.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "include/grpcpp/server_builder.h"
 
@@ -30,6 +35,22 @@ namespace grpc {
 using ::grpc::Status;
 using ::grpc::ServerContext;
 
+namespace {
+
+// Validates a 64-bit RPC state argument and narrows it to `int`. When
+// `allow_negative_sentinel` is true (`GetContextRequest`), negative values map
+// to the `-1` start-state sentinel; otherwise negative states are rejected.
+absl::StatusOr<int> ValidateState(int64_t state,
+                                  bool allow_negative_sentinel) {
+  if (state > std::numeric_limits<int>::max() ||
+      (!allow_negative_sentinel && state < 0)) {
+    return absl::InvalidArgumentError("Invalid state.");
+  }
+  return state < 0 ? -1 : static_cast<int>(state);
+}
+
+}  // namespace
+
 ServerAsyncImpl::ServerAsyncImpl(
     std::unique_ptr<models::LanguageModelHub> model_hub) {
   model_hub_ = std::move(model_hub);
@@ -38,8 +59,14 @@ ServerAsyncImpl::ServerAsyncImpl(
 Status ServerAsyncImpl::HandleRequest(ServerContext* context,
                                       const GetContextRequest* request,
                                       LMScores* response) {
+  const absl::StatusOr<int> init_state =
+      ValidateState(request->state(), /*allow_negative_sentinel=*/true);
+  if (!init_state.ok()) {
+    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                  std::string(init_state.status().message()));
+  }
   if (!model_hub_->ExtractLMScores(
-          model_hub_->ContextState(request->context(), request->state()),
+          model_hub_->ContextState(request->context(), *init_state),
           response)) {
     // Only fails if given state is invalid.
     return Status(::grpc::StatusCode::INVALID_ARGUMENT, "invalid state");
@@ -50,8 +77,14 @@ Status ServerAsyncImpl::HandleRequest(ServerContext* context,
 Status ServerAsyncImpl::HandleRequest(ServerContext* context,
                                       const GetContextRequest* request,
                                       NextState* response) {
-  const int64_t state = model_hub_->ContextState(request->context(),
-                                                 request->state());
+  const absl::StatusOr<int> init_state =
+      ValidateState(request->state(), /*allow_negative_sentinel=*/true);
+  if (!init_state.ok()) {
+    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                  std::string(init_state.status().message()));
+  }
+  const int64_t state =
+      model_hub_->ContextState(request->context(), *init_state);
   response->set_next_state(state);
   return Status::OK;
 }
@@ -314,18 +347,33 @@ void ServerAsyncImpl::Shutdown() {
 
 Status ServerAsyncImpl::ManageUpdateLMScores(
     const UpdateLMScoresRequest* request, LMScores* response) {
+  const absl::StatusOr<int> state =
+      ValidateState(request->state(), /*allow_negative_sentinel=*/false);
+  if (!state.ok()) {
+    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                  std::string(state.status().message()));
+  }
+  if (request->count() <= 0) {
+    return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                  "Count must be positive.");
+  }
   const int utf8_sym_size = request->utf8_sym_size();
   std::vector<int> utf8_syms(utf8_sym_size);
-  int curr_state = request->state();
   for (int i = 0; i < utf8_sym_size; ++i) {
-    // Adds each symbol to vector and finds next state.
-    utf8_syms[i] = request->utf8_sym(i);
-    curr_state = model_hub_->NextState(curr_state, utf8_syms[i]);
+    const int utf8_sym = request->utf8_sym(i);
+    if (utf8_sym < 0) {
+      return Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                    "Invalid UTF8 symbol.");
+    }
+    utf8_syms[i] = utf8_sym;
   }
-  if (!model_hub_->UpdateLMCounts(request->state(), utf8_syms,
-                                  request->count())) {
+  if (!model_hub_->UpdateLMCounts(*state, utf8_syms, request->count())) {
     return Status(::grpc::StatusCode::INVALID_ARGUMENT,
                   "Failed to update language model counts.");
+  }
+  int curr_state = *state;
+  for (int utf8_sym : utf8_syms) {
+    curr_state = model_hub_->NextState(curr_state, utf8_sym);
   }
   if (model_hub_->ExtractLMScores(curr_state, response)) {
     return Status::OK;

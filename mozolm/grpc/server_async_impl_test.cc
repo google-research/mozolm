@@ -14,6 +14,7 @@
 
 #include "mozolm/grpc/server_async_impl.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -46,7 +47,7 @@ class ServerAsyncImplMock : public ServerAsyncImpl {
 };
 
 // Check that a call to GetLMScores returns the expected status error code.
-void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
+void CheckGetLMScoresError(int64_t state, ::grpc::StatusCode error_code) {
   ServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
@@ -59,7 +60,7 @@ void CheckGetLMScoresError(int state, ::grpc::StatusCode error_code) {
 
 // Check that a call to GetLMScores succeeds and returns the expected
 // probabilities and normalization.
-void CheckGetLMScores(int state, const std::string& context_str = "") {
+void CheckGetLMScores(int64_t state, const std::string& context_str = "") {
   ServerAsyncImplMock server;
   ServerContext context;
   GetContextRequest request;
@@ -77,19 +78,52 @@ void CheckGetLMScores(int state, const std::string& context_str = "") {
   }
 }
 
+// Check that a call to GetNextState succeeds and returns the expected state.
+void CheckGetNextState(int64_t state, const std::string& context_str,
+                       int64_t expected_state) {
+  ServerAsyncImplMock server;
+  ServerContext context;
+  GetContextRequest request;
+  NextState response;
+  request.set_state(state);
+  request.set_context(context_str);
+  Status status = server.HandleRequest(&context, &request, &response);
+  ASSERT_TRUE(status.ok());
+  EXPECT_EQ(response.next_state(), expected_state);
+}
+
+// Check that a call to GetNextState returns the expected status error code.
+void CheckGetNextStateError(int64_t state, ::grpc::StatusCode error_code) {
+  ServerAsyncImplMock server;
+  ServerContext context;
+  GetContextRequest request;
+  NextState response;
+  request.set_state(state);
+  Status status = server.HandleRequest(&context, &request, &response);
+  ASSERT_EQ(status.error_code(), error_code);
+}
+
 // Check that a call to UpdateLMScores returns the expected status code.
-void CheckUpdateLMScoresError(int state, int utf8_sym, int count,
-                              ::grpc::StatusCode error_code) {
+void CheckUpdateLMScoresError(int64_t state, const std::vector<int>& utf8_syms,
+                              int count, ::grpc::StatusCode error_code) {
   ServerAsyncImplMock server;
   ServerContext context;
   UpdateLMScoresRequest request;
   LMScores response;
   request.set_state(state);
-  request.add_utf8_sym(utf8_sym);
+  for (int utf8_sym : utf8_syms) {
+    request.add_utf8_sym(utf8_sym);
+  }
   request.set_count(count);
   const UpdateLMScoresRequest* request_ptr(&request);
   Status status = server.HandleRequest(&context, request_ptr, &response);
   ASSERT_EQ(status.error_code(), error_code);
+}
+
+void CheckUpdateLMScoresError(int64_t state, int utf8_sym, int count,
+                              ::grpc::StatusCode error_code) {
+  CheckUpdateLMScoresError(state, std::vector<int>{utf8_sym}, count,
+                           error_code);
 }
 
 // Check that a call to UpdateLMScore updates correctly.
@@ -160,6 +194,60 @@ TEST(ServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountOne) {
 
 TEST(ServerAsyncTest, UpdateLMScore_SetsLMScoreWitCountTen) {
   CheckUpdateLMScoresContent(0, 10);
+}
+
+TEST(ServerAsyncTest, GetLMScores_RejectsOverflowing64BitState) {
+  CheckGetLMScoresError(1LL << 32, ::grpc::StatusCode::INVALID_ARGUMENT);
+}
+
+TEST(ServerAsyncTest, GetLMScores_AcceptsNegativeSentinelStates) {
+  CheckGetLMScores(-1);
+  CheckGetLMScores(-(1LL << 32) + 999);
+}
+
+TEST(ServerAsyncTest, GetNextState_Validates64BitState) {
+  CheckGetNextState(-1, "", 0);
+  CheckGetNextState(-(1LL << 32) + 999, "", 0);
+  CheckGetNextStateError(1LL << 32, ::grpc::StatusCode::INVALID_ARGUMENT);
+}
+
+TEST(ServerAsyncTest,
+     UpdateLMScore_RejectsUnallocatedPositiveStateWithoutMutatingStartState) {
+  ServerAsyncImplMock server;
+  ServerContext update_ctx;
+  UpdateLMScoresRequest update_req;
+  LMScores update_resp;
+  update_req.set_state(1);
+  update_req.add_utf8_sym('a');
+  update_req.set_count(1);
+  Status update_status =
+      server.HandleRequest(&update_ctx, &update_req, &update_resp);
+  EXPECT_EQ(update_status.error_code(), ::grpc::StatusCode::INVALID_ARGUMENT);
+
+  ServerContext get_ctx;
+  GetContextRequest get_req;
+  LMScores get_resp;
+  get_req.set_state(0);
+  ASSERT_TRUE(server.HandleRequest(&get_ctx, &get_req, &get_resp).ok());
+  EXPECT_NEAR(get_resp.normalization(), 28.0, kFloatDelta);
+}
+
+TEST(ServerAsyncTest, UpdateLMScore_RejectsOverflowing64BitStates) {
+  CheckUpdateLMScoresError(1LL << 32, 'a', 1,
+                           ::grpc::StatusCode::INVALID_ARGUMENT);
+  CheckUpdateLMScoresError(-(1LL << 32) + 1, 'a', 1,
+                           ::grpc::StatusCode::INVALID_ARGUMENT);
+}
+
+TEST(ServerAsyncTest, UpdateLMScore_RejectsNegativeSymbolsOnValidState) {
+  CheckUpdateLMScoresError(0, -1, 1, ::grpc::StatusCode::INVALID_ARGUMENT);
+  CheckUpdateLMScoresError(0, {-1, 'a'}, 1,
+                           ::grpc::StatusCode::INVALID_ARGUMENT);
+}
+
+TEST(ServerAsyncTest, UpdateLMScore_RejectsNonPositiveCountOnValidState) {
+  CheckUpdateLMScoresError(0, 'a', 0, ::grpc::StatusCode::INVALID_ARGUMENT);
+  CheckUpdateLMScoresError(0, 'a', -1, ::grpc::StatusCode::INVALID_ARGUMENT);
 }
 
 }  // namespace grpc
