@@ -332,6 +332,69 @@ TEST_F(VocabOnlyModelsTest, BayesMixtureTest) {
   EXPECT_NEAR(scores.probabilities(2), 0.1, kEpsilon);  // "b"
 }
 
+TEST_F(VocabOnlyModelsTest, RejectsInvalidStateInUpdateLMCounts) {
+  for (LanguageModelHub *hub : {one_model_hub_.get(),
+                                uniform_two_model_hub_.get(),
+                                bayes_two_model_hub_.get()}) {
+    EXPECT_FALSE(hub->UpdateLMCounts(-1, {kAsciiA}, 1));
+    EXPECT_FALSE(hub->UpdateLMCounts(-100, {kAsciiA}, 1));
+    EXPECT_FALSE(hub->UpdateLMCounts(1, {kAsciiA}, 1));
+    // Verify that the rejected call above did not allocate hub state 1.
+    EXPECT_FALSE(hub->UpdateLMCounts(1, {kAsciiA}, 1));
+    EXPECT_FALSE(hub->UpdateLMCounts(1000000, {kAsciiA}, 1));
+  }
+  CheckUniform();
+  CheckInitialTwoModelMix();
+}
+
+TEST_F(VocabOnlyModelsTest, RejectsNegativeSymbolsInUpdateLMCounts) {
+  EXPECT_FALSE(
+      one_model_hub_->UpdateLMCounts(one_model_start_state_, {-1}, 1));
+  EXPECT_FALSE(one_model_hub_->UpdateLMCounts(
+      one_model_start_state_, {-1, kAsciiA}, 1));
+  EXPECT_FALSE(one_model_hub_->UpdateLMCounts(
+      one_model_start_state_, {kAsciiA, -1, kAsciiB}, 1));
+
+  EXPECT_FALSE(uniform_two_model_hub_->UpdateLMCounts(
+      uniform_two_model_start_state_, {-1}, 1));
+  EXPECT_FALSE(uniform_two_model_hub_->UpdateLMCounts(
+      uniform_two_model_start_state_, {-1, kAsciiA}, 1));
+  EXPECT_FALSE(uniform_two_model_hub_->UpdateLMCounts(
+      uniform_two_model_start_state_, {kAsciiA, -1, kAsciiB}, 1));
+
+  EXPECT_FALSE(
+      bayes_two_model_hub_->UpdateLMCounts(bayes_two_model_start_state_, {-1},
+                                           1));
+  EXPECT_FALSE(bayes_two_model_hub_->UpdateLMCounts(
+      bayes_two_model_start_state_, {-1, kAsciiA}, 1));
+  EXPECT_FALSE(bayes_two_model_hub_->UpdateLMCounts(
+      bayes_two_model_start_state_, {kAsciiA, -1, kAsciiB}, 1));
+  // Verify that no continuation state was allocated from the rejected calls.
+  EXPECT_FALSE(bayes_two_model_hub_->UpdateLMCounts(1, {kAsciiA}, 1));
+
+  CheckUniform();
+  CheckInitialTwoModelMix();
+}
+
+TEST(LanguageModelHubSimpleBigramTest, BayesianMixtureRejectsInvalidUpdates) {
+  LanguageModelHub uninitialized_hub;
+  EXPECT_FALSE(uninitialized_hub.UpdateLMCounts(0, {kAsciiA}, 1));
+
+  ModelHubConfig hub_config;
+  hub_config.set_mixture_type(ModelHubConfig::INTERPOLATION);
+  hub_config.set_bayesian_history_length(3);
+  hub_config.add_model_config()->set_type(ModelConfig::SIMPLE_CHAR_BIGRAM);
+  hub_config.add_model_config()->set_type(ModelConfig::SIMPLE_CHAR_BIGRAM);
+  auto hub_or = MakeModelHub(hub_config);
+  ASSERT_OK(hub_or.status());
+  std::unique_ptr<LanguageModelHub> hub = std::move(hub_or.value());
+
+  EXPECT_FALSE(hub->UpdateLMCounts(-1, {kAsciiA}, 1));
+  EXPECT_FALSE(hub->UpdateLMCounts(1000000, {kAsciiA}, 1));
+  EXPECT_FALSE(hub->UpdateLMCounts(0, {-1, kAsciiA}, 1));
+  EXPECT_TRUE(hub->UpdateLMCounts(0, {kAsciiA}, 1));
+}
+
 }  // namespace
 }  // namespace models
 }  // namespace mozolm

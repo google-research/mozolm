@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 
 #include "google/protobuf/stubs/logging.h"
 #include "nisaba/port/status_macros.h"
@@ -135,6 +136,9 @@ int LanguageModelHub::StateSym(int state) {
 absl::Status LanguageModelHub::UpdateHubState(
     int idx, const std::vector<int>& model_states, int prev_state,
     int state_sym) {
+  if (idx < 0 || idx >= hub_states_.size()) {
+    return absl::OutOfRangeError("Hub state index out of bounds.");
+  }
   std::vector<int> old_next_states;
   ASSIGN_OR_RETURN(
       old_next_states,
@@ -142,7 +146,9 @@ absl::Status LanguageModelHub::UpdateHubState(
           model_states, prev_state, state_sym, bayesian_history_length_)));
   for (auto next_state : old_next_states) {
     // Removes prev_state_ values that refer to old, overwritten hub state.
-    hub_states_[next_state]->ResetPrevState();
+    if (next_state >= 0 && next_state < hub_states_.size()) {
+      hub_states_[next_state]->ResetPrevState();
+    }
   }
   return absl::OkStatus();
 }
@@ -278,9 +284,10 @@ bool LanguageModelHub::ExtractLMScores(int state, LMScores* response) {
 }
 
 void LanguageModelHub::UpdateBayesianHistory(int32_t state) {
-  if (state >= 0 && bayesian_history_length_ > 0) {
+  if (state >= 0 && state < hub_states_.size() &&
+      bayesian_history_length_ > 0) {
     const int prev_state = hub_states_[state]->prev_state();
-    if (prev_state >= 0) {
+    if (prev_state >= 0 && prev_state < hub_states_.size()) {
       std::vector<double> lm_probs(language_models_.size());
       for (int idx = 0; idx < language_models_.size(); ++idx) {
         lm_probs[idx] = language_models_[idx]->SymLMScore(
@@ -296,7 +303,13 @@ void LanguageModelHub::UpdateBayesianHistory(int32_t state) {
 bool LanguageModelHub::UpdateLMCounts(int32_t state,
                                       const std::vector<int>& utf8_syms,
                                       int64_t count) {
-  bool result = state >= 0 && state < hub_states_.size();
+  if (state < 0 || state >= hub_states_.size()) {
+    return false;
+  }
+  if (std::any_of(utf8_syms.begin(), utf8_syms.end(),
+                  [](int utf8_sym) { return utf8_sym < 0; })) {
+    return false;
+  }
   // Ensures hub states exist for all continuations;
   int next_state = state;
   for (auto utf8_sym : utf8_syms) {
@@ -306,6 +319,9 @@ bool LanguageModelHub::UpdateLMCounts(int32_t state,
     // Updates Bayesian history at next states before updating counts.
     int this_state = state;
     for (auto utf8_sym : utf8_syms) {
+      if (this_state < 0 || this_state >= hub_states_.size()) {
+        break;
+      }
       const auto next_states = hub_states_[this_state]->next_states();
       for (auto ns : next_states) {
         UpdateBayesianHistory(ns.second);
@@ -313,6 +329,7 @@ bool LanguageModelHub::UpdateLMCounts(int32_t state,
       this_state = NextState(this_state, utf8_sym);
     }
   }
+  bool result = true;
   int idx = 0;
   while (result && idx < mixture_weights_.size()) {
     result = language_models_[idx]->UpdateLMCounts(
@@ -327,12 +344,15 @@ bool LanguageModelHub::UpdateLMCounts(int32_t state,
 
 bool LanguageModelHub::VerifyOrCorrectModelStates(
     int32_t state, const std::vector<int>& utf8_syms) {
+  if (state < 0 || state >= hub_states_.size()) {
+    return false;
+  }
   for (int utf8_sym : utf8_syms) {
     // Checks for next state; if there, verifies (and updates if needed) model
     // state information.
     int next_state = hub_states_[state]->next_state(utf8_sym);
     bool result;
-    if (next_state >= 0) {
+    if (next_state >= 0 && next_state < hub_states_.size()) {
       // Collects model next state vector to double check.
       std::vector<int> next_states(language_models_.size());
       for (auto idx = 0; idx < next_states.size(); ++idx) {
