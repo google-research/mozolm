@@ -84,7 +84,7 @@ absl::Status NGramWordFstModel::EstablishLexicographicOrdering() {
   lexicographic_order_[idx] = 0;
   lexicographic_position_[0] = idx++;
   first_char_begin_index_ = idx;
-  std::string first_char;
+  [[maybe_unused]] std::string first_char;
   std::vector<std::string> last_string(1);
   for (int i = 0; i < symbols.size(); ++i) {
     StdArc::Label sym = syms->Find(symbols[i]);
